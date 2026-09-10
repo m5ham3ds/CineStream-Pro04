@@ -109,7 +109,6 @@ fun ServerSelectionDialog(
     LaunchedEffect(currentSiteIndex) {
         if (currentSiteIndex >= prioritySites.size) {
             isLoading = false
-            bypassStatus = "NORMAL"
             isFailed = true
             return@LaunchedEffect
         }
@@ -139,7 +138,6 @@ fun ServerSelectionDialog(
         // If we timed out and still no servers, move to the next site
         if (extractedServers.isEmpty()) {
             currentSiteIndex++
-            retryTrigger++
         }
     }
 
@@ -179,7 +177,6 @@ Dialog(
         val isCloudflare = bypassStatus == "CLOUDFLARE"
 
         val activeColor = if (isVerified || isNormal) Color(0xFF00C853) else Color(0xFFFF1111)
-            if (!isFailed && extractedServers.isEmpty()) {
 
 
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -233,6 +230,8 @@ Dialog(
                                     modifier = Modifier.fillMaxSize(),
                                     factory = { ctx ->
                                         WebView(ctx).apply {
+                                            android.webkit.CookieManager.getInstance().setAcceptCookie(true)
+                                            android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
                                             settings.apply {
                                                 javaScriptEnabled = true
                                                 domStorageEnabled = true
@@ -265,7 +264,7 @@ Dialog(
                                                             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                                                                 if (bypassStatus == "VERIFIED") bypassStatus = "NORMAL"
                                                             }, 1500)
-                                                        } else if (status == "CLOUDFLARE" && !isFailed && extractedServers.isEmpty()) {
+                                                        } else if (status == "CLOUDFLARE") {
                                                             bypassStatus = "CLOUDFLARE"
                                                         }
                                                     }
@@ -276,7 +275,6 @@ Dialog(
                                                         if (lastFailedSiteIndex != currentSiteIndex) {
                                                             lastFailedSiteIndex = currentSiteIndex
                                                             currentSiteIndex++
-                                                            retryTrigger++
                                                         }
                                                     }
                                                 }
@@ -415,7 +413,6 @@ Dialog(
                                 )
                             }
                 }
-            }
             }
             
             if (!isCloudflare) {
@@ -751,10 +748,7 @@ Dialog(
                                 androidx.compose.material3.TextButton(
                                     onClick = {
                                         showOpenBrowserConfirmDialog = false
-                                        android.webkit.CookieManager.getInstance().removeAllCookies(null)
-                                        android.webkit.CookieManager.getInstance().flush()
                                         bypassStatus = "CLOUDFLARE"
-                                        retryTrigger++
                                     }
                                 ) { Text("نعم", color = Color(0xFFE50914)) }
                             },
@@ -808,17 +802,16 @@ Dialog(
                                     androidx.compose.material3.TextButton(
                                         onClick = {
                                             showNoMoreExtensionsDialog = false
-                                            onNavigateToExtensions()
-                                            onDismiss()
+                                            showCancelConfirmDialog = true
                                         }
-                                    ) { Text("الذهاب للإضافات", color = Color.White) }
+                                    ) { Text("إلغاء تماماً", color = Color(0xFFE50914)) }
                                 }
                             },
                             dismissButton = {
                                 androidx.compose.material3.TextButton(onClick = { 
                                     showNoMoreExtensionsDialog = false
                                     onDismiss()
-                                }) { Text("إلغاء تماماً", color = Color(0xFFE50914)) }
+                                }) { Text("إغلاق وإضافة مواقع", color = Color.White) }
                             }
                         )
                     }
