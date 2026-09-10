@@ -1,0 +1,10 @@
+<resources>
+    <string name="library">Library</string>
+    <string name="about_app">About App</string>
+    <string name="help_support">Help and Support</string>
+    <string name="login">Log In</string>
+    <string name="logout">Log Out</string>
+    <string name="logout_confirm">Are you sure you want to log out?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+</resources>

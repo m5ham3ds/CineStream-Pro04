@@ -1,0 +1,37 @@
+--- app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt
++++ app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt
+@@ -786,16 +786,21 @@
+                             title = { Text("لا توجد إضافات أخرى", color = Color.White) },
+                             text = { Text("لم يتم تثبيت أي إضافات أخرى للمتابعة. ماذا تريد أن تفعل؟", color = Color.LightGray) },
+                             containerColor = Color(0xFF222225),
+                             confirmButton = {
+-                                androidx.compose.material3.TextButton(
+-                                    onClick = {
+-                                        showNoMoreExtensionsDialog = false
+-                                    }
+-                                ) { Text("العودة للموقع الحالي", color = Color(0xFF00C853)) }
++                                Row {
++                                    androidx.compose.material3.TextButton(
++                                        onClick = {
++                                            showNoMoreExtensionsDialog = false
++                                        }
++                                    ) { Text("العودة", color = Color(0xFF00C853)) }
++                                    androidx.compose.material3.TextButton(
++                                        onClick = {
++                                            showNoMoreExtensionsDialog = false
++                                            showCancelConfirmDialog = true
++                                        }
++                                    ) { Text("إلغاء تماماً", color = Color(0xFFE50914)) }
++                                }
+                             },
+                             dismissButton = {
+                                 androidx.compose.material3.TextButton(onClick = { 
+                                     showNoMoreExtensionsDialog = false
+-                                    // Normally you'd navigate to extensions here, 
+-                                    // but we just dismiss for now as we don't have the navController
+                                     onDismiss()
+-                                }) { Text("إلغاء", color = Color.White) }
++                                }) { Text("الذهاب للإضافات", color = Color.White) }
+                             }
+                         )
+                     }

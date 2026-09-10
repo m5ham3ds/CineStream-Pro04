@@ -1,0 +1,7 @@
+<resources>
+    <string name="confirm_change">Confirm Change</string>
+    <string name="confirm_theme_change">Are you sure you want to change the theme?</string>
+    <string name="confirm_color_change">Are you sure you want to change the primary color?</string>
+    <string name="confirm_language_change">Are you sure you want to change the language?</string>
+    <string name="cancel">Cancel</string>
+</resources>

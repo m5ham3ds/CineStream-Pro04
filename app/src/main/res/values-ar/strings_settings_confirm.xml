@@ -1,0 +1,7 @@
+<resources>
+    <string name="confirm_change">تأكيد التغيير</string>
+    <string name="confirm_theme_change">هل أنت متأكد أنك تريد تغيير المظهر؟</string>
+    <string name="confirm_color_change">هل أنت متأكد أنك تريد تغيير اللون الأساسي؟</string>
+    <string name="confirm_language_change">هل أنت متأكد أنك تريد تغيير لغة التطبيق؟</string>
+    <string name="cancel">إلغاء</string>
+</resources>

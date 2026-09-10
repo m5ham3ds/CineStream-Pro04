@@ -1,0 +1,5 @@
+<resources>
+    <string name="movies">Movies</string>
+    <string name="series">Series</string>
+    <string name="anime">Anime</string>
+</resources>
