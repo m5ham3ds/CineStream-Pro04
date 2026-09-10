@@ -64,6 +64,7 @@ fun BackgroundWebView(
             modifier = Modifier.fillMaxSize().alpha(0.01f), 
             factory = { ctx ->
                 WebView(ctx).apply {
+                    setInitialScale(1)
                     settings.apply {
                         javaScriptEnabled = true
                         domStorageEnabled = true

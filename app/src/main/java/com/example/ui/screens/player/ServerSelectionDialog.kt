@@ -193,7 +193,8 @@ Dialog(
                                 offsetY += dragAmount.y
                             }
                         }
-                        .fillMaxSize()
+                        .fillMaxWidth(0.9f)
+                        .fillMaxHeight(0.85f)
                         .clip(RoundedCornerShape(16.dp))
                         .background(Color.White)
                         .zIndex(100f)
@@ -232,6 +233,7 @@ Dialog(
                                         WebView(ctx).apply {
                                             android.webkit.CookieManager.getInstance().setAcceptCookie(true)
                                             android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                                            setInitialScale(1)
                                             settings.apply {
                                                 javaScriptEnabled = true
                                                 domStorageEnabled = true
@@ -289,7 +291,7 @@ Dialog(
                                                         for (i in 0 until serversData.length()) {
                                                             val item = serversData.getJSONObject(i)
                                                             val name = item.getString("name")
-                                                            val link = if (item.has("link")) item.getString("link") else ""
+                                                            val link = if (item.has("link")) item.getString("link") else if (item.has("url")) item.getString("url") else ""
                                                             val id = if (item.has("id")) item.getString("id") else ""
                                                             serversNames.add(name)
                                                             serversMap[name] = link

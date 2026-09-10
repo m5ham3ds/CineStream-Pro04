@@ -133,6 +133,7 @@ fun HiddenVideoExtractor(
                         .fillMaxWidth(),
                     factory = { ctx ->
             WebView(ctx).apply {
+                setInitialScale(1)
                 settings.apply {
                     javaScriptEnabled = true
                     domStorageEnabled = true

@@ -13,14 +13,14 @@ import java.util.Locale
 class ExtensionReflectionWrapper(private val instance: Any) : ProviderExtension {
     private val clazz = instance.javaClass
     
-    override val id: String get() = clazz.getMethod("getId").invoke(instance) as String
-    override val name: String get() = clazz.getMethod("getName").invoke(instance) as String
-    override val baseUrl: String get() = clazz.getMethod("getBaseUrl").invoke(instance) as String
-    override val isAnime: Boolean get() = clazz.getMethod("isAnime").invoke(instance) as Boolean
-    override val isMovie: Boolean get() = clazz.getMethod("isMovie").invoke(instance) as Boolean
-    override val isSeries: Boolean get() = clazz.getMethod("isSeries").invoke(instance) as Boolean
-    override val lang: String get() = clazz.getMethod("getLang").invoke(instance) as String
-    override val iconUrl: String get() = clazz.getMethod("getIconUrl").invoke(instance) as String
+    override val id: String get() = try { clazz.getMethod("getId").invoke(instance) as String } catch(e: Exception) { clazz.name }
+    override val name: String get() = try { clazz.getMethod("getName").invoke(instance) as String } catch(e: Exception) { "Unknown" }
+    override val baseUrl: String get() = try { clazz.getMethod("getBaseUrl").invoke(instance) as String } catch(e: Exception) { "" }
+    override val isAnime: Boolean get() = try { clazz.getMethod("isAnime").invoke(instance) as Boolean } catch(e: Exception) { false }
+    override val isMovie: Boolean get() = try { clazz.getMethod("isMovie").invoke(instance) as Boolean } catch(e: Exception) { true }
+    override val isSeries: Boolean get() = try { clazz.getMethod("isSeries").invoke(instance) as Boolean } catch(e: Exception) { true }
+    override val lang: String get() = try { clazz.getMethod("getLang").invoke(instance) as String } catch(e: Exception) { "" }
+    override val iconUrl: String get() = try { clazz.getMethod("getIconUrl").invoke(instance) as String } catch(e: Exception) { "" }
 
     override fun getSearchUrl(titleOriginal: String, titleClean: String): String {
         return clazz.getMethod("getSearchUrl", String::class.java, String::class.java)
@@ -48,6 +48,7 @@ object ExtensionManager {
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        _availableExtensions.add(EgyDeadExtension)
         scanExternalExtensions(context)
         loadInstalled()
     }
