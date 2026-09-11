@@ -155,7 +155,9 @@ fun ServerSelectionDialog(
     }
     
     val cleanTitle = baseTitle.replace(Regex("[^a-zA-Z0-9\\s]"), " ").replace(Regex("\\s+"), " ").trim()
-    val searchUrl = currentExtension.getSearchUrl(baseTitle, cleanTitleWithYear)
+    
+    // Use cleanTitle for search so the site actually returns results (site search engines often fail with year appended)
+    val searchUrl = currentExtension.getSearchUrl(baseTitle, cleanTitle)
 
 
 Dialog(
@@ -333,7 +335,7 @@ Dialog(
                                                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                                     super.onProgressChanged(view, newProgress)
                                                     if (newProgress >= 30) {
-                                                        val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, baseTitle)
+                                                        val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, cleanTitleWithYear)
                                                         view?.evaluateJavascript(autoPlayScript, null)
                                                     }
                                                 }
@@ -398,7 +400,7 @@ Dialog(
                                                                 android.webkit.CookieManager.getInstance().flush()
                                                                 bypassStatus = "NORMAL"
                                                             }
-                                                            val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, baseTitle)
+                                                            val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, cleanTitleWithYear)
                                                             view?.evaluateJavascript(autoPlayScript, null)
                                                         } else {
                                                             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
