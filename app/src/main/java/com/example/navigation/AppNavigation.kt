@@ -107,7 +107,9 @@ import com.example.ui.screens.auth.AuthScreen
 fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Splash.route
+    val currentRoute = navBackStackEntry?.destination?.route
+
+ ?: Screen.Splash.route
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -121,6 +123,17 @@ fun AppNavigation() {
     var isSearchExpanded by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     var searchQuery by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
     var showLogoutDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.activity.compose.BackHandler(enabled = true) {
+        if (currentRoute == Screen.Home.route) {
+            showLogoutDialog = true
+        } else {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
+
 
     var isUpdatingData by remember { mutableStateOf(com.example.utils.NetworkUtils.isInternetAvailable(context)) }
     var updateFinishedShowGreen by remember { mutableStateOf(false) }
@@ -132,28 +145,7 @@ fun AppNavigation() {
             updateFinishedShowGreen = false
         }
     }
-    
-    
-    val extensionUrls = remember { 
-        listOf(
-            "https://tv10.egydead.live/", "https://vidsrc.me/", "https://multiembed.mov/", "https://vidsrc.to/",
-            "https://egydead.icu/", "https://faselhd.club/", "https://anime4up.com/",
-            "https://witanime.com/", "https://cimaleek.com/", "https://asia2tv.cc/",
-            "https://tuktukcinema.net/", "https://arabseed-tv.com/", "https://www.arabseed.wine/",
-            "https://e.cimalight.co/", "https://egybests.live/", "https://www.stardima.com/",
-            "https://a.qfilm.tv/", "https://egydead.rip/", "https://mycima.red/", 
-            "https://witanime.you/", "https://animesit.com/"
-        )
-    }
-    val bottomBarRoutes = listOf(
-        Screen.Home.route,
-        Screen.Movies.route,
-        Screen.Series.route,
-        Screen.Search.route,
-        Screen.Library.route,
-        Screen.Anime.route
-    )
-    
+    val bottomBarRoutes = listOf(Screen.Home.route, Screen.Movies.route, Screen.Search.route, Screen.Series.route, Screen.Anime.route)
     val hasTopBar = bottomBarRoutes.contains(currentRoute) || currentRoute in listOf(
         Screen.Profile.route, Screen.Downloads.route, Screen.Settings.route, Screen.Extensions.route, Screen.Share.route, Screen.About.route, Screen.Social.route
     )
@@ -163,11 +155,11 @@ fun AppNavigation() {
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
         drawerContent = {
-                        ModalDrawerSheet(
+            ModalDrawerSheet(
                 drawerContainerColor = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.width(300.dp)
             ) {
-                // Top Header Section with Gradient
+                // Top Header Section
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -181,38 +173,21 @@ fun AppNavigation() {
                 ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Top
+                        verticalArrangement = Arrangement.Bottom
                     ) {
-                        Text(
-                            text = "CineStream",
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Serif
-                            ),
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Start
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable {
-                                scope.launch { drawerState.close() }
-                                if (isGuest) {
-                                    navController.navigate(Screen.Auth.route)
-                                } else {
-                                    navController.navigate(Screen.Profile.route)
-                                }
-                            }
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 val displayName = if (isGuest || currentUser == null) "Guest User" else {
-                                    "${currentUser?.firstName} ${currentUser?.lastName}".trim().takeIf { it.isNotBlank() } ?: currentUser?.username ?: "User"
+                                    "${currentUser?.firstName ?: ""} ${currentUser?.lastName ?: ""}".trim().takeIf { it.isNotBlank() } ?: currentUser?.username ?: "User"
                                 }
                                 Text(
                                     text = displayName,
                                     fontSize = 24.sp,
-                                    fontFamily = FontFamily.SansSerif,
+                                    fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 if (!isGuest && currentUser?.username?.isNotBlank() == true) {
@@ -222,6 +197,7 @@ fun AppNavigation() {
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     if (!isGuest) {
                                         Icon(painter = painterResource(android.R.drawable.ic_dialog_info), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
@@ -234,13 +210,17 @@ fun AppNavigation() {
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.weight(1f))
+                            
                             Box(
                                 modifier = Modifier
-                                    .size(70.dp)
+                                    .size(60.dp)
                                     .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.onSurfaceVariant)
-                                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                                    .clickable { 
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate(Screen.Profile.route)
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (currentUser != null && currentUser?.photoUrl?.isNotEmpty() == true) {
@@ -250,15 +230,8 @@ fun AppNavigation() {
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize()
                                     )
-                                } else if (currentUser != null) {
-                                    Text(
-                                        text = (currentUser?.firstName?.take(1) ?: currentUser?.username?.take(1) ?: "U").uppercase(),
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 28.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
                                 } else {
-                                    Icon(Icons.Default.Person, contentDescription = "Avatar", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(40.dp))
+                                    Icon(Icons.Default.Person, contentDescription = "Avatar", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
                                 }
                             }
                         }
@@ -313,24 +286,10 @@ fun AppNavigation() {
                         colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                         onClick = {
                             scope.launch { drawerState.close() }
-                            if (currentRoute != Screen.Extensions.route) {
-                                navController.navigate(Screen.Extensions.route)
-                            }
-                        },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.settings), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
-                        selected = currentRoute == Screen.Settings.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            if (currentRoute == Screen.Settings.route) {
-                                navController.popBackStack(Screen.Settings.route, inclusive = true)
-                                navController.navigate(Screen.Settings.route)
-                            } else {
-                                navController.navigate(Screen.Settings.route)
+                            navController.navigate(Screen.Extensions.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
                             }
                         },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -343,25 +302,10 @@ fun AppNavigation() {
                         colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                         onClick = {
                             scope.launch { drawerState.close() }
-                            if (currentRoute != Screen.Social.route) {
-                                navController.navigate(Screen.Social.route)
-                            }
-                        },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-
-                    NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Download, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.downloads), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
-                        selected = currentRoute == Screen.Downloads.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            if (currentRoute == Screen.Downloads.route) {
-                                navController.popBackStack(Screen.Downloads.route, inclusive = true)
-                                navController.navigate(Screen.Downloads.route)
-                            } else {
-                                navController.navigate(Screen.Downloads.route)
+                            navController.navigate(Screen.Social.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
                             }
                         },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -374,13 +318,47 @@ fun AppNavigation() {
                         colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                         onClick = {
                             scope.launch { drawerState.close() }
-                            if (currentRoute != Screen.Share.route) {
-                                navController.navigate(Screen.Share.route)
+                            navController.navigate(Screen.Share.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
                             }
                         },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
-
+                    
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
+                        label = { Text(stringResource(R.string.settings), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        selected = currentRoute == Screen.Settings.route,
+                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(Screen.Settings.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                    
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Outlined.Download, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
+                        label = { Text(stringResource(R.string.downloads), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        selected = currentRoute == Screen.Downloads.route,
+                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate(Screen.Downloads.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                    
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                     
                     NavigationDrawerItem(
@@ -390,11 +368,10 @@ fun AppNavigation() {
                         colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                         onClick = {
                             scope.launch { drawerState.close() }
-                            if (currentRoute == Screen.About.route) {
-                                navController.popBackStack(Screen.About.route, inclusive = true)
-                                navController.navigate(Screen.About.route)
-                            } else {
-                                navController.navigate(Screen.About.route)
+                            navController.navigate(Screen.About.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
                             }
                         },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -411,8 +388,8 @@ fun AppNavigation() {
                 }
                 
                 HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
-
-                // Bottom Area (Logout)// Bottom Area (Logout)
+                
+                // Bottom Area (Logout)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -425,13 +402,8 @@ fun AppNavigation() {
                             .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surface)
                             .clickable { 
-                                if (isGuest) {
-                                    scope.launch { drawerState.close() }
-                                    navController.navigate(Screen.Auth.route)
-                                } else {
-                                    scope.launch { drawerState.close() }
-                                    showLogoutDialog = true
-                                }
+                                scope.launch { drawerState.close() }
+                                showLogoutDialog = true
                             }
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.Center,
@@ -471,6 +443,7 @@ fun AppNavigation() {
             )
         }
         Scaffold(
+
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 Column {
@@ -486,18 +459,22 @@ fun AppNavigation() {
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Avatar on left
+                            androidx.compose.material3.IconButton(
+                                onClick = { scope.launch { drawerState.open() } }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Menu"
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(36.dp)
                                     .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.onSurfaceVariant)
+                                    .background(MaterialTheme.colorScheme.onBackground)
                                     .clickable {
-                                         if (isGuest) {
-                                            navController.navigate(Screen.Auth.route)
-                                        } else {
-                                            navController.navigate(Screen.Profile.route)
-                                        }
+                                        navController.navigate(Screen.Profile.route)
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -516,16 +493,6 @@ fun AppNavigation() {
                             if (!isSearchExpanded) {
                                 Spacer(modifier = Modifier.weight(1f))
                                                             
-                                                            // Center App Name
-                                                            Text(
-                                                                "CineStream",
-                                                                fontWeight = FontWeight.Bold,
-                                                                color = MaterialTheme.colorScheme.primary, // Red
-                                                                fontSize = 22.sp
-                                                            )
-                                                            
-                                                            Spacer(modifier = Modifier.weight(1f))
-                            } else {
                                 Spacer(modifier = Modifier.width(16.dp))
                             }
     
@@ -535,64 +502,32 @@ fun AppNavigation() {
                                 ExpandableSearchBar(
                                     isExpanded = isSearchExpanded,
                                     onExpandedChange = { isSearchExpanded = it },
-                                    onMovieClick = {  id -> com.example.utils.AdManager.showInterstitial(context)
-navController.navigate(Screen.MovieDetails.createRoute(id)) },
-                                    onSeriesClick = {  id -> com.example.utils.AdManager.showInterstitial(context)
-navController.navigate(Screen.SeriesDetails.createRoute(id)) }
-                                )
-                            } else {
-                                // Right Icons
-                                Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp).clickable { isSearchExpanded = true })
-                                Spacer(modifier = Modifier.width(16.dp))
-                                BadgedBox(
-                                    badge = {
-                                        Badge(
-                                            containerColor = MaterialTheme.colorScheme.primary, // Red badge
-                                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.offset(x = (-4).dp, y = 4.dp)
-                                        ) {
-                                            Text("1")
-                                        }
+                                    onMovieClick = { id -> 
+                                        com.example.utils.AdManager.showInterstitial(context)
+                                        navController.navigate(Screen.MovieDetails.createRoute(id))
+                                    },
+                                    onSeriesClick = { id -> 
+                                        com.example.utils.AdManager.showInterstitial(context)
+                                        navController.navigate(Screen.SeriesDetails.createRoute(id))
                                     }
-                                ) {
-                                    Icon(Icons.Outlined.Notifications, contentDescription = "Notifications", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp))
-                                }
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(24.dp).clickable { scope.launch { drawerState.open() } })
+                                )
                             }
-
                         }
-                        
-                        
                     }
                 }
                 }
             },
             bottomBar = {
-                androidx.compose.foundation.layout.Column {
-                    if (currentRoute != null && currentRoute != Screen.Splash.route && currentRoute != Screen.Auth.route && currentRoute != Screen.Onboarding.route) {
-                        if (!currentRoute.contains("movie_details") && !currentRoute.contains("series_details") && !currentRoute.contains("player") && !currentRoute.contains("trailer")) {
-                            com.example.ui.components.StartAppBanner()
-                        }
-                    }
-                    if (bottomBarRoutes.contains(currentRoute) || currentRoute in listOf(Screen.Extensions.route, Screen.Share.route)) {
-                        BottomNavBar(navController = navController)
-                    }
+                if (bottomBarRoutes.contains(currentRoute)) {
+                    com.example.ui.components.BottomNavBar(navController = navController)
                 }
             }
-        
         ) { innerPadding ->
-            val isFullScreen = currentRoute.contains("player") || currentRoute.contains("trailer") || currentRoute == Screen.Splash.route
-            val navHostModifier = if (isFullScreen) {
-                Modifier
+            val navHostModifier = if (hasTopBar) {
+                Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)
             } else {
-                Modifier.padding(innerPadding)
-                    .consumeWindowInsets(innerPadding)
-                    .then(
-                    if (!hasTopBar) Modifier.windowInsetsPadding(WindowInsets.statusBars).consumeWindowInsets(WindowInsets.statusBars) else Modifier
-                )
+                Modifier.padding(innerPadding).consumeWindowInsets(innerPadding).then(Modifier.windowInsetsPadding(WindowInsets.statusBars).consumeWindowInsets(WindowInsets.statusBars))
             }
-
             NavHost(
                 navController = navController,
                 startDestination = Screen.Splash.route,
@@ -946,4 +881,3 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
 }
 }
 }
-// Trending and Watching added at the end using sed later

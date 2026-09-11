@@ -56,8 +56,7 @@ class TmdbMediaRepositoryImpl : MediaRepository {
 
     override fun getNewReleasesSeries(): Flow<List<Series>> = flow {
         val response = RetrofitClient.tmdbApi.getNewReleasesSeries(apiKey)
-            emit(response.results.map { it.toDomain() })
-
+            emit(response.results.filter { it.genreIds?.contains(16) != true || it.originCountry?.contains("JP") != true }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
@@ -72,8 +71,7 @@ class TmdbMediaRepositoryImpl : MediaRepository {
 
     override fun getSeries(): Flow<List<Series>> = flow {
         val response = RetrofitClient.tmdbApi.getPopularSeries(apiKey)
-            emit(response.results.map { it.toDomain() })
-
+            emit(response.results.filter { it.genreIds?.contains(16) != true || it.originCountry?.contains("JP") != true }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
@@ -86,10 +84,31 @@ class TmdbMediaRepositoryImpl : MediaRepository {
         emit(emptyList())
     }
 
+
+    override fun getUpcomingSeries(): Flow<List<Series>> = flow {
+        val response = RetrofitClient.tmdbApi.getUpcomingSeriesDiscover(apiKey, minDate = "2026-09-11")
+        emit(response.results.map { it.toDomain() })
+    }.catch {
+        emit(emptyList())
+    }
+
+    override fun getUpcomingAnime(): Flow<List<Series>> = flow {
+        val response = RetrofitClient.tmdbApi.getUpcomingAnimeDiscover(apiKey, minDate = "2026-09-11")
+        emit(response.results.map { it.toDomain() })
+    }.catch {
+        emit(emptyList())
+    }
+
+    override fun getNewReleasesAnime(): Flow<List<Series>> = flow {
+        val response = RetrofitClient.tmdbApi.getAiringTodayAnime(apiKey, minDate = "2026-09-11", maxDate = "2026-10-11")
+        emit(response.results.map { it.toDomain() })
+    }.catch {
+        emit(emptyList())
+    }
+
     override fun getTrendingSeries(): Flow<List<Series>> = flow {
         val response = RetrofitClient.tmdbApi.getTrendingSeries(apiKey)
-            emit(response.results.map { it.toDomain() })
-
+            emit(response.results.filter { it.genreIds?.contains(16) != true || it.originCountry?.contains("JP") != true }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }

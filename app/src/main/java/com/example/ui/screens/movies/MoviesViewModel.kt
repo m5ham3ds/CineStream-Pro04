@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 data class MoviesUiState(
     val isLoading: Boolean = true,
     val movies: List<Movie> = emptyList(),
+    val upcomingMovies: List<Movie> = emptyList(),
     val error: String? = null
 )
 
@@ -28,11 +29,22 @@ class MoviesViewModel(private val repository: MediaRepository) : ViewModel() {
     fun loadMovies() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.getMovies()
-                .catch { e -> _uiState.update { it.copy(error = e.message, isLoading = it.movies.isEmpty()) } }
-                .collect { movies ->
-                    _uiState.update { it.copy(movies = movies, isLoading = movies.isEmpty()) }
-                }
+            
+            launch {
+                repository.getMovies()
+                    .catch { e -> _uiState.update { it.copy(error = e.message) } }
+                    .collect { movies ->
+                        _uiState.update { it.copy(movies = movies, isLoading = false) }
+                    }
+            }
+            
+            launch {
+                repository.getUpcomingMovies()
+                    .catch { e -> }
+                    .collect { upcoming ->
+                        _uiState.update { it.copy(upcomingMovies = upcoming) }
+                    }
+            }
         }
     }
 }

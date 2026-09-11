@@ -120,7 +120,7 @@ fun SeriesScreen(
     ) {
 
         // Hero Section
-        HeroCarousel(items = uiState.series.take(5).map { HeroItem(it.id, it.title, it.backdropUrl, false) }, onClick = onSeriesClick)
+        HeroCarousel(items = uiState.newEpisodes.take(10).map { HeroItem(it.id, it.title, it.backdropUrl, false) }, onClick = onSeriesClick)
 
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -180,6 +180,36 @@ fun SeriesScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
+
+
+        // Coming Soon Series
+        if (uiState.upcomingSeries.isNotEmpty()) {
+            SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = {})
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(uiState.upcomingSeries) { series ->
+                    MediaCard(
+                        title = series.title,
+                        posterUrl = series.posterUrl,
+                        rating = series.rating,
+                        year = series.firstAirDate?.take(4) ?: "2024",
+                        isMovie = false,
+                        mediaId = series.id,
+                        onClick = { onSeriesClick(series.id) },
+                        onLongClick = { 
+                            selectedMediaId = series.id
+                            selectedMediaTitle = series.title
+                            selectedMediaPoster = series.posterUrl
+                            showBottomSheet = true
+                        },
+                        modifier = Modifier.width(140.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
         // Popular Series
         SectionTitleShared(stringResource(R.string.popular_series), onSeeAllClick = onNavigateToPopular)

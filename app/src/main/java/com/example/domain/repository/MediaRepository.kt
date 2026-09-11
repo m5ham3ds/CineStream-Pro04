@@ -11,11 +11,14 @@ interface MediaRepository {
     fun getTrendingSeries(): Flow<List<Series>>
 
     fun getUpcomingMovies(): Flow<List<Movie>>
+    fun getUpcomingSeries(): Flow<List<Series>>
+    fun getUpcomingAnime(): Flow<List<Series>>
     fun getAnimeSeries(): Flow<List<Series>>
     fun getAnimeMovies(): Flow<List<Movie>>
 
     fun getNewReleasesMovies(): Flow<List<Movie>>
     fun getNewReleasesSeries(): Flow<List<Series>>
+    fun getNewReleasesAnime(): Flow<List<Series>>
 
 
     suspend fun getMovieById(id: String): Movie?

@@ -37,7 +37,9 @@ data class TmdbSeries(
     @Json(name = "poster_path") val posterPath: String?,
     @Json(name = "backdrop_path") val backdropPath: String?,
     @Json(name = "first_air_date") val firstAirDate: String?,
-    @Json(name = "vote_average") val voteAverage: Double?
+    @Json(name = "vote_average") val voteAverage: Double?,
+    @Json(name = "genre_ids") val genreIds: List<Int>? = emptyList(),
+    @Json(name = "origin_country") val originCountry: List<String>? = emptyList()
 ) {
     val fullPosterUrl: String
         get() = posterPath?.let { "https://image.tmdb.org/t/p/w500$it" } ?: ""

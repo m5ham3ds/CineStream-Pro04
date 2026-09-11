@@ -119,7 +119,7 @@ fun MoviesScreen(
             
     ) {
         // Hero Section
-        HeroCarousel(items = uiState.movies.take(5).map { HeroItem(it.id, it.title, it.backdropUrl, true) }, onClick = onMovieClick)
+        HeroCarousel(items = uiState.movies.take(10).map { HeroItem(it.id, it.title, it.backdropUrl, true) }, onClick = onMovieClick)
 
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -182,6 +182,34 @@ if (movieHistoryItems.isNotEmpty()) {
             Spacer(modifier = Modifier.height(24.dp))
         }
 
+
+
+        // Coming Soon Movies
+        if (uiState.upcomingMovies.isNotEmpty()) {
+            SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = {})
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(uiState.upcomingMovies) { movie ->
+                    MediaCard(
+                        title = movie.title,
+                        posterUrl = movie.posterUrl,
+                        rating = movie.rating,
+                        year = movie.releaseDate?.take(4) ?: "2024",
+                        mediaId = movie.id,
+                        onClick = { onMovieClick(movie.id) },
+                        onLongClick = { 
+                            selectedMediaId = movie.id
+                            selectedMediaTitle = movie.title
+                            selectedMediaPoster = movie.posterUrl
+                            showBottomSheet = true
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
         // Popular Movies
         SectionTitleShared(stringResource(R.string.popular_movies), onSeeAllClick = onNavigateToPopular)
