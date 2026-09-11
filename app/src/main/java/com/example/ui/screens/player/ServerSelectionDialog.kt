@@ -262,6 +262,7 @@ Dialog(
                                                 @android.webkit.JavascriptInterface
                                                 fun sendBypassStatus(status: String) {
                                                     android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                                        if (isFailed && bypassStatus != "CLOUDFLARE") return@post
                                                         if (status == "NORMAL" && (bypassStatus == "CHECKING_CLOUDFLARE" || bypassStatus == "CLOUDFLARE")) {
                                                             android.webkit.CookieManager.getInstance().flush()
                                                             bypassStatus = "VERIFIED"
@@ -269,7 +270,9 @@ Dialog(
                                                                 if (bypassStatus == "VERIFIED") bypassStatus = "NORMAL"
                                                             }, 1500)
                                                         } else if (status == "CLOUDFLARE") {
-                                                            bypassStatus = "CLOUDFLARE"
+                                                            if (!isFailed) {
+                                                                bypassStatus = "CLOUDFLARE"
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -279,6 +282,7 @@ Dialog(
                                                         if (lastFailedSiteIndex != currentSiteIndex) {
                                                             lastFailedSiteIndex = currentSiteIndex
                                                             currentSiteIndex++
+                                                            retryTrigger++
                                                         }
                                                     }
                                                 }
@@ -303,6 +307,7 @@ Dialog(
                                                         
                                                         if (serversNames.isNotEmpty() && extractedServers.isEmpty()) {
                                                             android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                                                bypassStatus = "NORMAL"
                                                                 finalWatchUrl = url
                                                                 extractedServers = serversNames
                                                                 extractedServerLinks = serversMap
@@ -319,6 +324,7 @@ Dialog(
                                                     val servers = serversStr.split(",").filter { it.isNotBlank() }.distinct()
                                                     if (servers.isNotEmpty() && extractedServers.isEmpty()) {
                                                         android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                                            bypassStatus = "NORMAL"
                                                             finalWatchUrl = url
                                                             extractedServers = servers
                                                             val tempMap = servers.associateWith { "" }
@@ -351,9 +357,10 @@ Dialog(
                                                     isNotified = false
                                                     checkAttempt = 0
                                                     android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                                        if (bypassStatus == "CLOUDFLARE") {
-                                                            bypassStatus = "CHECKING_CLOUDFLARE"
-                                                        }
+                                                        // Removed: Do not auto-hide WebView on reload/navigate
+                                                        // if (bypassStatus == "CLOUDFLARE") {
+                                                        //     bypassStatus = "CHECKING_CLOUDFLARE"
+                                                        // }
                                                     }
                                                 }
                                                 
@@ -399,6 +406,10 @@ Dialog(
                                                             android.os.Handler(android.os.Looper.getMainLooper()).post {
                                                                 android.webkit.CookieManager.getInstance().flush()
                                                                 bypassStatus = "NORMAL"
+                                                                if (isFailed) {
+                                                                    isFailed = false
+                                                                    isLoading = true
+                                                                }
                                                             }
                                                             val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, cleanTitleWithYear)
                                                             view?.evaluateJavascript(autoPlayScript, null)
@@ -412,6 +423,10 @@ Dialog(
                                             }
                                             
                                             val targetUrl = searchUrl
+                                            val cookies = android.webkit.CookieManager.getInstance().getCookie(targetUrl)
+                                            if (cookies != null && cookies.contains("cf_clearance")) {
+                                                bypassStatus = "NORMAL"
+                                            }
                                             loadUrl(targetUrl)
                                         }
                                     }
@@ -981,6 +996,11 @@ Dialog(
                                 onClick = {
                                     showManualConfirmDialog = false
                                     bypassStatus = "NORMAL"
+                                    if (isFailed) {
+                                        isFailed = false
+                                        isLoading = true
+                                        retryTrigger++
+                                    }
                                 }
                             ) {
                                 Text("نعم، أكمل", color = Color(0xFFE50914))
