@@ -71,24 +71,27 @@ fun ServerSelectionDialog(
     val coroutineScope = rememberCoroutineScope()
     
     
+    val mediaKey = "$title-$isMovie-$season-$episode"
+
     val installedExtensions = ExtensionManager.installedExtensions.collectAsState().value
-    val prioritySites = installedExtensions.filter { 
-        if (isAnime) it.isAnime else if (isMovie) it.isMovie else it.isSeries 
-    }
-    val safeSites = if (prioritySites.isNotEmpty()) prioritySites else installedExtensions
+    val safeSites = if (installedExtensions.isNotEmpty()) installedExtensions else listOf(com.example.extensions.ExtensionReflectionWrapper(Any()))
     
     var currentSiteIndex by remember { mutableStateOf(0) }
     var currentExtension by remember { mutableStateOf(safeSites[0]) }
     val currentSiteName = currentExtension.name
     
-    var isLoading by remember { mutableStateOf(true) }
+    var isLoading by remember { mutableStateOf(ServerStateStore.currentMediaKey != mediaKey || ServerStateStore.extractedServers.isEmpty()) }
     var loadingMessage by remember { mutableStateOf("جاري الفحص وتخطي الحماية...") }
     
-    var extractedServers by remember { mutableStateOf<List<String>>(emptyList()) }
-    var extractedServerLinks by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var extractedServers by remember { mutableStateOf<List<String>>(
+        if (ServerStateStore.currentMediaKey == mediaKey) ServerStateStore.extractedServers else emptyList()
+    ) }
+    var extractedServerLinks by remember { mutableStateOf<Map<String, String>>(
+        if (ServerStateStore.currentMediaKey == mediaKey) ServerStateStore.extractedServerLinks else emptyMap()
+    ) }
     var finalWatchUrl by remember { mutableStateOf<String?>(null) }
     var isFailed by remember { mutableStateOf(false) }
-    var bypassStatus by remember { mutableStateOf("CHECKING_CLOUDFLARE") }
+    var bypassStatus by remember { mutableStateOf(if (isLoading) "CHECKING_CLOUDFLARE" else "NORMAL") }
     var showCancelConfirmDialog by remember { mutableStateOf(false) }
     var isNetworkError by remember { mutableStateOf(false) }
     var retryTrigger by remember { mutableIntStateOf(0) }
@@ -101,15 +104,16 @@ fun ServerSelectionDialog(
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
-
     // --- Quality Extraction States ---
     var selectedServerForQuality by remember { mutableStateOf<String?>(null) }
     var isExtractingQuality by remember { mutableStateOf(false) }
     var qualityExtractionMessage by remember { mutableStateOf("جاري استخراج الجودات المتاحة...") }
-    var extractedQualities by remember { mutableStateOf<List<com.example.utils.M3U8Parser.QualityInfo>>(emptyList()) }
+    var extractedQualities by remember { mutableStateOf<List<com.example.utils.M3U8Parser.QualityInfo>>(
+        if (ServerStateStore.currentMediaKey == mediaKey) ServerStateStore.extractedQualities else emptyList()
+    ) }
 
     LaunchedEffect(currentSiteIndex) {
-        if (currentSiteIndex >= prioritySites.size) {
+        if (currentSiteIndex >= safeSites.size) {
             isLoading = false
             isFailed = true
             return@LaunchedEffect
@@ -313,9 +317,10 @@ Dialog(
                                                                 finalWatchUrl = url
                                                                 extractedServers = serversNames
                                                                 extractedServerLinks = serversMap
-                                                                com.example.ui.screens.player.ServerStateStore.extractedServers = serversNames
-                                                                com.example.ui.screens.player.ServerStateStore.extractedServerLinks = serversMap
-                                                                com.example.ui.screens.player.ServerStateStore.extractedServerIds = serversIds
+                                                                ServerStateStore.currentMediaKey = mediaKey
+                                                                ServerStateStore.extractedServers = serversNames
+                                                                ServerStateStore.extractedServerLinks = serversMap
+                                                                ServerStateStore.extractedServerIds = serversIds
                                                                 isLoading = false
                                                             }
                                                         }
@@ -330,8 +335,9 @@ Dialog(
                                                             finalWatchUrl = url
                                                             extractedServers = servers
                                                             val tempMap = servers.associateWith { "" }
-                                                            com.example.ui.screens.player.ServerStateStore.extractedServers = servers
-                                                            com.example.ui.screens.player.ServerStateStore.extractedServerLinks = tempMap
+                                                            ServerStateStore.currentMediaKey = mediaKey
+                                                            ServerStateStore.extractedServers = servers
+                                                            ServerStateStore.extractedServerLinks = tempMap
                                                             extractedServerLinks = tempMap
                                                             isLoading = false
                                                         }
@@ -705,7 +711,7 @@ Dialog(
                     
                     
                     // Bottom progress line
-                    val progress = (currentSiteIndex.toFloat() / prioritySites.size.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
+                    val progress = (currentSiteIndex.toFloat() / safeSites.size.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -972,7 +978,7 @@ Dialog(
                             }
                         }
                         
-                        if (currentSiteIndex < prioritySites.size - 1) {
+                        if (currentSiteIndex < safeSites.size - 1) {
                             Spacer(modifier = Modifier.height(16.dp))
                             TextButton(
                                 onClick = {
@@ -1051,17 +1057,22 @@ Dialog(
                             qualityExtractionMessage = "جاري تحليل الجودات..."
                             val qualities = com.example.utils.M3U8Parser.getQualities(url)
                             extractedQualities = qualities
+                            ServerStateStore.extractedQualities = qualities
                             isExtractingQuality = false
                         }
                     } else {
                         // Not an m3u8, just show default
-                        extractedQualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", url))
+                        val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", url))
+                        extractedQualities = qualities
+                        ServerStateStore.extractedQualities = qualities
                         isExtractingQuality = false
                     }
                 },
                 onIframeUrlFound = { iframeUrl ->
                     // Sometimes we get a new iframe url, we should probably follow it or just return it as quality
-                    extractedQualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", iframeUrl))
+                    val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", iframeUrl))
+                    extractedQualities = qualities
+                    ServerStateStore.extractedQualities = qualities
                     isExtractingQuality = false
                 }
             )

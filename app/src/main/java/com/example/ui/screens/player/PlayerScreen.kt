@@ -1,5 +1,7 @@
 package com.example.ui.screens.player
 
+import androidx.compose.foundation.verticalScroll
+
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.webkit.WebSettings
@@ -90,7 +92,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     var volume by remember { mutableStateOf(0.5f) }
     var isLocked by remember { mutableStateOf(false) }
     var currentSpeed by remember { mutableStateOf(1f) }
-    var currentQuality by remember { mutableStateOf("Auto") }
+    
     var showQualitySheet by remember { mutableStateOf(false) }
     var showEpisodesSheet by remember { mutableStateOf(false) }
     
@@ -147,12 +149,12 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
         }
     }
     
-    LaunchedEffect(currentQuality) {
+    LaunchedEffect(uiState.currentQuality) {
         val parametersBuilder = trackSelector.buildUponParameters()
-        if (currentQuality == "Auto") {
+        if (uiState.currentQuality == "Auto" || !uiState.currentQuality.contains("p")) {
             parametersBuilder.clearVideoSizeConstraints()
         } else {
-            val height = currentQuality.replace("p", "").toIntOrNull()
+            val height = uiState.currentQuality.replace("p", "").toIntOrNull()
             if (height != null) {
                 // To force a specific quality, we set max and min to the same height,
                 // or just max and clear others, but ExoPlayer usually respects max size constraints well.
@@ -168,8 +170,8 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
 
     var showInitialSelection by remember { mutableStateOf(false) }
 
-    // State to hold actual available qualities from ExoPlayer
-    var availableVideoQualities by remember { mutableStateOf<List<String>>(listOf("Auto")) }
+// No longer needed
+// var availableVideoQualities by remember { mutableStateOf<List<String>>(listOf("Auto")) }
 
 
     LaunchedEffect(uiState.currentVideoUrl) {
@@ -546,18 +548,18 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             onDismissRequest = { showQualitySheet = false },
             containerColor = Color(0xFF1C1C1E)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
                 Text("Select Quality", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
-                availableVideoQualities.forEach { q ->
+                uiState.availableQualities.forEach { q ->
                     TextButton(
                         onClick = { 
-                            currentQuality = q
+                            viewModel.selectQuality(q)
                             showQualitySheet = false
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(q, color = if (q == currentQuality) Color(0xFFE50914) else Color.White)
+                        Text(q, color = if (q == uiState.currentQuality) Color(0xFFE50914) else Color.White)
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
@@ -570,7 +572,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             onDismissRequest = { showEpisodesSheet = false },
             containerColor = Color(0xFF1C1C1E)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
                 Text("Episodes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn {
@@ -599,7 +601,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             onDismissRequest = { showServerSheet = false },
             containerColor = Color(0xFF1C1C1E)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
                 Text("Select Server", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 uiState.availableServers.forEach { s ->
@@ -624,7 +626,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             onDismissRequest = { showWebsiteSheet = false },
             containerColor = Color(0xFF1C1C1E)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
                 Text("Select Source Website", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 uiState.availableWebsites.forEach { w ->
@@ -646,11 +648,15 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
 
     if (showDownloadSheet) {
         DownloadQualitySheet(
-            qualities = availableVideoQualities.filter { it != "Auto" }.ifEmpty { listOf("Default") },
+            qualities = uiState.availableQualities.ifEmpty { listOf("Default") },
             onDismiss = { showDownloadSheet = false },
             onQualitySelected = { quality ->
-                uiState.currentVideoUrl?.let { videoUrl ->
-                    com.example.utils.AndroidDownloader.downloadVideo(context, videoUrl, "${uiState.title} - $quality")
+                // First get the matching url from extractedQualitiesInfo, fallback to currentVideoUrl
+                val selectedQualityInfo = uiState.extractedQualitiesInfo.find { it.name == quality }
+                val videoUrl = selectedQualityInfo?.url ?: uiState.currentVideoUrl
+                
+                videoUrl?.let { url ->
+                    com.example.utils.AndroidDownloader.downloadVideo(context, url, "${uiState.title} - $quality")
                 } ?: run {
                     android.widget.Toast.makeText(context, "Please wait for the stream to load first.", android.widget.Toast.LENGTH_SHORT).show()
                 }
@@ -687,10 +693,10 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                         
                         Text("Quality:", color = Color.Gray, fontSize = 14.sp)
                         androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(availableVideoQualities) { q ->
+                            items(uiState.availableQualities) { q ->
                                 androidx.compose.material3.FilterChip(
-                                    selected = (currentQuality == q),
-                                    onClick = { currentQuality = q },
+                                    selected = (uiState.currentQuality == q),
+                                    onClick = { viewModel.selectQuality(q) },
                                     label = { Text(q) },
                                     colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
                                         selectedContainerColor = Color(0xFFE50914),

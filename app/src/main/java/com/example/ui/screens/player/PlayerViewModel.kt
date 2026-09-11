@@ -30,8 +30,9 @@ data class PlayerUiState(
     val serverIdToChange: String? = null,
 
     // Quality
-    val availableQualities: List<String> = listOf("Auto", "1080p", "720p"),
+    val availableQualities: List<String> = listOf("Auto"),
     val currentQuality: String = "Auto",
+    val extractedQualitiesInfo: List<com.example.utils.M3U8Parser.QualityInfo> = emptyList(),
 
     // Episodes
     val episodes: List<Episode> = emptyList(),
@@ -82,17 +83,31 @@ class PlayerViewModel : ViewModel() {
             isMovie = isMovie,
             isAnime = isAnime,
             title = initialTitle,
-            availableWebsites = availableList,
+            availableWebsites = com.example.extensions.ExtensionManager.installedExtensions.value.map { it.name },
             currentWebsite = bestWebsite,
             fallbackWebsites = remainingFallbacks,
             currentServer = targetServer ?: "",
             availableServers = com.example.ui.screens.player.ServerStateStore.extractedServers,
             availableServerLinks = com.example.ui.screens.player.ServerStateStore.extractedServerLinks,
-            availableServerIds = com.example.ui.screens.player.ServerStateStore.extractedServerIds
+            availableServerIds = com.example.ui.screens.player.ServerStateStore.extractedServerIds,
+            extractedQualitiesInfo = com.example.ui.screens.player.ServerStateStore.extractedQualities,
+            availableQualities = if (com.example.ui.screens.player.ServerStateStore.extractedQualities.isNotEmpty()) {
+                com.example.ui.screens.player.ServerStateStore.extractedQualities.map { it.name }
+            } else {
+                listOf("Auto")
+            },
+            currentQuality = if (com.example.ui.screens.player.ServerStateStore.extractedQualities.isNotEmpty()) {
+                com.example.ui.screens.player.ServerStateStore.extractedQualities.first().name
+            } else {
+                "Auto"
+            }
         )
 
         if (!directUrl.isNullOrEmpty() && (directUrl.contains(".mp4") || directUrl.contains(".m3u8") || directUrl.startsWith("local_offline_file"))) {
-            _uiState.value = _uiState.value.copy(currentVideoUrl = directUrl, isLoading = false)
+            _uiState.value = _uiState.value.copy(
+                currentVideoUrl = directUrl, 
+                isLoading = false
+            )
         } else if (!directUrl.isNullOrEmpty()) {
             // It's a watch url (webpage), we need to extract from it
             _uiState.value = _uiState.value.copy(extractionUrl = directUrl, isLoading = true)
@@ -139,6 +154,20 @@ class PlayerViewModel : ViewModel() {
             currentServer = ""
         )
         generateExtractionUrl()
+    }
+
+    fun selectQuality(qualityName: String) {
+        val selectedQuality = _uiState.value.extractedQualitiesInfo.find { it.name == qualityName }
+        if (selectedQuality != null) {
+            _uiState.value = _uiState.value.copy(
+                currentQuality = qualityName,
+                currentVideoUrl = selectedQuality.url
+            )
+        } else {
+            _uiState.value = _uiState.value.copy(
+                currentQuality = qualityName
+            )
+        }
     }
 
     fun selectServer(server: String) {
