@@ -750,7 +750,10 @@ Dialog(
                                 androidx.compose.material3.TextButton(
                                     onClick = {
                                         showOpenBrowserConfirmDialog = false
+                                        android.webkit.CookieManager.getInstance().removeAllCookies(null)
+                                        android.webkit.CookieManager.getInstance().flush()
                                         bypassStatus = "CLOUDFLARE"
+                                        retryTrigger++
                                     }
                                 ) { Text("نعم", color = Color(0xFFE50914)) }
                             },
@@ -799,21 +802,26 @@ Dialog(
                                     androidx.compose.material3.TextButton(
                                         onClick = {
                                             showNoMoreExtensionsDialog = false
+                                            isFailed = false
+                                            isLoading = true
+                                            currentSiteIndex = 0
+                                            currentExtension = safeSites[0]
+                                            retryTrigger++
                                         }
-                                    ) { Text("العودة", color = Color(0xFF00C853)) }
+                                    ) { Text("إعادة المحاولة", color = Color(0xFF00C853)) }
                                     androidx.compose.material3.TextButton(
                                         onClick = {
                                             showNoMoreExtensionsDialog = false
-                                            showCancelConfirmDialog = true
+                                            onNavigateToExtensions()
                                         }
-                                    ) { Text("إلغاء تماماً", color = Color(0xFFE50914)) }
+                                    ) { Text("صفحة الإضافات", color = Color(0xFF2196F3)) }
                                 }
                             },
                             dismissButton = {
                                 androidx.compose.material3.TextButton(onClick = { 
                                     showNoMoreExtensionsDialog = false
                                     onDismiss()
-                                }) { Text("إغلاق وإضافة مواقع", color = Color.White) }
+                                }) { Text("إلغاء تماماً", color = Color(0xFFE50914)) }
                             }
                         )
                     }
