@@ -121,18 +121,17 @@ fun ServerSelectionDialog(
         }
         
         currentExtension = safeSites[currentSiteIndex]
-        bypassStatus = "CLOUDFLARE"
+        bypassStatus = "CHECKING_CLOUDFLARE"
+        forceBypassComplete = false
         loadingMessage = "جاري الفحص في موقع $currentSiteName..."
         extractedServers = emptyList()
         finalWatchUrl = null
         
-        // Wait for up to 300 iterations (5 minutes), but pause counting if we are doing Cloudflare bypass
+        // Wait for up to 300 seconds (5 minutes) unconditionally
         var waited = 0
         while (waited < 300) {
             delay(1000)
-            if (bypassStatus != "CLOUDFLARE" && bypassStatus != "CHECKING_CLOUDFLARE") {
-                waited++
-            }
+            waited++
             if (extractedServers.isNotEmpty()) {
                 // Servers found! We can stop waiting.
                 return@LaunchedEffect
@@ -290,6 +289,7 @@ Dialog(
                                                 fun sendFailed() {
                                                     android.os.Handler(android.os.Looper.getMainLooper()).post {
                                                         if (isManualBrowserOpen) return@post
+                                                        if (bypassStatus == "CLOUDFLARE") return@post
                                                         if (lastFailedSiteIndex != currentSiteIndex) {
                                                             lastFailedSiteIndex = currentSiteIndex
                                                             currentSiteIndex++
@@ -415,10 +415,17 @@ Dialog(
 
                                                     view?.evaluateJavascript(checkJS) { result ->
                                                         if (result == "true" && !isNotified) {
+                                                            if (bypassStatus == "CLOUDFLARE" && !forceBypassComplete && !isManualBrowserOpen) {
+                                                                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                                                    repeatCheck(view, attempt + 1)
+                                                                }, 1000)
+                                                                return@evaluateJavascript
+                                                            }
+                                                            
                                                             isNotified = true
                                                             android.os.Handler(android.os.Looper.getMainLooper()).post {
                                                                 android.webkit.CookieManager.getInstance().flush()
-                                                                if (!isManualBrowserOpen) {
+                                                                if (!isManualBrowserOpen && bypassStatus == "CHECKING_CLOUDFLARE") {
                                                                     bypassStatus = "NORMAL"
                                                                 }
                                                                 if (isFailed) {
