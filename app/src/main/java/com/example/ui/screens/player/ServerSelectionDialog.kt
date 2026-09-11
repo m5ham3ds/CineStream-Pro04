@@ -96,6 +96,7 @@ fun ServerSelectionDialog(
     var showOpenBrowserConfirmDialog by remember { mutableStateOf(false) }
     var showSkipSiteConfirmDialog by remember { mutableStateOf(false) }
     var showNoMoreExtensionsDialog by remember { mutableStateOf(false) }
+    var isManualBrowserOpen by remember { mutableStateOf(false) }
 
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
@@ -115,7 +116,8 @@ fun ServerSelectionDialog(
         }
         
         currentExtension = safeSites[currentSiteIndex]
-        bypassStatus = "CHECKING_CLOUDFLARE"
+        bypassStatus = "CLOUDFLARE"
+        isManualBrowserOpen = false
         loadingMessage = "جاري الفحص في موقع $currentSiteName..."
         extractedServers = emptyList()
         finalWatchUrl = null
@@ -279,6 +281,7 @@ Dialog(
                                                 @android.webkit.JavascriptInterface
                                                 fun sendFailed() {
                                                     android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                                        if (isManualBrowserOpen) return@post
                                                         if (lastFailedSiteIndex != currentSiteIndex) {
                                                             lastFailedSiteIndex = currentSiteIndex
                                                             currentSiteIndex++
@@ -405,7 +408,9 @@ Dialog(
                                                             isNotified = true
                                                             android.os.Handler(android.os.Looper.getMainLooper()).post {
                                                                 android.webkit.CookieManager.getInstance().flush()
-                                                                bypassStatus = "NORMAL"
+                                                                if (!isManualBrowserOpen) {
+                                                                    bypassStatus = "NORMAL"
+                                                                }
                                                                 if (isFailed) {
                                                                     isFailed = false
                                                                     isLoading = true
@@ -424,7 +429,7 @@ Dialog(
                                             
                                             val targetUrl = searchUrl
                                             val cookies = android.webkit.CookieManager.getInstance().getCookie(targetUrl)
-                                            if (cookies != null && cookies.contains("cf_clearance")) {
+                                            if (!isManualBrowserOpen && cookies != null && cookies.isNotEmpty()) {
                                                 bypassStatus = "NORMAL"
                                             }
                                             loadUrl(targetUrl)
@@ -767,7 +772,12 @@ Dialog(
                             confirmButton = {
                                 androidx.compose.material3.TextButton(
                                     onClick = {
+                                        isManualBrowserOpen = true
                                         showOpenBrowserConfirmDialog = false
+                                        isFailed = false
+                                        isLoading = true
+                                        currentSiteIndex = 0
+                                        currentExtension = safeSites[0]
                                         android.webkit.CookieManager.getInstance().removeAllCookies(null)
                                         android.webkit.CookieManager.getInstance().flush()
                                         bypassStatus = "CLOUDFLARE"
@@ -796,7 +806,8 @@ Dialog(
                                             isLoading = true
                                             currentSiteIndex++
                                             currentExtension = safeSites[currentSiteIndex]
-                                            bypassStatus = "CHECKING_CLOUDFLARE"
+                                            bypassStatus = "CLOUDFLARE"
+                                            isManualBrowserOpen = false
                                             retryTrigger++
                                         } else {
                                             showNoMoreExtensionsDialog = true
@@ -972,7 +983,8 @@ Dialog(
                                     extractedServerLinks = emptyMap()
                                     isLoading = true
                                     isFailed = false
-                                    bypassStatus = "CHECKING_CLOUDFLARE"
+                                    bypassStatus = "CLOUDFLARE"
+                                    isManualBrowserOpen = false
                                     retryTrigger++
                                 },
                                 modifier = Modifier.fillMaxWidth()
