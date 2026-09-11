@@ -100,6 +100,7 @@ fun ServerSelectionDialog(
     var showSkipSiteConfirmDialog by remember { mutableStateOf(false) }
     var showNoMoreExtensionsDialog by remember { mutableStateOf(false) }
     var isManualBrowserOpen by remember { mutableStateOf(false) }
+    var forceBypassComplete by remember { mutableStateOf(false) }
 
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
@@ -125,9 +126,9 @@ fun ServerSelectionDialog(
         extractedServers = emptyList()
         finalWatchUrl = null
         
-        // Wait for up to 30 iterations, but pause counting if we are doing Cloudflare bypass
+        // Wait for up to 300 iterations (5 minutes), but pause counting if we are doing Cloudflare bypass
         var waited = 0
-        while (waited < 30) {
+        while (waited < 300) {
             delay(1000)
             if (bypassStatus != "CLOUDFLARE" && bypassStatus != "CHECKING_CLOUDFLARE") {
                 waited++
@@ -275,7 +276,11 @@ Dialog(
                                                                 if (bypassStatus == "VERIFIED") bypassStatus = "NORMAL"
                                                             }, 1500)
                                                         } else if (status == "CLOUDFLARE") {
-                                                            if (!isFailed) {
+                                                            val targetUrl = currentExtension.getSearchUrl("test", "test")
+                                                            val cookies = android.webkit.CookieManager.getInstance().getCookie(targetUrl)
+                                                            val hasCookies = cookies != null && cookies.isNotEmpty()
+                                                            
+                                                            if (!isFailed && !forceBypassComplete && !(hasCookies && !isManualBrowserOpen)) {
                                                                 bypassStatus = "CLOUDFLARE"
                                                             }
                                                         }
@@ -436,6 +441,7 @@ Dialog(
                                             val cookies = android.webkit.CookieManager.getInstance().getCookie(targetUrl)
                                             if (!isManualBrowserOpen && cookies != null && cookies.isNotEmpty()) {
                                                 bypassStatus = "NORMAL"
+                                                forceBypassComplete = true
                                             }
                                             loadUrl(targetUrl)
                                         }
@@ -778,6 +784,7 @@ Dialog(
                                 androidx.compose.material3.TextButton(
                                     onClick = {
                                         isManualBrowserOpen = true
+                                        forceBypassComplete = false
                                         showOpenBrowserConfirmDialog = false
                                         isFailed = false
                                         isLoading = true
@@ -813,6 +820,7 @@ Dialog(
                                             currentExtension = safeSites[currentSiteIndex]
                                             bypassStatus = "CLOUDFLARE"
                                             isManualBrowserOpen = false
+                                            forceBypassComplete = false
                                             retryTrigger++
                                         } else {
                                             showNoMoreExtensionsDialog = true
@@ -990,6 +998,7 @@ Dialog(
                                     isFailed = false
                                     bypassStatus = "CLOUDFLARE"
                                     isManualBrowserOpen = false
+                                    forceBypassComplete = false
                                     retryTrigger++
                                 },
                                 modifier = Modifier.fillMaxWidth()
@@ -1012,6 +1021,7 @@ Dialog(
                             androidx.compose.material3.TextButton(
                                 onClick = {
                                     showManualConfirmDialog = false
+                                    forceBypassComplete = true
                                     bypassStatus = "NORMAL"
                                     if (isFailed) {
                                         isFailed = false
