@@ -27,6 +27,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import androidx.compose.ui.platform.LocalContext
+import coil.request.ImageRequest
 import com.example.extensions.ExtensionManager
 import com.example.extensions.ProviderExtension
 
@@ -230,7 +232,11 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
             ) {
                 if (ext.iconUrl.isNotEmpty()) {
                     AsyncImage(
-                        model = ext.iconUrl,
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(ext.iconUrl)
+                            .crossfade(true)
+                            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize()
                     )

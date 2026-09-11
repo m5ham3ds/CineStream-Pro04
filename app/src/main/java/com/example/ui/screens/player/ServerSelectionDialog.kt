@@ -283,6 +283,7 @@ Dialog(
                                                 @android.webkit.JavascriptInterface
                                                 fun sendServersV2(serversJson: String, url: String) {
                                                     try {
+                                                        android.util.Log.d("ExtServers", "sendServersV2 called with: " + serversJson)
                                                         val serversData = org.json.JSONArray(serversJson)
                                                         val serversNames = mutableListOf<String>()
                                                         val serversMap = mutableMapOf<String, String>()

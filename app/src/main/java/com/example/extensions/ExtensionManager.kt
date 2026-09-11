@@ -48,7 +48,6 @@ object ExtensionManager {
 
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        _availableExtensions.add(EgyDeadExtension)
         scanExternalExtensions(context)
         loadInstalled()
     }
