@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.Locale
 
-class ExtensionReflectionWrapper(private val instance: Any) : ProviderExtension {
+class ExtensionReflectionWrapper(private val instance: Any, var _apkPackageName: String? = null) : ProviderExtension {
     private val clazz = instance.javaClass
     
     override val id: String get() = try { clazz.getMethod("getId").invoke(instance) as String } catch(e: Exception) { clazz.name }
@@ -21,6 +21,7 @@ class ExtensionReflectionWrapper(private val instance: Any) : ProviderExtension 
     override val isSeries: Boolean get() = try { clazz.getMethod("isSeries").invoke(instance) as Boolean } catch(e: Exception) { true }
     override val lang: String get() = try { clazz.getMethod("getLang").invoke(instance) as String } catch(e: Exception) { "" }
     override val iconUrl: String get() = try { clazz.getMethod("getIconUrl").invoke(instance) as String } catch(e: Exception) { "" }
+    override val apkPackageName: String? get() = _apkPackageName
 
     override fun getSearchUrl(titleOriginal: String, titleClean: String): String {
         return clazz.getMethod("getSearchUrl", String::class.java, String::class.java)
@@ -78,15 +79,21 @@ object ExtensionManager {
                             "${capitalizedSuffix}Extension",
                             "EgyDeadExtension",
                             "EgydeadExtension",
+                            "WitAnimeExtension",
+                            "WitanimeExtension",
                             "${suffix}Extension",
                             "${suffix.uppercase()}Extension",
                             "${capitalizedSuffix}Provider",
                             "EgyDeadProvider",
                             "EgydeadProvider",
+                            "WitAnimeProvider",
+                            "WitanimeProvider",
                             "MainExtension",
                             "ExtensionImpl",
                             "EgyDead",
                             "Egydead",
+                            "WitAnime",
+                            "Witanime",
                             capitalizedSuffix,
                             "ProviderExtension",
                             "Extension"
@@ -143,7 +150,7 @@ object ExtensionManager {
                         }
                         
                         if (extensionInstance != null) {
-                            val wrapper = ExtensionReflectionWrapper(extensionInstance)
+                            val wrapper = ExtensionReflectionWrapper(extensionInstance, pkg.packageName)
                             if (_availableExtensions.none { it.id == wrapper.id }) {
                                 _availableExtensions.add(wrapper)
                                 Log.d("ExtensionManager", "Successfully loaded external APK extension: ${wrapper.name} from ${pkg.packageName}")

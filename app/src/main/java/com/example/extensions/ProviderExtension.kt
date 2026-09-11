@@ -9,6 +9,7 @@ interface ProviderExtension {
     val isSeries: Boolean
     val lang: String
     val iconUrl: String
+    val apkPackageName: String? get() = null
 
     /**
      * JS Script to execute to extract servers or links on the site

@@ -230,10 +230,19 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                     .background(Color(0xFF0F0F11)),
                 contentAlignment = Alignment.Center
             ) {
-                if (ext.iconUrl.isNotEmpty()) {
+                val context = LocalContext.current
+                val appIcon = remember(ext.apkPackageName) {
+                    ext.apkPackageName?.let { pkg ->
+                        try {
+                            context.packageManager.getApplicationIcon(pkg)
+                        } catch (e: Exception) { null }
+                    }
+                }
+
+                if (appIcon != null || ext.iconUrl.isNotEmpty()) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(ext.iconUrl)
+                            .data(appIcon ?: ext.iconUrl)
                             .crossfade(true)
                             .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
                             .build(),
@@ -278,11 +287,13 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 // Badges
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (ext.isAnime) {
-                        Badge(text = "الأنمي", icon = null, color = Color.Red, bgColor = Color.Red.copy(alpha = 0.15f))
+                        Badge(text = "الأنمي", icon = Icons.Default.Face, color = Color.Red, bgColor = Color.Red.copy(alpha = 0.15f))
                     } else if (ext.isMovie || ext.isSeries) {
+                        val badgeText = if(ext.isMovie && ext.isSeries) "شامل" else if (ext.isMovie) "أفلام" else "مسلسلات"
+                        val badgeIcon = if(ext.isMovie && ext.isSeries) Icons.Default.GridView else if (ext.isMovie) Icons.Outlined.Movie else Icons.Outlined.Tv
                         Badge(
-                            text = if(ext.isMovie && ext.isSeries) "شامل" else if (ext.isMovie) "أفلام" else "مسلسلات", 
-                            icon = null, 
+                            text = badgeText, 
+                            icon = badgeIcon, 
                             color = Color.Red, 
                             bgColor = Color.Red.copy(alpha = 0.15f)
                         )
