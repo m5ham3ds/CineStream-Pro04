@@ -117,7 +117,6 @@ fun ServerSelectionDialog(
         
         currentExtension = safeSites[currentSiteIndex]
         bypassStatus = "CLOUDFLARE"
-        isManualBrowserOpen = false
         loadingMessage = "جاري الفحص في موقع $currentSiteName..."
         extractedServers = emptyList()
         finalWatchUrl = null
@@ -232,7 +231,7 @@ Dialog(
                     // The WebView block
                                                 key(retryTrigger) {
                                 AndroidView(
-                                    modifier = Modifier.fillMaxSize(),
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
                                     factory = { ctx ->
                                         WebView(ctx).apply {
                                             android.webkit.CookieManager.getInstance().setAcceptCookie(true)
