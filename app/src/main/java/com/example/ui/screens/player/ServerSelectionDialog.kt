@@ -59,6 +59,7 @@ import java.net.URLEncoder
 @Composable
 fun ServerSelectionDialog(
     title: String,
+    year: String = "",
     isMovie: Boolean,
     season: Int = 1,
     episode: Int = 1,
@@ -146,16 +147,15 @@ fun ServerSelectionDialog(
     } else {
         title
     }
-    val cleanTitle = baseTitle.replace(Regex("[^a-zA-Z0-9\\s]"), " ").replace(Regex("\\s+"), " ").trim()
-    // For sites like tv10.egydead.live we actually need the original encoded title, not the cleaned one!
-    // Example: tv10.egydead.live/?s=Spider-Man%3A+Brand+New+Day
-    val encodedTitleOriginal = URLEncoder.encode(baseTitle, "UTF-8")
-    val encodedPlusTitleOriginal = URLEncoder.encode(baseTitle, "UTF-8").replace("%20", "+")
-    val encodedTitle = URLEncoder.encode(cleanTitle, "UTF-8")
-    val encodedPlusTitle = URLEncoder.encode(cleanTitle, "UTF-8").replace("%20", "+")
+    // نضيف سنة الإصدار للعنوان الأصلي إذا كانت موجودة لضمان دقة البحث بين الأجزاء
+    val cleanTitleWithYear = if (year.isNotBlank() && year != "0") {
+        "$baseTitle $year".replace(Regex("[^a-zA-Z0-9\\s]"), " ").replace(Regex("\\s+"), " ").trim()
+    } else {
+        baseTitle.replace(Regex("[^a-zA-Z0-9\\s]"), " ").replace(Regex("\\s+"), " ").trim()
+    }
     
-    // We use the original encoded title for all sites as requested, so we don't break their search
-    val searchUrl = currentExtension.getSearchUrl(baseTitle, cleanTitle)
+    val cleanTitle = baseTitle.replace(Regex("[^a-zA-Z0-9\\s]"), " ").replace(Regex("\\s+"), " ").trim()
+    val searchUrl = currentExtension.getSearchUrl(baseTitle, cleanTitleWithYear)
 
 
 Dialog(
@@ -333,7 +333,7 @@ Dialog(
                                                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                                     super.onProgressChanged(view, newProgress)
                                                     if (newProgress >= 30) {
-                                                        val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, title)
+                                                        val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, baseTitle)
                                                         view?.evaluateJavascript(autoPlayScript, null)
                                                     }
                                                 }
@@ -398,7 +398,7 @@ Dialog(
                                                                 android.webkit.CookieManager.getInstance().flush()
                                                                 bypassStatus = "NORMAL"
                                                             }
-                                                            val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, title)
+                                                            val autoPlayScript = currentExtension.getExtractionScript(isMovie, episode, baseTitle)
                                                             view?.evaluateJavascript(autoPlayScript, null)
                                                         } else {
                                                             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({

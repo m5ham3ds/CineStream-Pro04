@@ -307,6 +307,7 @@ fun MovieDetailsScreen(
             if (showSourceSheet) {
                 ServerSelectionDialog(
                     title = movie.originalTitle ?: movie.title,
+                    year = movie.year.toString(),
                     isMovie = true,
                     isAnime = movie.genres.any { it.contains("Animation", ignoreCase = true) || it.contains("Anime", ignoreCase = true) },
                     onDismiss = { showSourceSheet = false },
@@ -594,6 +595,7 @@ fun SeriesDetailsScreen(
             if (selectedEpisodeForSource != null) {
                 ServerSelectionDialog(
                     title = series.originalTitle ?: series.title,
+                    year = series.year.toString(),
                     isMovie = false,
                     season = uiState.selectedSeason?.seasonNumber ?: 1,
                     episode = selectedEpisodeForSource?.episodeNumber ?: 1,
