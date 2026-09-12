@@ -123,13 +123,34 @@ fun AppNavigation() {
     var isSearchExpanded by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     var searchQuery by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
     var showLogoutDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var showExitDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val backStack by navController.currentBackStack.collectAsState()
+    var lastBackStackSize by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    var backPressCount by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    
+    androidx.compose.runtime.LaunchedEffect(backStack.size) {
+        if (backStack.size > lastBackStackSize) {
+            backPressCount = 0
+        }
+        lastBackStackSize = backStack.size
+    }
+
     androidx.activity.compose.BackHandler(enabled = true) {
         if (currentRoute == Screen.Home.route) {
-            showLogoutDialog = true
+            showExitDialog = true
         } else {
-            navController.navigate(Screen.Home.route) {
-                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                launchSingleTop = true
+            if (backPressCount < 2) {
+                backPressCount++
+                val popped = navController.popBackStack()
+                if (!popped) {
+                    showExitDialog = true
+                }
+            } else {
+                backPressCount = 0
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = false }
+                    launchSingleTop = true
+                }
             }
         }
     }
@@ -418,6 +439,25 @@ fun AppNavigation() {
         }
     ) {
         androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
+        if (showExitDialog) {
+            AlertDialog(
+                onDismissRequest = { showExitDialog = false },
+                title = { Text("الخروج من التطبيق") },
+                text = { Text("هل أنت متأكد أنك تريد الخروج من التطبيق؟") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val activity = context as? android.app.Activity
+                        activity?.finish()
+                    }) { Text("نعم", color = Color.Red) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showExitDialog = false }) { Text("لا", color = MaterialTheme.colorScheme.onSurface) }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         if (showLogoutDialog) {
             AlertDialog(
                 onDismissRequest = { showLogoutDialog = false },

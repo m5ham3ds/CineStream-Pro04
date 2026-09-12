@@ -568,7 +568,7 @@ Dialog(
                         }, label = "BypassAnimation"
                     ) { currentStatus ->
                         Box(
-                            modifier = Modifier.fillMaxWidth().height(450.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             // 1. The WebView (Always present, but hidden by overlay if not Cloudflare)
@@ -579,7 +579,7 @@ Dialog(
                             // 2. The Overlay UI (Shown when NOT CLOUDFLARE)
                             if (currentStatus != "CLOUDFLARE") {
                                 Box(
-                                    modifier = Modifier.fillMaxSize().background(Color(0xFF16161A)),
+                                    modifier = Modifier.fillMaxWidth().wrapContentHeight().background(Color(0xFF16161A)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (isNetworkError) {
@@ -651,7 +651,7 @@ Dialog(
                                                 "CHECKING_CLOUDFLARE" -> {
                                                     androidx.compose.ui.text.buildAnnotatedString {
                                                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) { append("تأمين الاتصال بموقع ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFF00C853))) { append(currentSiteName) }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFFE50914))) { append(currentSiteName) }
                                                     }
                                                 }
                                                 "CLOUDFLARE" -> {
@@ -669,7 +669,7 @@ Dialog(
                                                 else -> {
                                                     androidx.compose.ui.text.buildAnnotatedString {
                                                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) { append("جاري البحث في ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFF00C853))) { append(currentSiteName) }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFFE50914))) { append(currentSiteName) }
                                                     }
                                                 }
                                             }
