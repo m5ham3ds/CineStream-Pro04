@@ -12,12 +12,12 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -35,8 +35,18 @@ fun CineStreamHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFF2A0505),
+                        Color(0xFF101010),
+                        Color(0xFF101010),
+                        Color(0xFF2A0505)
+                    )
+                )
+            )
             .statusBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -46,7 +56,7 @@ fun CineStreamHeader(
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(Color(0xFF1A1A1A))
-                .border(2.dp, Color.Red, CircleShape),
+                .border(2.dp, Color(0xFFE50914), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             IconButton(onClick = onProfileClick) {
@@ -54,7 +64,7 @@ fun CineStreamHeader(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
                     tint = Color.LightGray,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -63,33 +73,47 @@ fun CineStreamHeader(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 24.sp)) {
+                    withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 26.sp)) {
                         append("Cine")
                     }
-                    withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 24.sp)) {
+                    withStyle(style = SpanStyle(color = Color(0xFFE50914), fontWeight = FontWeight.Bold, fontSize = 26.sp)) {
                         append("Stream")
                     }
                 }
             )
             Text(
-                text = "MOVIES • SERIES • ANIME",
-                color = Color.Gray,
-                fontSize = 10.sp,
-                letterSpacing = 1.sp
+                text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = Color(0xFFB3B3B3), fontSize = 9.sp, letterSpacing = 3.sp, fontWeight = FontWeight.Bold)) {
+                        append("MOVIES")
+                    }
+                    withStyle(style = SpanStyle(color = Color(0xFFE50914), fontSize = 9.sp, fontWeight = FontWeight.Bold)) {
+                        append(" • ")
+                    }
+                    withStyle(style = SpanStyle(color = Color(0xFFB3B3B3), fontSize = 9.sp, letterSpacing = 3.sp, fontWeight = FontWeight.Bold)) {
+                        append("SERIES")
+                    }
+                    withStyle(style = SpanStyle(color = Color(0xFFE50914), fontSize = 9.sp, fontWeight = FontWeight.Bold)) {
+                        append(" • ")
+                    }
+                    withStyle(style = SpanStyle(color = Color(0xFFB3B3B3), fontSize = 9.sp, letterSpacing = 3.sp, fontWeight = FontWeight.Bold)) {
+                        append("ANIME")
+                    }
+                }
             )
         }
 
         // Actions
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Search
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(42.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1A1A1A)),
+                    .background(Color(0xFF181818))
+                    .border(1.dp, Color(0xFF2C2C2C), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(onClick = onSearchClick) {
@@ -97,7 +121,7 @@ fun CineStreamHeader(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
                         tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
@@ -105,9 +129,10 @@ fun CineStreamHeader(
             // Notifications
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(42.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1A1A1A)),
+                    .background(Color(0xFF181818))
+                    .border(1.dp, Color(0xFF2C2C2C), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(onClick = { /* TODO */ }) {
@@ -116,19 +141,19 @@ fun CineStreamHeader(
                             imageVector = Icons.Default.Notifications,
                             contentDescription = "Notifications",
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                         // Notification badge
                         Box(
                             modifier = Modifier
-                                .size(16.dp)
+                                .size(18.dp)
                                 .clip(CircleShape)
-                                .background(Color.Red)
+                                .background(Color(0xFFE50914))
                                 .align(Alignment.TopEnd)
                                 .offset(x = 6.dp, y = (-4).dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("1", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text("1", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -137,9 +162,10 @@ fun CineStreamHeader(
             // Menu
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF1A1A1A)),
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xFF181818))
+                    .border(1.dp, Color(0xFF2C2C2C), RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 IconButton(onClick = onMenuClick) {
@@ -147,7 +173,7 @@ fun CineStreamHeader(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menu",
                         tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
