@@ -165,104 +165,22 @@ fun SeriesScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         if (selectedCategory == "Series") {
-        if (seriesHistoryItems.isNotEmpty()) {
-            SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(seriesHistoryItems) { item ->
-                    ContinueWatchingCardShared(item = item) {
-                        onSeriesClick(item.id)
+            if (seriesHistoryItems.isNotEmpty()) {
+                SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(seriesHistoryItems) { item ->
+                        ContinueWatchingCardShared(item = item) {
+                            onSeriesClick(item.id)
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
 
-        // Trending Series
-        if (uiState.trendingSeries.isNotEmpty()) {
-            SectionTitleShared(stringResource(R.string.trending_series), onSeeAllClick = onNavigateToTrending)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                itemsIndexed(uiState.trendingSeries) { index, series ->
-                    MediaCard(
-                        title = series.title,
-                        posterUrl = series.posterUrl,
-                        rank = index + 1,
-                        rating = series.rating,
-                        year = series.year.toString(),
-                        mediaId = series.id,
-                        onClick = { onSeriesClick(series.id) },
-                        onLongClick = { 
-                            selectedMediaId = series.id
-                            selectedMediaTitle = series.title
-                            selectedMediaPoster = series.posterUrl
-                            showBottomSheet = true
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
 
-        // New Releases
-        if (uiState.newEpisodes.isNotEmpty()) {
-            SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(uiState.newEpisodes) { series ->
-                    MediaCard(
-                        title = series.title,
-                        posterUrl = series.posterUrl,
-                        rank = null,
-                        rating = series.rating,
-                        year = series.year.toString(),
-                        mediaId = series.id,
-                        onClick = { onSeriesClick(series.id) },
-                        onLongClick = { 
-                            selectedMediaId = series.id
-                            selectedMediaTitle = series.title
-                            selectedMediaPoster = series.posterUrl
-                            showBottomSheet = true
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // Popular Series
-        if (uiState.series.isNotEmpty()) {
-            SectionTitleShared(stringResource(R.string.popular_series), onSeeAllClick = onNavigateToPopular)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(uiState.series) { series ->
-                    MediaCard(
-                        title = series.title,
-                        posterUrl = series.posterUrl,
-                        rank = null,
-                        rating = series.rating,
-                        year = series.year.toString(),
-                        mediaId = series.id,
-                        onClick = { onSeriesClick(series.id) },
-                        onLongClick = { 
-                            selectedMediaId = series.id
-                            selectedMediaTitle = series.title
-                            selectedMediaPoster = series.posterUrl
-                            showBottomSheet = true
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
 
         // Coming Soon Series
         if (uiState.upcomingSeries.isNotEmpty()) {
@@ -275,9 +193,9 @@ fun SeriesScreen(
                     MediaCard(
                         title = series.title,
                         posterUrl = series.posterUrl,
-                        rank = null,
                         rating = series.rating,
-                        year = series.year.toString(),
+                        year = series.firstAirDate?.take(4) ?: "2024",
+                        isMovie = false,
                         mediaId = series.id,
                         onClick = { onSeriesClick(series.id) },
                         onLongClick = { 
@@ -285,12 +203,68 @@ fun SeriesScreen(
                             selectedMediaTitle = series.title
                             selectedMediaPoster = series.posterUrl
                             showBottomSheet = true
-                        }
+                        },
+                        modifier = Modifier.width(140.dp)
                     )
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
+
+        // Popular Series
+        SectionTitleShared(stringResource(R.string.popular_series), onSeeAllClick = onNavigateToPopular)
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            itemsIndexed(uiState.series) { index, series ->
+                MediaCard(
+                    title = series.title,
+                    posterUrl = series.posterUrl,
+                    rank = index + 1,
+                    rating = 8.7 - (index * 0.1),
+                    year = "${series.seasons.size} Seasons",
+                    isMovie = false,
+                    mediaId = series.id,
+                            onClick = { onSeriesClick(series.id) },
+                    onLongClick = { 
+                        selectedMediaId = series.id
+                        selectedMediaTitle = series.title
+                        selectedMediaPoster = series.posterUrl
+                        showBottomSheet = true
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // New Releases
+        SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            itemsIndexed(uiState.series.reversed()) { index, series ->
+                MediaCard(
+                    title = series.title,
+                    posterUrl = series.posterUrl,
+                    rank = null, 
+                    rating = 8.5,
+                    year = "2024",
+                    isMovie = false,
+                    mediaId = series.id,
+                            onClick = { onSeriesClick(series.id) },
+                    onLongClick = { 
+                        selectedMediaId = series.id
+                        selectedMediaTitle = series.title
+                        selectedMediaPoster = series.posterUrl
+                        showBottomSheet = true
+                    }
+                )
+            }
+        }
+
 } else {
             val displayItems = when (selectedCategory) {
                 stringResource(R.string.new_releases) -> uiState.series.reversed()

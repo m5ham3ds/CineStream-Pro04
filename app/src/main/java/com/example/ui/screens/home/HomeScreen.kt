@@ -166,7 +166,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val mix = (uiState.trendingMovies.take(5) + uiState.trendingSeries.map { 
-                    com.example.domain.models.Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
+                    Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
                 }.take(5)).shuffled()
                 itemsIndexed(mix) { index, item ->
                     MediaCard(
@@ -176,7 +176,7 @@ fun HomeScreen(
                         rating = item.rating,
                         year = item.year.toString(),
                         mediaId = item.id,
-                        onClick = { onMovieClick(item.id) },
+                        onClick = { onMovieClick(item.id) }, // Assuming fallback to movie click for mix, or we could just use movie/series distinction if we saved it. To keep it simple:
                         onLongClick = { 
                             bottomSheetIsMovie = true
                             selectedMediaId = item.id
@@ -198,13 +198,13 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val mix = (uiState.newReleasesMovies.take(10) + uiState.newReleasesSeries.map { 
-                    com.example.domain.models.Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
+                    Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
                 }.take(10)).shuffled()
                 itemsIndexed(mix) { index, item ->
                     MediaCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
-                        rank = null,
+                        rank = 0,
                         rating = item.rating,
                         year = item.year.toString(),
                         onClick = { onMovieClick(item.id) },
@@ -221,29 +221,27 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // 4. Popular
-        if (uiState.allMovies.isNotEmpty() || uiState.allSeries.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.popular), onSeeAllClick = onNavigateToPopular)
+        // 4. Trending Movies
+        if (uiState.trendingMovies.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.trending_movies), onSeeAllClick = onNavigateToTrending)
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                val mix = (uiState.allMovies.take(10) + uiState.allSeries.map { 
-                    com.example.domain.models.Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
-                }.take(10)).shuffled()
-                itemsIndexed(mix) { index, item ->
+                itemsIndexed(uiState.trendingMovies) { index, movie ->
                     MediaCard(
-                        title = item.title,
-                        posterUrl = item.posterUrl,
-                        rank = null,
-                        rating = item.rating,
-                        year = item.year.toString(),
-                        onClick = { onMovieClick(item.id) },
+                        title = movie.title,
+                        posterUrl = movie.posterUrl,
+                        rank = 0,
+                        rating = movie.rating,
+                        year = movie.year.toString(),
+                        mediaId = movie.id,
+                        onClick = { onMovieClick(movie.id) },
                         onLongClick = { 
                             bottomSheetIsMovie = true
-                            selectedMediaId = item.id
-                            selectedMediaTitle = item.title
-                            selectedMediaPoster = item.posterUrl
+                            selectedMediaId = movie.id
+                            selectedMediaTitle = movie.title
+                            selectedMediaPoster = movie.posterUrl
                             showBottomSheet = true
                         }
                     )
@@ -252,26 +250,28 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // 5. Coming Soon
-        if (uiState.upcomingMovies.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
+        // 5. Trending Series
+        if (uiState.trendingSeries.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.trending_series), onSeeAllClick = onNavigateToTrending)
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                itemsIndexed(uiState.upcomingMovies) { index, item ->
+                itemsIndexed(uiState.trendingSeries) { index, series ->
                     MediaCard(
-                        title = item.title,
-                        posterUrl = item.posterUrl,
-                        rank = null,
-                        rating = item.rating,
-                        year = item.year.toString(),
-                        onClick = { onMovieClick(item.id) },
+                        title = series.title,
+                        posterUrl = series.posterUrl,
+                        rank = 0,
+                        rating = series.rating,
+                        year = "${series.seasons.size} Seasons",
+                        isMovie = false,
+                        mediaId = series.id,
+                        onClick = { onSeriesClick(series.id) },
                         onLongClick = { 
-                            bottomSheetIsMovie = true
-                            selectedMediaId = item.id
-                            selectedMediaTitle = item.title
-                            selectedMediaPoster = item.posterUrl
+                            bottomSheetIsMovie = false
+                            selectedMediaId = series.id
+                            selectedMediaTitle = series.title
+                            selectedMediaPoster = series.posterUrl
                             showBottomSheet = true
                         }
                     )
@@ -279,6 +279,37 @@ fun HomeScreen(
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
+
+        // 6. Trending Anime
+        if (uiState.animeSeries.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.trending_anime), onSeeAllClick = onNavigateToAnime)
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(uiState.animeSeries) { index, series ->
+                    MediaCard(
+                        title = series.title,
+                        posterUrl = series.posterUrl,
+                        rank = 0,
+                        rating = series.rating,
+                        year = series.year.toString(),
+                        isMovie = false,
+                        mediaId = series.id,
+                        onClick = { onSeriesClick(series.id) },
+                        onLongClick = { 
+                            bottomSheetIsMovie = false
+                            selectedMediaId = series.id
+                            selectedMediaTitle = series.title
+                            selectedMediaPoster = series.posterUrl
+                            showBottomSheet = true
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
 } else {
             val displayItems = when (selectedCategory) {
                 "Movies" -> uiState.allMovies

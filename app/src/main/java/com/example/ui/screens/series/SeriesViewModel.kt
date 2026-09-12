@@ -13,10 +13,9 @@ import kotlinx.coroutines.launch
 
 data class SeriesUiState(
     val isLoading: Boolean = true,
-    val series: List<Series> = emptyList(), // Popular
+    val series: List<Series> = emptyList(),
     val upcomingSeries: List<Series> = emptyList(),
-    val trendingSeries: List<Series> = emptyList(),
-    val newEpisodes: List<Series> = emptyList(), // New Releases
+    val newEpisodes: List<Series> = emptyList(),
     val error: String? = null
 )
 
@@ -53,14 +52,6 @@ class SeriesViewModel(private val repository: MediaRepository) : ViewModel() {
                     .catch { e -> }
                     .collect { newEps ->
                         _uiState.update { it.copy(newEpisodes = newEps) }
-                    }
-            }
-
-            launch {
-                repository.getTrendingSeries()
-                    .catch { e -> }
-                    .collect { trending ->
-                        _uiState.update { it.copy(trendingSeries = trending) }
                     }
             }
         }
