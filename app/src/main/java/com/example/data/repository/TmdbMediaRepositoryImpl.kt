@@ -113,6 +113,13 @@ class TmdbMediaRepositoryImpl : MediaRepository {
         emit(emptyList())
     }
 
+    override fun getTrendingAnime(): Flow<List<Series>> = flow {
+        val response = RetrofitClient.tmdbApi.getTrendingSeries(apiKey)
+        emit(response.results.filter { it.genreIds?.contains(16) == true && (it.originCountry?.contains("JP") == true ) }.map { it.toDomain() })
+    }.catch {
+        emit(emptyList())
+    }
+
 override suspend fun getMovieById(id: String): Movie? = withContext(Dispatchers.IO) {
         if (id.startsWith("provider|")) {
             val parts = id.split("|")

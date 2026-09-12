@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 
 data class MoviesUiState(
     val isLoading: Boolean = true,
+    val trendingMovies: List<Movie> = emptyList(),
+    val newReleasesMovies: List<Movie> = emptyList(),
     val movies: List<Movie> = emptyList(),
     val upcomingMovies: List<Movie> = emptyList(),
     val error: String? = null
@@ -30,6 +32,22 @@ class MoviesViewModel(private val repository: MediaRepository) : ViewModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
+            launch {
+                repository.getTrendingMovies()
+                    .catch { }
+                    .collect { trending ->
+                        _uiState.update { it.copy(trendingMovies = trending) }
+                    }
+            }
+            
+            launch {
+                repository.getNewReleasesMovies()
+                    .catch { }
+                    .collect { newReleases ->
+                        _uiState.update { it.copy(newReleasesMovies = newReleases) }
+                    }
+            }
+
             launch {
                 repository.getMovies()
                     .catch { e -> _uiState.update { it.copy(error = e.message) } }

@@ -163,44 +163,93 @@ fun AnimeScreen(
                 }
             }
         }
-
-
         Spacer(modifier = Modifier.height(24.dp))
-        
-        
-
-        
         if (selectedCategory == animeStr) {
             if (animeHistoryItems.isNotEmpty()) {
-            SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(animeHistoryItems) { item ->
-                    ContinueWatchingCardShared(item = item) {
-                        onAnimeClick(item.id)
+                SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(animeHistoryItems) { item ->
+                        ContinueWatchingCardShared(item = item) {
+                            onAnimeClick(item.id)
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
 
+            // Trending Anime
+            if (uiState.trendingAnime.isNotEmpty()) {
+                SectionTitleShared("Trending Anime", onSeeAllClick = onNavigateToTrending)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(uiState.trendingAnime) { series ->
+                        MediaCard(
+                            title = series.title,
+                            posterUrl = series.posterUrl,
+                            rating = series.rating,
+                            year = series.firstAirDate?.take(4) ?: "2024",
+                            isMovie = false,
+                            mediaId = series.id,
+                            onClick = { onAnimeClick(series.id) },
+                            onLongClick = { 
+                                selectedMediaId = series.id
+                                selectedMediaTitle = series.title
+                                selectedMediaPoster = series.posterUrl
+                                showBottomSheet = true
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
+            // New Releases
+            if (uiState.newEpisodes.isNotEmpty()) {
+                SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(uiState.newEpisodes) { series ->
+                        MediaCard(
+                            title = series.title,
+                            posterUrl = series.posterUrl,
+                            rank = null,
+                            rating = series.rating,
+                            year = series.firstAirDate?.take(4) ?: "2024",
+                            isMovie = false,
+                            mediaId = series.id,
+                            onClick = { onAnimeClick(series.id) },
+                            onLongClick = { 
+                                selectedMediaId = series.id
+                                selectedMediaTitle = series.title
+                                selectedMediaPoster = series.posterUrl
+                                showBottomSheet = true
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
-        // Coming Soon Anime
-        if (uiState.upcomingAnime.isNotEmpty()) {
-            SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = {})
+            // Popular Anime
+            SectionTitleShared(stringResource(R.string.popular_anime), onSeeAllClick = onNavigateToPopular)
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(uiState.upcomingAnime) { series ->
+                itemsIndexed(uiState.series) { index, series ->
                     MediaCard(
                         title = series.title,
                         posterUrl = series.posterUrl,
+                        rank = index + 1,
                         rating = series.rating,
-                        year = series.firstAirDate?.take(4) ?: "2024",
+                        year = "2024",
                         isMovie = false,
                         mediaId = series.id,
                         onClick = { onAnimeClick(series.id) },
@@ -209,73 +258,45 @@ fun AnimeScreen(
                             selectedMediaTitle = series.title
                             selectedMediaPoster = series.posterUrl
                             showBottomSheet = true
-                        },
-                        modifier = Modifier.width(140.dp)
+                        }
                     )
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-        }
 
-        // Popular Anime
-        SectionTitleShared(stringResource(R.string.popular_anime), onSeeAllClick = onNavigateToPopular)
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            itemsIndexed(uiState.series) { index, series ->
-                MediaCard(
-                    title = series.title,
-                    posterUrl = series.posterUrl,
-                    rank = index + 1,
-                    rating = 8.7 - (index * 0.1),
-                    year = "2024",
-                    isMovie = false,
-                    mediaId = series.id,
+            // Coming Soon Anime
+            if (uiState.upcomingAnime.isNotEmpty()) {
+                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = {})
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(uiState.upcomingAnime) { series ->
+                        MediaCard(
+                            title = series.title,
+                            posterUrl = series.posterUrl,
+                            rating = series.rating,
+                            year = series.firstAirDate?.take(4) ?: "2024",
+                            isMovie = false,
+                            mediaId = series.id,
                             onClick = { onAnimeClick(series.id) },
-                    onLongClick = { 
-                        selectedMediaId = series.id
-                        selectedMediaTitle = series.title
-                        selectedMediaPoster = series.posterUrl
-                        showBottomSheet = true
+                            onLongClick = { 
+                                selectedMediaId = series.id
+                                selectedMediaTitle = series.title
+                                selectedMediaPoster = series.posterUrl
+                                showBottomSheet = true
+                            },
+                            modifier = Modifier.width(140.dp)
+                        )
                     }
-                )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // New Releases
-        SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            itemsIndexed(uiState.series.reversed()) { index, series ->
-                MediaCard(
-                    title = series.title,
-                    posterUrl = series.posterUrl,
-                    rank = null, // No rank for new releases
-                    rating = 8.5,
-                    year = "2024",
-                    isMovie = false,
-                    mediaId = series.id,
-                            onClick = { onAnimeClick(series.id) },
-                    onLongClick = { 
-                        selectedMediaId = series.id
-                        selectedMediaTitle = series.title
-                        selectedMediaPoster = series.posterUrl
-                        showBottomSheet = true
-                    }
-                )
-            }
-        }
-
-} else {
+        } else {
             val displayItems = when (selectedCategory) {
                 stringResource(R.string.new_releases) -> uiState.series.reversed()
                 "Top Rated" -> uiState.series.sortedByDescending { it.rating }
-                "Genres" -> uiState.series.shuffled() // Placeholder for genres
+                "Genres" -> uiState.series.shuffled()
                 else -> uiState.series
             }
             
@@ -289,7 +310,7 @@ fun AnimeScreen(
                     posterUrl = series.posterUrl,
                     rank = null,
                     rating = series.rating,
-                    year = series.year.toString(),
+                    year = series.firstAirDate?.take(4) ?: "2024",
                     isMovie = false,
                     mediaId = series.id,
                     onClick = { onAnimeClick(series.id) },
@@ -302,6 +323,7 @@ fun AnimeScreen(
                 )
             }
         }
+    }
     }
 if (showBottomSheet) {
             MediaActionBottomSheet(
@@ -333,4 +355,4 @@ if (showBottomSheet) {
             )
         }
     }
-}
+

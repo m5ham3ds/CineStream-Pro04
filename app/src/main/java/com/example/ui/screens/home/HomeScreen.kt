@@ -310,6 +310,35 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
+        // 7. Coming Soon
+        if (uiState.upcomingMovies.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.coming_soon), onSeeAllClick = {})
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                val mix = uiState.upcomingMovies.take(10).shuffled()
+                itemsIndexed(mix) { index, item ->
+                    MediaCard(
+                        title = item.title,
+                        posterUrl = item.posterUrl,
+                        rank = 0,
+                        rating = item.rating,
+                        year = item.year.toString(),
+                        onClick = { onMovieClick(item.id) },
+                        onLongClick = { 
+                            bottomSheetIsMovie = true
+                            selectedMediaId = item.id
+                            selectedMediaTitle = item.title
+                            selectedMediaPoster = item.posterUrl
+                            showBottomSheet = true
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
 } else {
             val displayItems = when (selectedCategory) {
                 "Movies" -> uiState.allMovies

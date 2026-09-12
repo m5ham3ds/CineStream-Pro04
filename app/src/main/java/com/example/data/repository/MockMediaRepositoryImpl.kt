@@ -21,6 +21,10 @@ class MockMediaRepositoryImpl : MediaRepository {
     override fun getTrendingSeries(): Flow<List<Series>> = flow {
         emit(emptyList())
     }
+
+    override fun getTrendingAnime(): Flow<List<Series>> = flow {
+        emit(emptyList())
+    }
     override suspend fun getMovieById(id: String): Movie? = null
     override suspend fun getSeriesById(id: String): Series? = null
 
