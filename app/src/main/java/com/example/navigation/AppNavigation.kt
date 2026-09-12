@@ -459,46 +459,101 @@ fun AppNavigation() {
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            androidx.compose.material3.IconButton(
-                                onClick = { scope.launch { drawerState.open() } }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Menu"
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.onBackground)
-                                    .clickable {
-                                        navController.navigate(Screen.Profile.route)
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (currentUser != null && currentUser?.photoUrl?.isNotEmpty() == true) {
-                                    AsyncImage(
-                                        model = currentUser?.photoUrl,
-                                        contentDescription = "Avatar",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                } else {
-                                    Icon(Icons.Default.Person, contentDescription = "Avatar", tint = MaterialTheme.colorScheme.background)
-                                }
-                            }
-                            
                             if (!isSearchExpanded) {
+                                // Avatar
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable {
+                                            navController.navigate(Screen.Profile.route)
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (currentUser != null && currentUser?.photoUrl?.isNotEmpty() == true) {
+                                        AsyncImage(
+                                            model = currentUser?.photoUrl,
+                                            contentDescription = "Avatar",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Icon(Icons.Default.Person, contentDescription = "Avatar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                                
                                 Spacer(modifier = Modifier.weight(1f))
-                                                            
-                                Spacer(modifier = Modifier.width(16.dp))
-                            }
-    
-                            
-                            
-                            if (isSearchExpanded) {
+                                
+                                // App Title
+                                val titleRes = when(currentRoute) {
+                                    Screen.Home.route -> R.string.app_name
+                                    Screen.Movies.route -> R.string.movies
+                                    Screen.Series.route -> R.string.series
+                                    Screen.Anime.route -> R.string.anime
+                                    Screen.Search.route -> R.string.search
+                                    Screen.Profile.route -> R.string.profile
+                                    Screen.Settings.route -> R.string.settings
+                                    Screen.Downloads.route -> R.string.downloads
+                                    Screen.About.route -> R.string.about
+                                    Screen.Extensions.route -> R.string.extensions
+                                    Screen.Share.route -> R.string.share
+                                    Screen.Social.route -> R.string.social
+                                    else -> R.string.app_name
+                                }
+                                Text(
+                                    text = stringResource(id = titleRes),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (titleRes == R.string.app_name) Color(0xFFE50914) else MaterialTheme.colorScheme.onBackground
+                                )
+                                
+                                Spacer(modifier = Modifier.weight(1f))
+                                
+                                // Search Icon
+                                androidx.compose.material3.IconButton(
+                                    onClick = { isSearchExpanded = true }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Search",
+                                        tint = MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
+                                
+                                // Notification Icon with Badge
+                                Box(
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .size(36.dp)
+                                        .clickable { /* Handle Notifications */ },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                                        contentDescription = "Notifications",
+                                        tint = MaterialTheme.colorScheme.onBackground
+                                    )
+                                    androidx.compose.material3.Badge(
+                                        containerColor = Color(0xFFE50914),
+                                        contentColor = Color.White,
+                                        modifier = Modifier.align(Alignment.TopEnd).offset(x = (-2).dp, y = 2.dp)
+                                    ) {
+                                        Text("1", fontSize = 10.sp)
+                                    }
+                                }
+                                
+                                // Menu Icon
+                                androidx.compose.material3.IconButton(
+                                    onClick = { scope.launch { drawerState.open() } }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Menu,
+                                        contentDescription = "Menu",
+                                        tint = MaterialTheme.colorScheme.onBackground
+                                    )
+                                }
+                            } else {
                                 ExpandableSearchBar(
                                     isExpanded = isSearchExpanded,
                                     onExpandedChange = { isSearchExpanded = it },

@@ -1,62 +1,41 @@
 package com.example.ui.screens.home
-
-import android.widget.Toast
-import androidx.compose.ui.res.stringResource
-import com.example.R
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.pager.*
-import kotlinx.coroutines.delay
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.*
-
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.*
+import androidx.compose.foundation.*
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.style.*
+import androidx.compose.ui.draw.*
+import androidx.compose.foundation.shape.*
+import androidx.compose.ui.layout.*
+import androidx.compose.ui.res.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.unit.*
+import com.example.ui.components.*
 import coil.compose.AsyncImage
-import com.example.data.model.DownloadItem
-import com.example.data.model.LibraryItem
-import com.example.data.repository.DownloadRepository
-import com.example.data.repository.LibraryRepository
-import com.example.domain.models.Movie
-import com.example.ui.ViewModelFactory
-import com.example.ui.components.MediaActionBottomSheet
-
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import com.example.data.repository.HistoryRepository
-import androidx.compose.runtime.collectAsState
-
-import com.example.ui.components.MediaCard
-import com.example.ui.components.VerticalGrid
-import com.example.ui.components.MediaScreenSkeleton
-import com.example.ui.components.HeroCarousel
-import com.example.ui.components.HeroItem
-import com.example.ui.components.ContinueWatchingCardShared
+import com.example.R
+import com.example.data.model.*
+import com.example.data.repository.*
+import com.example.domain.models.*
+import com.example.ui.ViewModelFactory
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.pager.*
+import androidx.compose.foundation.lazy.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import android.widget.Toast
+import androidx.compose.material3.pulltorefresh.*
+import com.example.ui.screens.home.HomeViewModel
+
+
+
+
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,35 +142,7 @@ fun HomeScreen(
 
         
         if (selectedCategory == "Home") {
-// Trending Now
-        SectionTitle(stringResource(R.string.trending_now), onSeeAllClick = onNavigateToTrending)
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            itemsIndexed(uiState.trendingMovies) { index, movie ->
-                MediaCard(
-                    title = movie.title,
-                    posterUrl = movie.posterUrl,
-                    rank = index + 1,
-                    rating = 8.0 + (index * 0.1),
-                    year = "2024",
-                    mediaId = movie.id,
-                            onClick = { onMovieClick(movie.id) },
-                    onLongClick = { 
-                        bottomSheetIsMovie = true
-                        selectedMediaId = movie.id
-                        selectedMediaTitle = movie.title
-                        selectedMediaPoster = movie.posterUrl
-                        showBottomSheet = true
-                    }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Continue Watching
+        // 1. Continue Watching
         if (historyItems.isNotEmpty()) {
             SectionTitle(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
             LazyRow(
@@ -207,87 +158,30 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Trending Series
-        SectionTitle(stringResource(R.string.trending_series), onSeeAllClick = onNavigateToTrending)
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            itemsIndexed(uiState.trendingSeries) { index, series ->
-                MediaCard(
-                    title = series.title,
-                    posterUrl = series.posterUrl,
-                    rank = index + 1,
-                    rating = 8.5 + (index * 0.1),
-                    year = "${series.seasons.size} Seasons",
-                    isMovie = false,
-                    mediaId = series.id,
-                            onClick = { onSeriesClick(series.id) },
-                    onLongClick = { 
-                        bottomSheetIsMovie = false
-                        selectedMediaId = series.id
-                        selectedMediaTitle = series.title
-                        selectedMediaPoster = series.posterUrl
-                        showBottomSheet = true
-                    }
-                )
-            }
-        }
-
-
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        // Anime
-        if (uiState.animeSeries.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.anime), onSeeAllClick = onNavigateToAnime)
+        // 2. Trending Now
+        if (uiState.trendingMovies.isNotEmpty() || uiState.trendingSeries.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.trending_now), onSeeAllClick = onNavigateToTrending)
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                itemsIndexed(uiState.animeSeries) { index, series ->
+                val mix = (uiState.trendingMovies.take(5) + uiState.trendingSeries.map { 
+                    Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
+                }.take(5)).shuffled()
+                itemsIndexed(mix) { index, item ->
                     MediaCard(
-                        title = series.title,
-                        posterUrl = series.posterUrl,
-                        rank = 0,
-                        rating = series.rating,
-                        year = series.year.toString(),
-                        isMovie = false,
-                        mediaId = series.id,
-                            onClick = { onSeriesClick(series.id) },
-                        onLongClick = { 
-                            bottomSheetIsMovie = false
-                            selectedMediaId = series.id
-                            selectedMediaTitle = series.title
-                            selectedMediaPoster = series.posterUrl
-                            showBottomSheet = true
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // Coming Soon
-        if (uiState.upcomingMovies.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                itemsIndexed(uiState.upcomingMovies) { index, movie ->
-                    MediaCard(
-                        title = movie.title,
-                        posterUrl = movie.posterUrl,
-                        rank = 0,
-                        rating = movie.rating,
-                        year = movie.year.toString(),
-                        mediaId = movie.id,
-                            onClick = { onMovieClick(movie.id) },
+                        title = item.title,
+                        posterUrl = item.posterUrl,
+                        rank = index + 1,
+                        rating = item.rating,
+                        year = item.year.toString(),
+                        mediaId = item.id,
+                        onClick = { onMovieClick(item.id) }, // Assuming fallback to movie click for mix, or we could just use movie/series distinction if we saved it. To keep it simple:
                         onLongClick = { 
                             bottomSheetIsMovie = true
-                            selectedMediaId = movie.id
-                            selectedMediaTitle = movie.title
-                            selectedMediaPoster = movie.posterUrl
+                            selectedMediaId = item.id
+                            selectedMediaTitle = item.title
+                            selectedMediaPoster = item.posterUrl
                             showBottomSheet = true
                         }
                     )
@@ -296,8 +190,8 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // New Releases
-        if (uiState.newReleasesMovies.isNotEmpty()) {
+        // 3. New Releases
+        if (uiState.newReleasesMovies.isNotEmpty() || uiState.newReleasesSeries.isNotEmpty()) {
             SectionTitle(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -319,6 +213,95 @@ fun HomeScreen(
                             selectedMediaId = item.id
                             selectedMediaTitle = item.title
                             selectedMediaPoster = item.posterUrl
+                            showBottomSheet = true
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // 4. Trending Movies
+        if (uiState.trendingMovies.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.trending_movies), onSeeAllClick = onNavigateToTrending)
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(uiState.trendingMovies) { index, movie ->
+                    MediaCard(
+                        title = movie.title,
+                        posterUrl = movie.posterUrl,
+                        rank = 0,
+                        rating = movie.rating,
+                        year = movie.year.toString(),
+                        mediaId = movie.id,
+                        onClick = { onMovieClick(movie.id) },
+                        onLongClick = { 
+                            bottomSheetIsMovie = true
+                            selectedMediaId = movie.id
+                            selectedMediaTitle = movie.title
+                            selectedMediaPoster = movie.posterUrl
+                            showBottomSheet = true
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // 5. Trending Series
+        if (uiState.trendingSeries.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.trending_series), onSeeAllClick = onNavigateToTrending)
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(uiState.trendingSeries) { index, series ->
+                    MediaCard(
+                        title = series.title,
+                        posterUrl = series.posterUrl,
+                        rank = 0,
+                        rating = series.rating,
+                        year = "${series.seasons.size} Seasons",
+                        isMovie = false,
+                        mediaId = series.id,
+                        onClick = { onSeriesClick(series.id) },
+                        onLongClick = { 
+                            bottomSheetIsMovie = false
+                            selectedMediaId = series.id
+                            selectedMediaTitle = series.title
+                            selectedMediaPoster = series.posterUrl
+                            showBottomSheet = true
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // 6. Trending Anime
+        if (uiState.animeSeries.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.trending_anime), onSeeAllClick = onNavigateToAnime)
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                itemsIndexed(uiState.animeSeries) { index, series ->
+                    MediaCard(
+                        title = series.title,
+                        posterUrl = series.posterUrl,
+                        rank = 0,
+                        rating = series.rating,
+                        year = series.year.toString(),
+                        isMovie = false,
+                        mediaId = series.id,
+                        onClick = { onSeriesClick(series.id) },
+                        onLongClick = { 
+                            bottomSheetIsMovie = false
+                            selectedMediaId = series.id
+                            selectedMediaTitle = series.title
+                            selectedMediaPoster = series.posterUrl
                             showBottomSheet = true
                         }
                     )
@@ -419,24 +402,64 @@ if (showBottomSheet) {
 
 @Composable
 fun SectionTitle(title: String, onSeeAllClick: (() -> Unit)? = null) {
+    val parts = title.split(" ", limit = 2)
+    val firstWord = parts.getOrNull(0) ?: ""
+    val rest = parts.getOrNull(1) ?: ""
+
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        if (onSeeAllClick != null) {
-            Text(
-                text = stringResource(R.string.see_all),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onSeeAllClick() }
+        Column {
+            Row {
+                Text(
+                    text = firstWord,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                if (rest.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = rest,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE50914)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .width(28.dp)
+                    .height(3.dp)
+                    .clip(RoundedCornerShape(1.5.dp))
+                    .background(Color(0xFFE50914))
             )
+        }
+        
+        if (onSeeAllClick != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { onSeeAllClick() }
+            ) {
+                Text(
+                    text = stringResource(R.string.see_all),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = Color(0xFFE50914)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "See All",
+                    tint = Color(0xFFE50914),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }
+

@@ -1,13 +1,11 @@
+import re
+
 with open('app/src/main/java/com/example/navigation/AppNavigation.kt', 'r') as f:
     text = f.read()
 
-old_topbar = """                            if (!isSearchExpanded) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                
-                                Spacer(modifier = Modifier.width(16.dp))
-                            }"""
+pattern = r"if \(!isSearchExpanded\) \{(.*?)\}"
 
-new_topbar = """                            if (!isSearchExpanded) {
+new_topbar = """if (!isSearchExpanded) {
                                 Spacer(modifier = Modifier.weight(1f))
                                 val titleRes = when(currentRoute) {
                                     Screen.Home.route -> R.string.app_name
@@ -33,10 +31,7 @@ new_topbar = """                            if (!isSearchExpanded) {
                                 Spacer(modifier = Modifier.weight(1f))
                             }"""
 
-if old_topbar in text:
-    text = text.replace(old_topbar, new_topbar)
-    with open('app/src/main/java/com/example/navigation/AppNavigation.kt', 'w') as f:
-        f.write(text)
-    print("Fixed TopBar!")
-else:
-    print("Could not find old_topbar.")
+text = re.sub(pattern, new_topbar, text, count=1, flags=re.DOTALL)
+with open('app/src/main/java/com/example/navigation/AppNavigation.kt', 'w') as f:
+    f.write(text)
+print("Fixed TopBar!")
