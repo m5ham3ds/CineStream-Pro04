@@ -108,6 +108,20 @@ interface TmdbApiService {
         @Query("air_date.lte") maxDate: String
     ): TmdbResponse<TmdbSeries>
 
+    @GET("discover/movie")
+    suspend fun getArabicMovies(
+        @Query("api_key") apiKey: String,
+        @Query("with_original_language") withOriginalLanguage: String = "ar",
+        @Query("sort_by") sortBy: String = "popularity.desc"
+    ): TmdbResponse<TmdbMovie>
+    
+    @GET("discover/tv")
+    suspend fun getArabicSeries(
+        @Query("api_key") apiKey: String,
+        @Query("with_original_language") withOriginalLanguage: String = "ar",
+        @Query("sort_by") sortBy: String = "popularity.desc"
+    ): TmdbResponse<TmdbSeries>
+
     // Search
     @GET("search/multi")
     suspend fun searchMulti(

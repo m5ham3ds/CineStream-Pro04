@@ -84,6 +84,19 @@ class TmdbMediaRepositoryImpl : MediaRepository {
         emit(emptyList())
     }
 
+    override fun getArabicMovies(): Flow<List<Movie>> = flow {
+        val response = RetrofitClient.tmdbApi.getArabicMovies(apiKey)
+        emit(response.results.map { it.toDomain() })
+    }.catch {
+        emit(emptyList())
+    }
+
+    override fun getArabicSeries(): Flow<List<Series>> = flow {
+        val response = RetrofitClient.tmdbApi.getArabicSeries(apiKey)
+        emit(response.results.map { it.toDomain() })
+    }.catch {
+        emit(emptyList())
+    }
 
     override fun getUpcomingSeries(): Flow<List<Series>> = flow {
         val response = RetrofitClient.tmdbApi.getUpcomingSeriesDiscover(apiKey, minDate = "2026-09-11")

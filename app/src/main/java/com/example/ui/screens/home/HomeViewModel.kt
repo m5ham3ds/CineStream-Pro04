@@ -24,6 +24,8 @@ data class HomeUiState(
     val upcomingMovies: List<Movie> = emptyList(),
     val newReleasesMovies: List<Movie> = emptyList(),
     val newReleasesSeries: List<Series> = emptyList(),
+    val arabicMovies: List<Movie> = emptyList(),
+    val arabicSeries: List<Series> = emptyList(),
     val error: String? = null
 )
 
@@ -52,6 +54,8 @@ class HomeViewModel(
                 val trendingSeriesDeferred = async { repository.getTrendingSeries().firstOrNull() ?: emptyList() }
                 val allMoviesDeferred = async { repository.getMovies().firstOrNull() ?: emptyList() }
                 val allSeriesDeferred = async { repository.getSeries().firstOrNull() ?: emptyList() }
+                val arabicMoviesDeferred = async { repository.getArabicMovies().firstOrNull() ?: emptyList() }
+                val arabicSeriesDeferred = async { repository.getArabicSeries().firstOrNull() ?: emptyList() }
                 
                 val trendingMovies = trendingMoviesDeferred.await()
                 val animeSeries = animeSeriesDeferred.await()
@@ -61,6 +65,8 @@ class HomeViewModel(
                 val trendingSeries = trendingSeriesDeferred.await()
                 val allMovies = allMoviesDeferred.await()
                 val allSeries = allSeriesDeferred.await()
+                val arabicMovies = arabicMoviesDeferred.await()
+                val arabicSeries = arabicSeriesDeferred.await()
                 
                 val actionMovies = allMovies.filter { m -> m.genres.contains("Action") }
                 
@@ -77,6 +83,8 @@ class HomeViewModel(
                         actionMovies = actionMovies,
                         allMovies = allMovies,
                         allSeries = allSeries,
+                        arabicMovies = arabicMovies,
+                        arabicSeries = arabicSeries,
                         isLoading = !hasData
                     )
                 }

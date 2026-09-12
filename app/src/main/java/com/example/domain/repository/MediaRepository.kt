@@ -11,6 +11,9 @@ interface MediaRepository {
     fun getTrendingSeries(): Flow<List<Series>>
     fun getTrendingAnime(): Flow<List<Series>>
 
+    fun getArabicMovies(): Flow<List<Movie>>
+    fun getArabicSeries(): Flow<List<Series>>
+
     fun getUpcomingMovies(): Flow<List<Movie>>
     fun getUpcomingSeries(): Flow<List<Series>>
     fun getUpcomingAnime(): Flow<List<Series>>
