@@ -89,6 +89,9 @@ fun ServerSelectionDialog(
     var extractedServerLinks by remember { mutableStateOf<Map<String, String>>(
         if (ServerStateStore.currentMediaKey == mediaKey) ServerStateStore.extractedServerLinks else emptyMap()
     ) }
+    var extractedDownloadLinks by remember { mutableStateOf<Map<String, String>>(
+        if (ServerStateStore.currentMediaKey == mediaKey) ServerStateStore.extractedDownloadLinks else emptyMap()
+    ) }
     var finalWatchUrl by remember { mutableStateOf<String?>(null) }
     var isFailed by remember { mutableStateOf(false) }
     var bypassStatus by remember { mutableStateOf(if (isLoading) "CHECKING_CLOUDFLARE" else "NORMAL") }
@@ -163,7 +166,6 @@ fun ServerSelectionDialog(
     
     // Use cleanTitle for search so the site actually returns results (site search engines often fail with year appended)
     val searchUrl = currentExtension.getSearchUrl(baseTitle, cleanTitle)
-
 
 Dialog(
         onDismissRequest = {
@@ -304,6 +306,7 @@ Dialog(
                                                         val serversData = org.json.JSONArray(serversJson)
                                                         val serversNames = mutableListOf<String>()
                                                         val serversMap = mutableMapOf<String, String>()
+                                                        val downloadsMap = mutableMapOf<String, String>()
                                                         val serversIds = mutableMapOf<String, String>()
                                                         
                                                         for (i in 0 until serversData.length()) {
@@ -311,20 +314,27 @@ Dialog(
                                                             val name = item.getString("name")
                                                             val link = if (item.has("link")) item.getString("link") else if (item.has("url")) item.getString("url") else ""
                                                             val id = if (item.has("id")) item.getString("id") else ""
-                                                            serversNames.add(name)
-                                                            serversMap[name] = link
-                                                            serversIds[name] = id
+                                                            
+                                                            if (name.contains("(تحميل)") || link.endsWith(".mp4") || link.endsWith(".mkv")) {
+                                                                downloadsMap[name] = link
+                                                            } else {
+                                                                serversNames.add(name)
+                                                                serversMap[name] = link
+                                                                serversIds[name] = id
+                                                            }
                                                         }
                                                         
-                                                        if (serversNames.isNotEmpty() && extractedServers.isEmpty()) {
+                                                        if ((serversNames.isNotEmpty() || downloadsMap.isNotEmpty()) && extractedServers.isEmpty()) {
                                                             android.os.Handler(android.os.Looper.getMainLooper()).post {
                                                                 bypassStatus = "NORMAL"
                                                                 finalWatchUrl = url
                                                                 extractedServers = serversNames
                                                                 extractedServerLinks = serversMap
+                                                                extractedDownloadLinks = downloadsMap
                                                                 ServerStateStore.currentMediaKey = mediaKey
                                                                 ServerStateStore.extractedServers = serversNames
                                                                 ServerStateStore.extractedServerLinks = serversMap
+                                                                ServerStateStore.extractedDownloadLinks = downloadsMap
                                                                 ServerStateStore.extractedServerIds = serversIds
                                                                 isLoading = false
                                                             }
@@ -991,6 +1001,54 @@ Dialog(
                                     }
                                 }
                             }
+                            
+                            if (extractedDownloadLinks.isNotEmpty()) {
+                                item {
+                                    Text(
+                                        text = "روابط التحميل المباشرة",
+                                        color = Color(0xFF00C853),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                                    )
+                                }
+                                
+                                items(extractedDownloadLinks.keys.toList()) { downloadName ->
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                selectedServerForQuality = downloadName
+                                                isExtractingQuality = true
+                                                extractedQualities = emptyList()
+                                            },
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = Color(0xFF1E2732)
+                                        ),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Outlined.CloudDownload,
+                                                contentDescription = "تحميل",
+                                                tint = Color(0xFF00C853),
+                                                modifier = Modifier.size(20.dp).padding(end = 8.dp)
+                                            )
+                                            Text(
+                                                text = downloadName,
+                                                color = Color.White,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                         
                         if (currentSiteIndex < safeSites.size - 1) {
@@ -1055,12 +1113,12 @@ Dialog(
             LaunchedEffect(selectedServerForQuality) {
                 kotlinx.coroutines.delay(12000)
                 if (isExtractingQuality && extractedQualities.isEmpty()) {
-                    val serverUrl = extractedServerLinks[selectedServerForQuality] ?: finalWatchUrl ?: searchUrl
+                    val serverUrl = extractedServerLinks[selectedServerForQuality] ?: extractedDownloadLinks[selectedServerForQuality] ?: finalWatchUrl ?: searchUrl
                     extractedQualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", serverUrl))
                     isExtractingQuality = false
                 }
             }
-            val serverUrl = extractedServerLinks[selectedServerForQuality] ?: finalWatchUrl ?: searchUrl
+            val serverUrl = extractedServerLinks[selectedServerForQuality] ?: extractedDownloadLinks[selectedServerForQuality] ?: finalWatchUrl ?: searchUrl
             HiddenVideoExtractor(
                 url = serverUrl,
                 isMovie = isMovie,

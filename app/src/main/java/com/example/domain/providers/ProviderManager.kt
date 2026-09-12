@@ -28,6 +28,7 @@ object ProviderManager {
     // List of Aniyomi-style extensions (Sources)
     private val sources: List<AnimeSource> = listOf(
         ExampleAnimeSource()
+        
         // Add your parsed HTTP sources here!
     )
 

@@ -241,7 +241,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     ) {
         if (uiState.currentVideoUrl != null) {
             val videoUrl = uiState.currentVideoUrl!!
-            val isDirectVideo = videoUrl.endsWith(".m3u8") || videoUrl.endsWith(".mp4") || videoUrl.endsWith(".mkv") || videoUrl.contains("videodelivery.net") || videoUrl.contains("v.mp4") || videoUrl.contains("v2.hyperwatching.com") == false && videoUrl.contains("play.vidyard.com") == false && videoUrl.contains(".html") == false && videoUrl.contains("iframe") == false && videoUrl.contains("embed") == false
+            val isDirectVideo = videoUrl.contains(".mp4") || videoUrl.contains(".m3u8") || videoUrl.contains(".mkv")
             
             if (isDirectVideo && uiState.currentVideoUrl?.contains("embed") != true && uiState.currentVideoUrl?.contains("iframe") != true) {
                 AndroidView(
