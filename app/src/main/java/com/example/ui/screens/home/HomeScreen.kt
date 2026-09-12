@@ -221,65 +221,6 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
 
-        // Arabic Movies
-        if (uiState.arabicMovies.isNotEmpty()) {
-            SectionTitle("الأفلام العربية", onSeeAllClick = {})
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                itemsIndexed(uiState.arabicMovies) { index, movie ->
-                    MediaCard(
-                        title = movie.title,
-                        posterUrl = movie.posterUrl,
-                        rank = 0,
-                        rating = movie.rating,
-                        year = movie.year.toString(),
-                        mediaId = movie.id,
-                        onClick = { onMovieClick(movie.id) },
-                        onLongClick = { 
-                            bottomSheetIsMovie = true
-                            selectedMediaId = movie.id
-                            selectedMediaTitle = movie.title
-                            selectedMediaPoster = movie.posterUrl
-                            showBottomSheet = true
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // Arabic Series
-        if (uiState.arabicSeries.isNotEmpty()) {
-            SectionTitle("المسلسلات العربية", onSeeAllClick = {})
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                itemsIndexed(uiState.arabicSeries) { index, series ->
-                    MediaCard(
-                        title = series.title,
-                        posterUrl = series.posterUrl,
-                        rank = 0,
-                        rating = series.rating,
-                        year = "${series.seasons.size} Seasons",
-                        isMovie = false,
-                        mediaId = series.id,
-                        onClick = { onSeriesClick(series.id) },
-                        onLongClick = { 
-                            bottomSheetIsMovie = false
-                            selectedMediaId = series.id
-                            selectedMediaTitle = series.title
-                            selectedMediaPoster = series.posterUrl
-                            showBottomSheet = true
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
         // 4. Trending Movies
         if (uiState.trendingMovies.isNotEmpty()) {
             SectionTitle(stringResource(R.string.trending_movies), onSeeAllClick = onNavigateToTrending)

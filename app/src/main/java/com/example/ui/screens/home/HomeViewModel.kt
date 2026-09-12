@@ -57,17 +57,23 @@ class HomeViewModel(
                 val arabicMoviesDeferred = async { repository.getArabicMovies().firstOrNull() ?: emptyList() }
                 val arabicSeriesDeferred = async { repository.getArabicSeries().firstOrNull() ?: emptyList() }
                 
-                val trendingMovies = trendingMoviesDeferred.await()
+                val trendingMoviesRaw = trendingMoviesDeferred.await()
                 val animeSeries = animeSeriesDeferred.await()
-                val upcomingMovies = upcomingMoviesDeferred.await()
-                val newReleasesMovies = newReleasesMoviesDeferred.await()
-                val newReleasesSeries = newReleasesSeriesDeferred.await()
-                val trendingSeries = trendingSeriesDeferred.await()
+                val upcomingMoviesRaw = upcomingMoviesDeferred.await()
+                val newReleasesMoviesRaw = newReleasesMoviesDeferred.await()
+                val newReleasesSeriesRaw = newReleasesSeriesDeferred.await()
+                val trendingSeriesRaw = trendingSeriesDeferred.await()
                 val allMovies = allMoviesDeferred.await()
                 val allSeries = allSeriesDeferred.await()
-                val arabicMovies = arabicMoviesDeferred.await()
-                val arabicSeries = arabicSeriesDeferred.await()
+                val arabicMoviesRaw = arabicMoviesDeferred.await()
+                val arabicSeriesRaw = arabicSeriesDeferred.await()
                 
+                val trendingMovies = (trendingMoviesRaw.take(10) + arabicMoviesRaw.take(10)).shuffled().distinctBy { it.id }
+                val trendingSeries = (trendingSeriesRaw.take(10) + arabicSeriesRaw.take(10)).shuffled().distinctBy { it.id }
+                val newReleasesMovies = (newReleasesMoviesRaw.take(10) + arabicMoviesRaw.shuffled().take(5)).shuffled().distinctBy { it.id }
+                val newReleasesSeries = (newReleasesSeriesRaw.take(10) + arabicSeriesRaw.shuffled().take(5)).shuffled().distinctBy { it.id }
+                val upcomingMovies = (upcomingMoviesRaw.take(10) + arabicMoviesRaw.shuffled().take(5)).shuffled().distinctBy { it.id }
+
                 val actionMovies = allMovies.filter { m -> m.genres.contains("Action") }
                 
                 val hasData = trendingMovies.isNotEmpty() || animeSeries.isNotEmpty() || trendingSeries.isNotEmpty() || actionMovies.isNotEmpty()
@@ -83,8 +89,6 @@ class HomeViewModel(
                         actionMovies = actionMovies,
                         allMovies = allMovies,
                         allSeries = allSeries,
-                        arabicMovies = arabicMovies,
-                        arabicSeries = arabicSeries,
                         isLoading = !hasData
                     )
                 }
