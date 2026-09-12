@@ -488,128 +488,197 @@ fun AppNavigation() {
             topBar = {
                 Column {
                     if (hasTopBar) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .windowInsetsPadding(WindowInsets.statusBars)
-                    ) {
-                        Row(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .windowInsetsPadding(WindowInsets.statusBars)
                         ) {
-                            if (!isSearchExpanded) {
-                                // Avatar
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF0F0F13)) // Very dark grey/black
+                            ) {
+                                // Left Red Glow
                                 Box(
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                                        .clickable {
-                                            navController.navigate(Screen.Profile.route)
-                                        },
-                                    contentAlignment = Alignment.Center
+                                        .align(Alignment.CenterStart)
+                                        .width(120.dp)
+                                        .fillMaxHeight()
+                                        .background(Brush.horizontalGradient(colors = listOf(Color(0x33E50914), Color.Transparent)))
+                                )
+                                // Right Red Glow
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .width(120.dp)
+                                        .fillMaxHeight()
+                                        .background(Brush.horizontalGradient(colors = listOf(Color.Transparent, Color(0x33E50914))))
+                                )
+                                
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    if (currentUser != null && currentUser?.photoUrl?.isNotEmpty() == true) {
-                                        AsyncImage(
-                                            model = currentUser?.photoUrl,
-                                            contentDescription = "Avatar",
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
+                                    if (!isSearchExpanded) {
+                                        // Avatar with Glow
+                                        Box(
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFF1C1C1E))
+                                                .border(2.dp, Brush.radialGradient(listOf(Color(0xFFE50914), Color(0x55E50914))), CircleShape)
+                                                .clickable { navController.navigate(Screen.Profile.route) },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (currentUser != null && currentUser?.photoUrl?.isNotEmpty() == true) {
+                                                AsyncImage(
+                                                    model = currentUser?.photoUrl,
+                                                    contentDescription = "Avatar",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                            } else {
+                                                Icon(Icons.Default.Person, contentDescription = "Avatar", tint = Color.LightGray, modifier = Modifier.size(28.dp))
+                                            }
+                                        }
+                                        
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        
+                                        // App Title Center
+                                        val titleRes = when(currentRoute) {
+                                            Screen.Home.route -> R.string.app_name
+                                            Screen.Movies.route -> R.string.movies
+                                            Screen.Series.route -> R.string.series
+                                            Screen.Anime.route -> R.string.anime
+                                            Screen.Search.route -> R.string.search
+                                            Screen.Profile.route -> R.string.profile
+                                            Screen.Settings.route -> R.string.settings
+                                            Screen.Downloads.route -> R.string.downloads
+                                            Screen.About.route -> R.string.about
+                                            Screen.Extensions.route -> R.string.extensions
+                                            Screen.Share.route -> R.string.share
+                                            Screen.Social.route -> R.string.social
+                                            else -> R.string.app_name
+                                        }
+                                        
+                                        if (titleRes == R.string.app_name) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Text(
+                                                        text = "Cine",
+                                                        style = MaterialTheme.typography.headlineSmall,
+                                                        fontWeight = FontWeight.Black,
+                                                        color = Color.White
+                                                    )
+                                                    Text(
+                                                        text = "Stream",
+                                                        style = MaterialTheme.typography.headlineSmall,
+                                                        fontWeight = FontWeight.Black,
+                                                        color = Color(0xFFE50914)
+                                                    )
+                                                }
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Text("MOVIES", fontSize = 8.sp, color = Color.Gray, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                                                    Text(" • ", fontSize = 8.sp, color = Color(0xFFE50914), fontWeight = FontWeight.Bold)
+                                                    Text("SERIES", fontSize = 8.sp, color = Color.Gray, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                                                    Text(" • ", fontSize = 8.sp, color = Color(0xFFE50914), fontWeight = FontWeight.Bold)
+                                                    Text("ANIME", fontSize = 8.sp, color = Color.Gray, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                                                }
+                                            }
+                                        } else {
+                                            Text(
+                                                text = stringResource(id = titleRes),
+                                                style = MaterialTheme.typography.titleLarge,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+                                        
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        
+                                        // Action Icons
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            // Search
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(42.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color(0xFF1C1C1E))
+                                                    .clickable { isSearchExpanded = true },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Search,
+                                                    contentDescription = "Search",
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                            
+                                            // Notification
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(42.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color(0xFF1C1C1E))
+                                                    .clickable { /* Handle Notifications */ },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
+                                                    contentDescription = "Notifications",
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                                androidx.compose.material3.Badge(
+                                                    containerColor = Color(0xFFE50914),
+                                                    contentColor = Color.White,
+                                                    modifier = Modifier.align(Alignment.TopEnd).offset(x = (-2).dp, y = 2.dp)
+                                                ) {
+                                                    Text("1", fontSize = 10.sp)
+                                                }
+                                            }
+                                            
+                                            // Menu
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(42.dp)
+                                                    .clip(CircleShape)
+                                                    .background(Color(0xFF1C1C1E))
+                                                    .clickable { scope.launch { drawerState.open() } },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Menu,
+                                                    contentDescription = "Menu",
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                            }
+                                        }
                                     } else {
-                                        Icon(Icons.Default.Person, contentDescription = "Avatar", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        ExpandableSearchBar(
+                                            isExpanded = isSearchExpanded,
+                                            onExpandedChange = { isSearchExpanded = it },
+                                            onMovieClick = { id -> 
+                                                com.example.utils.AdManager.showInterstitial(context)
+                                                navController.navigate(Screen.MovieDetails.createRoute(id))
+                                            },
+                                            onSeriesClick = { id -> 
+                                                com.example.utils.AdManager.showInterstitial(context)
+                                                navController.navigate(Screen.SeriesDetails.createRoute(id))
+                                            }
+                                        )
                                     }
                                 }
-                                
-                                Spacer(modifier = Modifier.weight(1f))
-                                
-                                // App Title
-                                val titleRes = when(currentRoute) {
-                                    Screen.Home.route -> R.string.app_name
-                                    Screen.Movies.route -> R.string.movies
-                                    Screen.Series.route -> R.string.series
-                                    Screen.Anime.route -> R.string.anime
-                                    Screen.Search.route -> R.string.search
-                                    Screen.Profile.route -> R.string.profile
-                                    Screen.Settings.route -> R.string.settings
-                                    Screen.Downloads.route -> R.string.downloads
-                                    Screen.About.route -> R.string.about
-                                    Screen.Extensions.route -> R.string.extensions
-                                    Screen.Share.route -> R.string.share
-                                    Screen.Social.route -> R.string.social
-                                    else -> R.string.app_name
-                                }
-                                Text(
-                                    text = stringResource(id = titleRes),
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (titleRes == R.string.app_name) Color(0xFFE50914) else MaterialTheme.colorScheme.onBackground
-                                )
-                                
-                                Spacer(modifier = Modifier.weight(1f))
-                                
-                                // Search Icon
-                                androidx.compose.material3.IconButton(
-                                    onClick = { isSearchExpanded = true }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = "Search",
-                                        tint = MaterialTheme.colorScheme.onBackground
-                                    )
-                                }
-                                
-                                // Notification Icon with Badge
-                                Box(
-                                    modifier = Modifier
-                                        .padding(4.dp)
-                                        .size(36.dp)
-                                        .clickable { /* Handle Notifications */ },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = androidx.compose.material.icons.Icons.Outlined.Notifications,
-                                        contentDescription = "Notifications",
-                                        tint = MaterialTheme.colorScheme.onBackground
-                                    )
-                                    androidx.compose.material3.Badge(
-                                        containerColor = Color(0xFFE50914),
-                                        contentColor = Color.White,
-                                        modifier = Modifier.align(Alignment.TopEnd).offset(x = (-2).dp, y = 2.dp)
-                                    ) {
-                                        Text("1", fontSize = 10.sp)
-                                    }
-                                }
-                                
-                                // Menu Icon
-                                androidx.compose.material3.IconButton(
-                                    onClick = { scope.launch { drawerState.open() } }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Menu,
-                                        contentDescription = "Menu",
-                                        tint = MaterialTheme.colorScheme.onBackground
-                                    )
-                                }
-                            } else {
-                                ExpandableSearchBar(
-                                    isExpanded = isSearchExpanded,
-                                    onExpandedChange = { isSearchExpanded = it },
-                                    onMovieClick = { id -> 
-                                        com.example.utils.AdManager.showInterstitial(context)
-                                        navController.navigate(Screen.MovieDetails.createRoute(id))
-                                    },
-                                    onSeriesClick = { id -> 
-                                        com.example.utils.AdManager.showInterstitial(context)
-                                        navController.navigate(Screen.SeriesDetails.createRoute(id))
-                                    }
-                                )
                             }
                         }
                     }
-                }
                 }
             },
             bottomBar = {
