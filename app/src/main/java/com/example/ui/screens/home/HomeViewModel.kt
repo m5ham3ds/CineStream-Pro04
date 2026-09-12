@@ -43,8 +43,6 @@ class HomeViewModel(
     fun loadData() {
         _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
-            kotlinx.coroutines.delay(400) // Ensure shimmer effect is visible for a moment even if loading from cache
-            
             try {
                 val trendingMoviesDeferred = async { repository.getTrendingMovies().firstOrNull() ?: emptyList() }
                 val animeSeriesDeferred = async { repository.getAnimeSeries().firstOrNull() ?: emptyList() }

@@ -39,6 +39,7 @@ data class PlayerUiState(
     val currentEpisodeId: String = "",
     val currentSeasonNumber: Int = 1,
     val currentEpisodeNumber: Int = 1,
+    val visibleEpisodesCount: Int = 10,
 
     // Extracted URL
     val currentVideoUrl: String? = null,
@@ -117,6 +118,10 @@ class PlayerViewModel : ViewModel() {
         } else {
             generateExtractionUrl()
         }
+    }
+
+    fun loadMoreEpisodes() {
+        _uiState.value = _uiState.value.copy(visibleEpisodesCount = _uiState.value.visibleEpisodesCount + 10)
     }
 
     private fun loadEpisodes(seriesId: String, seasonNumber: Int) {

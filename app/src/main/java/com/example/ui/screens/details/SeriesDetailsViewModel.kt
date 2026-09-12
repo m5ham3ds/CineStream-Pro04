@@ -18,12 +18,14 @@ data class SeriesDetailsUiState(
     val error: String? = null,
     val selectedSeason: Season? = null,
     val episodes: List<Episode> = emptyList(),
-    val isEpisodesLoading: Boolean = false
+    val isEpisodesLoading: Boolean = false,
+    val visibleEpisodesCount: Int = 10
 )
 
 class SeriesDetailsViewModel(
     private val repository: MediaRepository
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(SeriesDetailsUiState())
     val uiState: StateFlow<SeriesDetailsUiState> = _uiState.asStateFlow()
 
@@ -47,13 +49,17 @@ class SeriesDetailsViewModel(
 
     fun selectSeason(season: Season) {
         val currentSeries = _uiState.value.series ?: return
-        _uiState.update { it.copy(selectedSeason = season) }
+        _uiState.update { it.copy(selectedSeason = season, visibleEpisodesCount = 10) }
         loadEpisodes(currentSeries.id, season.seasonNumber)
+    }
+
+    fun loadMoreEpisodes() {
+        _uiState.update { it.copy(visibleEpisodesCount = it.visibleEpisodesCount + 10) }
     }
 
     private fun loadEpisodes(seriesId: String, seasonNumber: Int) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isEpisodesLoading = true) }
+            _uiState.update { it.copy(isEpisodesLoading = true, visibleEpisodesCount = 10) }
             try {
                 val episodes = repository.getSeasonEpisodes(seriesId, seasonNumber)
                 _uiState.update { it.copy(episodes = episodes, isEpisodesLoading = false) }

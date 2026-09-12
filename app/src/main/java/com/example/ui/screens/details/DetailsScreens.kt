@@ -566,7 +566,7 @@ fun SeriesDetailsScreen(
                     if (uiState.isEpisodesLoading) {
                         Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                     } else {
-                        uiState.episodes.forEach { episode ->
+                        uiState.episodes.take(uiState.visibleEpisodesCount).forEach { episode ->
                             val isWatched = watchedEpisodeIds.contains(episode.id)
                             EpisodeCard(
                                 episode = episode,
@@ -586,6 +586,15 @@ fun SeriesDetailsScreen(
                                     isDownloadMode = true
                                 }
                             )
+                        }
+                        
+                        if (uiState.episodes.size > uiState.visibleEpisodesCount) {
+                            TextButton(
+                                onClick = { viewModel.loadMoreEpisodes() },
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                            ) {
+                                Text("Load More Episodes", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(32.dp))

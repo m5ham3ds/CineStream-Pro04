@@ -575,22 +575,31 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
                 Text("Episodes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn {
-                    items(uiState.episodes) { ep ->
-                        TextButton(
-                            onClick = { 
-                                viewModel.selectEpisode(ep)
-                                showEpisodesSheet = false 
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                "Episode ${ep.episodeNumber}: ${ep.title}", 
-                                color = if (ep.id == uiState.currentEpisodeId) Color(0xFFE50914) else Color.White
-                            )
-                        }
+                
+                uiState.episodes.take(uiState.visibleEpisodesCount).forEach { ep ->
+                    TextButton(
+                        onClick = { 
+                            viewModel.selectEpisode(ep)
+                            showEpisodesSheet = false 
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Episode ${ep.episodeNumber}: ${ep.title}", 
+                            color = if (ep.id == uiState.currentEpisodeId) Color(0xFFE50914) else Color.White
+                        )
                     }
                 }
+                
+                if (uiState.episodes.size > uiState.visibleEpisodesCount) {
+                    TextButton(
+                        onClick = { viewModel.loadMoreEpisodes() },
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                    ) {
+                        Text("تحميل المزيد من الحلقات", color = Color(0xFFE50914), fontWeight = FontWeight.Bold)
+                    }
+                }
+                
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }

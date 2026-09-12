@@ -38,16 +38,26 @@ object RetrofitClient {
             .cache(Cache(File(com.example.di.AppContainer.application.cacheDir, "http_cache"), cacheSize))
             .addInterceptor { chain ->
                 var request = chain.request()
-                if (isNetworkAvailable()) {
-                    request = request.newBuilder()
-                        .header("Cache-Control", "public, max-age=" + 60)
-                        .build()
-                } else {
+                // Always try network first with short cache, unless explicitly offline
+                if (!isNetworkAvailable()) {
                     request = request.newBuilder()
                         .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7)
                         .build()
+                } else {
+                    request = request.newBuilder()
+                        .header("Cache-Control", "public, max-age=" + 60)
+                        .build()
                 }
-                chain.proceed(request)
+
+                try {
+                    chain.proceed(request)
+                } catch (e: Exception) {
+                    // Fallback to cache if network throws (e.g. no internet despite active connection)
+                    val offlineRequest = request.newBuilder()
+                        .header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7)
+                        .build()
+                    chain.proceed(offlineRequest)
+                }
             }
             .addNetworkInterceptor { chain ->
                 val response = chain.proceed(chain.request())
