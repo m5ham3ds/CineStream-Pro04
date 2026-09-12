@@ -548,10 +548,12 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             onDismissRequest = { showQualitySheet = false },
             containerColor = Color(0xFF1C1C1E)
         ) {
-            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
-                Text("Select Quality", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
-                uiState.availableQualities.forEach { q ->
+            LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+                item {
+                    Text("Select Quality", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                items(uiState.availableQualities) { q ->
                     TextButton(
                         onClick = { 
                             viewModel.selectQuality(q)
@@ -562,7 +564,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                         Text(q, color = if (q == uiState.currentQuality) Color(0xFFE50914) else Color.White)
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         }
     }
@@ -572,11 +574,13 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             onDismissRequest = { showEpisodesSheet = false },
             containerColor = Color(0xFF1C1C1E)
         ) {
-            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
-                Text("Episodes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+                item {
+                    Text("Episodes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 
-                uiState.episodes.take(uiState.visibleEpisodesCount).forEach { ep ->
+                items(uiState.episodes.take(uiState.visibleEpisodesCount)) { ep ->
                     TextButton(
                         onClick = { 
                             viewModel.selectEpisode(ep)
@@ -592,15 +596,17 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                 }
                 
                 if (uiState.episodes.size > uiState.visibleEpisodesCount) {
-                    TextButton(
-                        onClick = { viewModel.loadMoreEpisodes() },
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-                    ) {
-                        Text("تحميل المزيد من الحلقات", color = Color(0xFFE50914), fontWeight = FontWeight.Bold)
+                    item {
+                        TextButton(
+                            onClick = { viewModel.loadMoreEpisodes() },
+                            modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                        ) {
+                            Text("تحميل المزيد من الحلقات", color = Color(0xFFE50914), fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(32.dp))
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         }
     }
@@ -610,10 +616,12 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             onDismissRequest = { showServerSheet = false },
             containerColor = Color(0xFF1C1C1E)
         ) {
-            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
-                Text("Select Server", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
-                uiState.availableServers.forEach { s ->
+            LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+                item {
+                    Text("Select Server", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                items(uiState.availableServers) { s ->
                     TextButton(
                         onClick = { 
                             viewModel.selectServer(s)
@@ -625,7 +633,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                         Text(s, color = if (s == uiState.currentServer) Color(0xFFE50914) else Color.White)
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         }
     }

@@ -282,7 +282,7 @@ fun HomeScreen(
 
         // 6. Trending Anime
         if (uiState.animeSeries.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.trending_anime), onSeeAllClick = onNavigateToAnime)
+            SectionTitle(stringResource(R.string.trending_anime), onSeeAllClick = onNavigateToTrending)
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)

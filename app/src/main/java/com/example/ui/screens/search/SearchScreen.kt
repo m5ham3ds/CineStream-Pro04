@@ -180,17 +180,30 @@ fun SearchScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Temporary dummy cards if no results, normally this would come from a trending endpoint
-                items(4) { index ->
-                    MediaCard(
-                        title = "Trending $index",
-                        posterUrl = "https://image.tmdb.org/t/p/w500/8Y43POKjjKDGI9MH89NW0NAzzp8.jpg",
-                        rank = index + 1,
-                        rating = 9.3 - (index * 0.2),
-                        year = "2024",
-                        isMovie = true,
-                        onClick = { }
-                    )
+                if (uiState.trendingNow.isEmpty()) {
+                    items(4) { index ->
+                        MediaCard(
+                            title = "Loading...",
+                            posterUrl = "",
+                            rank = index + 1,
+                            rating = 0.0,
+                            year = "",
+                            isMovie = true,
+                            onClick = { }
+                        )
+                    }
+                } else {
+                    itemsIndexed(uiState.trendingNow) { index, movie ->
+                        MediaCard(
+                            title = movie.title,
+                            posterUrl = movie.posterUrl,
+                            rank = index + 1,
+                            rating = movie.rating,
+                            year = movie.year.toString(),
+                            isMovie = true,
+                            onClick = { onMediaClick(movie.id, true) }
+                        )
+                    }
                 }
             }
 

@@ -20,7 +20,8 @@ data class SearchUiState(
     val query: String = "",
     val isSearching: Boolean = false,
     val movieResults: List<Movie> = emptyList(),
-    val seriesResults: List<Series> = emptyList()
+    val seriesResults: List<Series> = emptyList(),
+    val trendingNow: List<Movie> = emptyList()
 )
 
 @OptIn(FlowPreview::class)
@@ -40,6 +41,17 @@ class SearchViewModel(private val repository: MediaRepository) : ViewModel() {
                     } else {
                         performSearch(q)
                     }
+                }
+        }
+        
+        loadTrending()
+    }
+    
+    private fun loadTrending() {
+        viewModelScope.launch {
+            repository.getTrendingMovies()
+                .collect { movies ->
+                    _uiState.update { it.copy(trendingNow = movies.take(10)) }
                 }
         }
     }

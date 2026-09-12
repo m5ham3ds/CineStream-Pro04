@@ -1,6 +1,7 @@
 package com.example.ui.screens.series
 
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.combine
 import androidx.lifecycle.viewModelScope
 import com.example.domain.models.Series
 import com.example.domain.repository.MediaRepository
@@ -20,6 +21,7 @@ data class SeriesUiState(
     val error: String? = null
 )
 
+
 class SeriesViewModel(private val repository: MediaRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(SeriesUiState())
     val uiState: StateFlow<SeriesUiState> = _uiState.asStateFlow()
@@ -33,35 +35,43 @@ class SeriesViewModel(private val repository: MediaRepository) : ViewModel() {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             launch {
-                repository.getTrendingSeries()
-                    .catch { }
-                    .collect { trending ->
-                        _uiState.update { it.copy(trendingSeries = trending) }
-                    }
+                repository.getTrendingSeries().combine(repository.getArabicSeries()) { trending, arabic ->
+                    (trending.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
+                }
+                .catch { }
+                .collect { trending ->
+                    _uiState.update { it.copy(trendingSeries = trending) }
+                }
             }
             
             launch {
-                repository.getNewReleasesSeries()
-                    .catch { e -> }
-                    .collect { newEps ->
-                        _uiState.update { it.copy(newEpisodes = newEps) }
-                    }
+                repository.getNewReleasesSeries().combine(repository.getArabicSeries()) { newEps, arabic ->
+                    (newEps.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
+                }
+                .catch { e -> }
+                .collect { newEps ->
+                    _uiState.update { it.copy(newEpisodes = newEps) }
+                }
             }
 
             launch {
-                repository.getSeries()
-                    .catch { e -> _uiState.update { it.copy(error = e.message) } }
-                    .collect { series ->
-                        _uiState.update { it.copy(series = series, isLoading = false) }
-                    }
+                repository.getSeries().combine(repository.getArabicSeries()) { series, arabic ->
+                    (series.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
+                }
+                .catch { e -> _uiState.update { it.copy(error = e.message) } }
+                .collect { series ->
+                    _uiState.update { it.copy(series = series, isLoading = false) }
+                }
             }
             
             launch {
-                repository.getUpcomingSeries()
-                    .catch { e -> }
-                    .collect { upcoming ->
-                        _uiState.update { it.copy(upcomingSeries = upcoming) }
-                    }
+                repository.getUpcomingSeries().combine(repository.getArabicSeries()) { upcoming, arabic ->
+                    (upcoming.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
+                }
+                .catch { e -> }
+                .collect { upcoming ->
+                    _uiState.update { it.copy(upcomingSeries = upcoming) }
+                }
             }
         }
     }

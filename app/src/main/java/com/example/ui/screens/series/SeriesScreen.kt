@@ -181,7 +181,7 @@ fun SeriesScreen(
 
             // Trending Series
             if (uiState.trendingSeries.isNotEmpty()) {
-                SectionTitleShared("Trending Series", onSeeAllClick = onNavigateToTrending)
+                SectionTitleShared(stringResource(R.string.trending_series), onSeeAllClick = onNavigateToTrending)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)

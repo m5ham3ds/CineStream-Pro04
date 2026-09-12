@@ -184,7 +184,7 @@ fun MoviesScreen(
 
             // Trending Movies
             if (uiState.trendingMovies.isNotEmpty()) {
-                SectionTitleShared("Trending Movies", onSeeAllClick = onNavigateToTrending)
+                SectionTitleShared(stringResource(R.string.trending_movies), onSeeAllClick = onNavigateToTrending)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -288,7 +288,8 @@ fun MoviesScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-            } else {
+            }
+        } else {
             val displayItems = when (selectedCategory) {
                 stringResource(R.string.new_releases) -> uiState.movies.reversed()
                 "Top Rated" -> uiState.movies.sortedByDescending { it.rating }
@@ -351,4 +352,3 @@ if (showBottomSheet) {
             )
         }
     }
-}

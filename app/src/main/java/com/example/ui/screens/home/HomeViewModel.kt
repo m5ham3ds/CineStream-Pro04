@@ -66,11 +66,11 @@ class HomeViewModel(
                 val arabicMoviesRaw = arabicMoviesDeferred.await()
                 val arabicSeriesRaw = arabicSeriesDeferred.await()
                 
-                val trendingMovies = (trendingMoviesRaw.take(10) + arabicMoviesRaw.take(10)).shuffled().distinctBy { it.id }
-                val trendingSeries = (trendingSeriesRaw.take(10) + arabicSeriesRaw.take(10)).shuffled().distinctBy { it.id }
-                val newReleasesMovies = (newReleasesMoviesRaw.take(10) + arabicMoviesRaw.shuffled().take(5)).shuffled().distinctBy { it.id }
-                val newReleasesSeries = (newReleasesSeriesRaw.take(10) + arabicSeriesRaw.shuffled().take(5)).shuffled().distinctBy { it.id }
-                val upcomingMovies = (upcomingMoviesRaw.take(10) + arabicMoviesRaw.shuffled().take(5)).shuffled().distinctBy { it.id }
+                val trendingMovies = (trendingMoviesRaw.take(10) + arabicMoviesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
+                val trendingSeries = (trendingSeriesRaw.take(10) + arabicSeriesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
+                val newReleasesMovies = (newReleasesMoviesRaw.take(10) + arabicMoviesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
+                val newReleasesSeries = (newReleasesSeriesRaw.take(10) + arabicSeriesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
+                val upcomingMovies = (upcomingMoviesRaw.take(10) + arabicMoviesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
 
                 val actionMovies = allMovies.filter { m -> m.genres.contains("Action") }
                 
