@@ -5,6 +5,9 @@ import androidx.compose.ui.res.stringResource
 import com.example.R
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -34,13 +37,20 @@ fun PopularScreen(
     viewModel: HomeViewModel = viewModel(factory = ViewModelFactory())
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableStateOf("All") }
+    val animeStr = stringResource(R.string.anime)
+    val tabsList = listOf("All", "Movies", "Series", animeStr)
+    val pagerState = rememberPagerState(pageCount = { tabsList.size })
+    val coroutineScope = rememberCoroutineScope()
+    val selectedTab = tabsList[pagerState.currentPage]
     
-    val items = when (selectedTab) {
-        "Movies" -> uiState.trendingMovies.map { it to true }
+    
+    val getItemsForTab = { tab: String -> 
+        when (tab) {
+            "Movies" -> uiState.trendingMovies.map { it to true }
         "Series" -> uiState.trendingSeries.map { it to false }
-        stringResource(R.string.anime) -> uiState.animeSeries.map { it to false }
+        animeStr -> uiState.animeSeries.map { it to false }
         else -> (uiState.trendingMovies.map { it to true } + uiState.trendingSeries.map { it to false } + uiState.animeSeries.map { it to false })
+        }
     }
     
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
@@ -53,11 +63,10 @@ fun PopularScreen(
                 .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)).clip(RoundedCornerShape(12.dp)),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            val tabs = listOf("All", "Movies", "Series", stringResource(R.string.anime))
-            tabs.forEach { tab ->
+            tabsList.forEach { tab ->
                 val isSelected = selectedTab == tab
                 Box(
-                    modifier = Modifier.weight(1f).clickable { selectedTab = tab }
+                    modifier = Modifier.weight(1f).clickable { coroutineScope.launch { pagerState.animateScrollToPage(tabsList.indexOf(tab)) } }
                         .background(if (isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
                         .border(if (isSelected) 1.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, RoundedCornerShape(12.dp))
                         .padding(vertical = 12.dp),
@@ -67,31 +76,32 @@ fun PopularScreen(
                 }
             }
         }
-        
         Spacer(modifier = Modifier.height(8.dp))
         
         val ptrState = rememberPullToRefreshState()
-        PullToRefreshBox(isRefreshing = uiState.isLoading, onRefresh = { viewModel.loadData() }, state = ptrState, modifier = Modifier.fillMaxSize()) {
-            if (uiState.isLoading && items.isEmpty()) {
-                com.example.ui.components.GridScreenSkeleton()
-            } else {
-                LazyVerticalGrid(columns = GridCells.Fixed(3), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                itemsIndexed(items) { index, (media, isMovie) ->
-                    // Dynamic check for Media type
-                    val title = if (isMovie) (media as com.example.domain.models.Movie).title else (media as com.example.domain.models.Series).title
-                    val poster = if (isMovie) (media as com.example.domain.models.Movie).posterUrl else (media as com.example.domain.models.Series).posterUrl
-                    val id = if (isMovie) (media as com.example.domain.models.Movie).id else (media as com.example.domain.models.Series).id
-                    
-                    MediaCard(
-                        title = title,
-                        posterUrl = poster,
-                        isMovie = isMovie,
-                        rank = index + 1,
-                        mediaId = id,
-                        onClick = { onItemClick(id, isMovie) }
-                    )
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            val currentTab = tabsList[page]
+            val items = getItemsForTab(currentTab)
+            PullToRefreshBox(isRefreshing = uiState.isLoading, onRefresh = { viewModel.loadData() }, state = ptrState, modifier = Modifier.fillMaxSize()) {
+                if (uiState.isLoading && items.isEmpty()) {
+                    com.example.ui.components.GridScreenSkeleton()
+                } else {
+                    LazyVerticalGrid(columns = GridCells.Fixed(3), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        itemsIndexed(items) { index, (media, isMovie) ->
+                            val title = if (isMovie) (media as com.example.domain.models.Movie).title else (media as com.example.domain.models.Series).title
+                            val poster = if (isMovie) (media as com.example.domain.models.Movie).posterUrl else (media as com.example.domain.models.Series).posterUrl
+                            val id = if (isMovie) (media as com.example.domain.models.Movie).id else (media as com.example.domain.models.Series).id
+                            MediaCard(
+                                title = title,
+                                posterUrl = poster,
+                                isMovie = isMovie,
+                                rank = index + 1,
+                                mediaId = id,
+                                onClick = { onItemClick(id, isMovie) }
+                            )
+                        }
+                    }
                 }
-            }
             }
         }
     }

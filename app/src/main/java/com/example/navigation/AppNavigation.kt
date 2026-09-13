@@ -695,7 +695,8 @@ navController.navigate(Screen.MovieDetails.createRoute(id)) },
                         onNavigateToTrending = { navController.navigate(Screen.Trending.route) },
                         onNavigateToWatching = { navController.navigate(Screen.Watching.route) },
                         onNavigateToPopular = { navController.navigate(Screen.Popular.route) },
-                        onNavigateToNewReleases = { navController.navigate(Screen.NewReleases.route) }
+                        onNavigateToNewReleases = { navController.navigate(Screen.NewReleases.route) },
+                        onNavigateToUpcoming = { navController.navigate(Screen.Upcoming.route) }
                     )
                 }
                         composable(Screen.Anime.route) {
@@ -707,7 +708,8 @@ navController.navigate(Screen.MovieDetails.createRoute(id)) },
                 onNavigateToPopular = { navController.navigate(Screen.Popular.route) },
                 onNavigateToNewReleases = { navController.navigate(Screen.NewReleases.route) },
                 onNavigateToTrending = { navController.navigate(Screen.Trending.route) },
-                onNavigateToWatching = { navController.navigate(Screen.Watching.route) }
+                onNavigateToWatching = { navController.navigate(Screen.Watching.route) },
+                onNavigateToUpcoming = { navController.navigate(Screen.Upcoming.route) }
             )
         }
         composable(Screen.Series.route) {
@@ -717,7 +719,8 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                         onNavigateToTrending = { navController.navigate(Screen.Trending.route) },
                         onNavigateToWatching = { navController.navigate(Screen.Watching.route) },
                         onNavigateToPopular = { navController.navigate(Screen.Popular.route) },
-                        onNavigateToNewReleases = { navController.navigate(Screen.NewReleases.route) }
+                        onNavigateToNewReleases = { navController.navigate(Screen.NewReleases.route) },
+                        onNavigateToUpcoming = { navController.navigate(Screen.Upcoming.route) }
                     )
                 }
                 composable(Screen.Search.route) {

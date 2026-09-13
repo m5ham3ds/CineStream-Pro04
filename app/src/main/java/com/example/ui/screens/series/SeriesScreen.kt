@@ -63,6 +63,7 @@ fun SeriesScreen(
     onNavigateToWatching: () -> Unit = {},
     onNavigateToPopular: () -> Unit = {},
     onNavigateToNewReleases: () -> Unit = {},
+    onNavigateToUpcoming: () -> Unit = {},
     viewModel: SeriesViewModel = viewModel(factory = ViewModelFactory())
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -265,7 +266,7 @@ fun SeriesScreen(
 
             // Coming Soon Series
             if (uiState.upcomingSeries.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = {})
+                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)

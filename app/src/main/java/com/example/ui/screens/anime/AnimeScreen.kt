@@ -62,6 +62,7 @@ fun AnimeScreen(
     onNavigateToWatching: () -> Unit = {},
     onNavigateToPopular: () -> Unit = {},
     onNavigateToNewReleases: () -> Unit = {},
+    onNavigateToUpcoming: () -> Unit = {},
     viewModel: AnimeViewModel = viewModel(factory = ViewModelFactory())
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -266,7 +267,7 @@ fun AnimeScreen(
 
             // Coming Soon Anime
             if (uiState.upcomingAnime.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = {})
+                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)

@@ -39,6 +39,7 @@ fun InlineYouTubePlayer(
     val lifecycleOwner = LocalLifecycleOwner.current
     var isFullScreen by remember { mutableStateOf(false) }
     var exitFullscreenAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var youtubePlayer by remember { mutableStateOf<YouTubePlayer?>(null) }
 
     BackHandler(enabled = isFullScreen) {
         exitFullscreenAction?.invoke()
@@ -71,6 +72,7 @@ fun InlineYouTubePlayer(
 
                     val listener = object : AbstractYouTubePlayerListener() {
                         override fun onReady(player: YouTubePlayer) {
+                            youtubePlayer = player
                             player.loadVideo(videoId, 0f)
                         }
                     }
@@ -84,6 +86,9 @@ fun InlineYouTubePlayer(
                         initialize(listener, options)
                     }
                 }
+            },
+            update = { view ->
+                youtubePlayer?.loadVideo(videoId, 0f)
             },
             onRelease = { it.release() }
         )

@@ -5,6 +5,9 @@ import androidx.compose.ui.res.stringResource
 import com.example.R
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,13 +42,19 @@ fun WatchingScreen(
     val context = LocalContext.current
     val historyRepository = remember { HistoryRepository(context) }
     val historyItems by historyRepository.getHistoryItems().collectAsState(initial = emptyList())
-    var selectedTab by remember { mutableStateOf("All") }
+    val animeStr = stringResource(R.string.anime)
+    
 
-    val filteredItems = when (selectedTab) {
+    val tabsList = listOf("All", "Movies", "TV Series", animeStr)
+    val pagerState = rememberPagerState(pageCount = { tabsList.size })
+    val coroutineScope = rememberCoroutineScope()
+    val selectedTab = tabsList[pagerState.currentPage]
+    val getItemsForTab = { tab: String -> when (tab) {
         "Movies" -> historyItems.filter { it.isMovie }
         "TV Series" -> historyItems.filter { !it.isMovie } // Assume TV Series if not movie
-        stringResource(R.string.anime) -> emptyList() // You can adjust this if HistoryItem adds anime type
+        animeStr -> emptyList() // You can adjust this if HistoryItem adds anime type
         else -> historyItems
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
@@ -64,12 +73,11 @@ fun WatchingScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val tabs = listOf("All", "TV Series", "Movies", stringResource(R.string.anime))
-            tabs.forEach { tab ->
+            tabsList.forEach { tab ->
                 val isSelected = selectedTab == tab
                 Box(
                     modifier = Modifier
-                        .clickable { selectedTab = tab }
+                        .clickable { coroutineScope.launch { pagerState.animateScrollToPage(tabsList.indexOf(tab)) } }
                         .clip(RoundedCornerShape(16.dp))
                         .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
                         .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -84,19 +92,22 @@ fun WatchingScreen(
                 }
             }
         }
-
         if (historyItems.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.no_watching_items), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
             }
         } else {
-            LazyColumn(
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(filteredItems) { item ->
-                    DetailedContinueWatchingCard(item = item, onClick = { onItemClick(item.id, item.isMovie) })
+            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                val currentTab = tabsList[page]
+                val items = getItemsForTab(currentTab)
+                LazyColumn(
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(items) { item ->
+                        DetailedContinueWatchingCard(item = item, onClick = { onItemClick(item.id, item.isMovie) })
+                    }
                 }
             }
         }

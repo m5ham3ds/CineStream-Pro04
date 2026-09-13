@@ -62,6 +62,7 @@ fun MoviesScreen(
     onNavigateToWatching: () -> Unit = {},
     onNavigateToPopular: () -> Unit = {},
     onNavigateToNewReleases: () -> Unit = {},
+    onNavigateToUpcoming: () -> Unit = {},
     viewModel: MoviesViewModel = viewModel(factory = ViewModelFactory())
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -265,7 +266,7 @@ fun MoviesScreen(
 
             // Coming Soon Movies
             if (uiState.upcomingMovies.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = {})
+                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)

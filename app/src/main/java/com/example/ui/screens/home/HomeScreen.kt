@@ -312,7 +312,7 @@ fun HomeScreen(
 
         // 7. Coming Soon
         if (uiState.upcomingMovies.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.coming_soon), onSeeAllClick = {})
+            SectionTitle(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
