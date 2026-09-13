@@ -1,22 +1,42 @@
-def add_to_xml(filepath, is_ar=False):
-    with open(filepath, 'r') as f:
-        content = f.read()
+import xml.etree.ElementTree as ET
 
-    to_add = []
+def add_strings(file_path, strings_dict):
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+    existing = {child.attrib['name'] for child in root if 'name' in child.attrib}
     
-    if is_ar:
-        if 'name="cancel"' not in content: to_add.append('    <string name="cancel">إلغاء</string>')
-        if 'name="movies"' not in content: to_add.append('    <string name="movies">الأفلام</string>')
-        if 'name="about_app"' not in content: to_add.append('    <string name="about_app">حول التطبيق</string>')
-    else:
-        if 'name="cancel"' not in content: to_add.append('    <string name="cancel">Cancel</string>')
-        if 'name="movies"' not in content: to_add.append('    <string name="movies">Movies</string>')
-        if 'name="about_app"' not in content: to_add.append('    <string name="about_app">About CineStream</string>')
+    for key, val in strings_dict.items():
+        if key not in existing:
+            elem = ET.SubElement(root, 'string', {'name': key})
+            elem.text = val
+        else:
+            for child in root:
+                if child.attrib.get('name') == key:
+                    child.text = val
+                    
+    tree.write(file_path, encoding='utf-8', xml_declaration=True)
 
-    if to_add:
-        content = content.replace('</resources>', '\n'.join(to_add) + '\n</resources>')
-        with open(filepath, 'w') as f:
-            f.write(content)
+en_strings = {
+    'category_movies': 'Movies',
+    'category_series': 'Series',
+    'category_anime': 'Anime',
+    'category_genres': 'Genres',
+    'category_top_rated': 'Top Rated',
+    'trending_movies': 'Trending Movies',
+    'trending_series': 'Trending Series',
+    'trending_anime': 'Trending Anime'
+}
 
-add_to_xml('app/src/main/res/values/strings.xml', False)
-add_to_xml('app/src/main/res/values-ar/strings.xml', True)
+ar_strings = {
+    'category_movies': 'الأفلام',
+    'category_series': 'المسلسلات',
+    'category_anime': 'الأنمي',
+    'category_genres': 'التصنيفات',
+    'category_top_rated': 'الأعلى تقييماً',
+    'trending_movies': 'أفلام رائجة',
+    'trending_series': 'مسلسلات رائجة',
+    'trending_anime': 'أنمي رائج'
+}
+
+add_strings('app/src/main/res/values/strings.xml', en_strings)
+add_strings('app/src/main/res/values-ar/strings.xml', ar_strings)

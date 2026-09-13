@@ -93,12 +93,12 @@ fun MoviesScreen(
 
     var selectedCategory by remember { mutableStateOf("Movies") }
 
-    data class CategoryItem(val name: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+    data class CategoryItem(val id: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
     val categories = listOf(
-        CategoryItem("Movies", Icons.Default.LocalMovies),
-        CategoryItem("Genres", Icons.Default.Category),
-        CategoryItem(stringResource(R.string.new_releases), Icons.Default.NewReleases),
-        CategoryItem("Top Rated", Icons.Default.Star)
+        CategoryItem("Movies", stringResource(R.string.category_movies), Icons.Default.LocalMovies),
+        CategoryItem("Genres", stringResource(R.string.category_genres), Icons.Default.Category),
+        CategoryItem("New Releases", stringResource(R.string.new_releases), Icons.Default.NewReleases),
+        CategoryItem("Top Rated", stringResource(R.string.category_top_rated), Icons.Default.Star)
     )
     val ptrState = rememberPullToRefreshState()
     
@@ -130,12 +130,12 @@ fun MoviesScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(if (selectedCategory == category.name) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                        .background(if (selectedCategory == category.id) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
                         .clickable {
-                            if (selectedCategory == category.name) {
+                            if (selectedCategory == category.id) {
                                 selectedCategory = "Movies"
                             } else {
-                                selectedCategory = category.name
+                                selectedCategory = category.id
                             }
                         }
                         .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -144,16 +144,16 @@ fun MoviesScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = category.icon, 
-                            contentDescription = category.name, 
-                            tint = if (selectedCategory == category.name) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+                            contentDescription = category.label, 
+                            tint = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = category.name,
-                            color = if (selectedCategory == category.name) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+                            text = category.label,
+                            color = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp,
-                            fontWeight = if (selectedCategory == category.name) FontWeight.SemiBold else FontWeight.Normal
+                            fontWeight = if (selectedCategory == category.id) FontWeight.SemiBold else FontWeight.Normal
                         )
                     }
                 }
@@ -289,7 +289,7 @@ fun MoviesScreen(
             }
         } else {
             val displayItems = when (selectedCategory) {
-                stringResource(R.string.new_releases) -> uiState.movies.reversed()
+                "New Releases" -> uiState.movies.reversed()
                 "Top Rated" -> uiState.movies.sortedByDescending { it.rating }
                 "Genres" -> uiState.movies.shuffled() // Placeholder for genres
                 else -> uiState.movies

@@ -292,9 +292,9 @@ fun ShareScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ContentTypeCard("Movies", Icons.Outlined.Movie, selectedContentType == "Movies") { selectedContentType = "Movies" }
-                    ContentTypeCard("TV Series", Icons.Outlined.Tv, selectedContentType == "TV Series") { selectedContentType = "TV Series" }
-                    ContentTypeCard("Anime", Icons.Default.Face, selectedContentType == "Anime") { selectedContentType = "Anime" }
+                    ContentTypeCard(stringResource(R.string.category_movies), Icons.Outlined.Movie, selectedContentType == "Movies") { selectedContentType = "Movies" }
+                    ContentTypeCard(stringResource(R.string.category_series), Icons.Outlined.Tv, selectedContentType == "TV Series") { selectedContentType = "TV Series" }
+                    ContentTypeCard(stringResource(R.string.category_anime), Icons.Default.Face, selectedContentType == "Anime") { selectedContentType = "Anime" }
                     ContentTypeCard("All Files", Icons.Outlined.Folder, selectedContentType == "All Files") { selectedContentType = "All Files" }
                 }
                 Spacer(modifier = Modifier.height(24.dp))

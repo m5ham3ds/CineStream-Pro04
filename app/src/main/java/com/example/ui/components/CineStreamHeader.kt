@@ -15,6 +15,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +48,7 @@ fun CineStreamHeader(
     val surfaceColor = MaterialTheme.colorScheme.surface
 
 
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -246,7 +250,7 @@ fun CineStreamHeader(
                                         .align(Alignment.Center),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("1", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
+                                    Text("1", color = androidx.compose.ui.graphics.Color.White, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
                                 }
                             }
                         }
@@ -274,4 +278,5 @@ fun CineStreamHeader(
             }
         }
     }
+}
 }
