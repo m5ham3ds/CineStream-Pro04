@@ -161,19 +161,16 @@ fun HiddenVideoExtractor(
                 cookieManager.setAcceptThirdPartyCookies(this, true)
 
                 
-                addJavascriptInterface(object {
-                    @android.webkit.JavascriptInterface
-                    fun sendServers(serversStr: String) {
+                val bridge = VideoExtractorBridge(
+                    onSendServers = { serversStr ->
                         val servers = serversStr.split(",").filter { it.isNotBlank() }
                         if (servers.isNotEmpty()) {
                             Handler(Looper.getMainLooper()).post {
                                 onServersFound?.invoke(servers)
                             }
                         }
-                    }
-
-                    @android.webkit.JavascriptInterface
-                    fun sendServersV2(serversJson: String, url: String) {
+                    },
+                    onSendServersV2 = { serversJson, url ->
                         try {
                             val serversData = org.json.JSONArray(serversJson)
                             val serversNames = mutableListOf<String>()
@@ -199,36 +196,29 @@ fun HiddenVideoExtractor(
                                 }
                             }
                         } catch (e: Exception) { e.printStackTrace() }
-                    }
-                    
-                    @android.webkit.JavascriptInterface
-                    fun sendIframeUrl(url: String) {
+                    },
+                    onSendIframeUrl = { url ->
                         Handler(Looper.getMainLooper()).post {
                             onIframeUrlFound?.invoke(url) ?: onVideoUrlFound(url)
                         }
-                    }
-                    
-                    @android.webkit.JavascriptInterface
-                    fun sendVideoUrl(url: String) {
+                    },
+                    onSendVideoUrl = { url ->
                         Handler(Looper.getMainLooper()).post {
                             onVideoUrlFound(url)
                         }
-                    }
-                    
-                    @android.webkit.JavascriptInterface
-                    fun sendFailed() {
+                    },
+                    onSendFailed = {
                         Handler(Looper.getMainLooper()).post { onExtractionFailed?.invoke() }
-                    }
-                    
-                    @android.webkit.JavascriptInterface
-                    fun sendBypassStatus(status: String) {
+                    },
+                    onSendBypassStatus = { status ->
                         Handler(Looper.getMainLooper()).post {
                             val isCf = (status == "CLOUDFLARE")
                             isCloudflareDetected = isCf
                             onCloudflareDetected?.invoke(isCf)
                         }
                     }
-                }, "AndroidBridge")
+                )
+                addJavascriptInterface(bridge, "AndroidBridge")
 
 
                 webViewClient = object : WebViewClient() {
@@ -327,4 +317,31 @@ fun HiddenVideoExtractor(
             }
         }
     }
+}
+
+class VideoExtractorBridge(
+    private val onSendServers: (String) -> Unit,
+    private val onSendServersV2: (String, String) -> Unit,
+    private val onSendIframeUrl: (String) -> Unit,
+    private val onSendVideoUrl: (String) -> Unit,
+    private val onSendFailed: () -> Unit,
+    private val onSendBypassStatus: (String) -> Unit
+) {
+    @android.webkit.JavascriptInterface
+    fun sendServers(serversStr: String) { onSendServers(serversStr) }
+
+    @android.webkit.JavascriptInterface
+    fun sendServersV2(serversJson: String, url: String) { onSendServersV2(serversJson, url) }
+
+    @android.webkit.JavascriptInterface
+    fun sendIframeUrl(url: String) { onSendIframeUrl(url) }
+
+    @android.webkit.JavascriptInterface
+    fun sendVideoUrl(url: String) { onSendVideoUrl(url) }
+
+    @android.webkit.JavascriptInterface
+    fun sendFailed() { onSendFailed() }
+
+    @android.webkit.JavascriptInterface
+    fun sendBypassStatus(status: String) { onSendBypassStatus(status) }
 }

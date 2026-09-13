@@ -268,14 +268,12 @@ Dialog(
                                             cookieManager.setAcceptCookie(true)
                                             cookieManager.setAcceptThirdPartyCookies(this, true)
                                             
-                                            addJavascriptInterface(object {
-                                                private var lastFailedSiteIndex = -1
-                                                @android.webkit.JavascriptInterface
-                                                fun logDebug(msg: String) {
+                                            var lastFailedSiteIndex = -1
+                                            val bridge = ServerSelectionBridge(
+                                                onLogDebug = { msg ->
                                                     android.util.Log.d("AISTUDIO_DEBUG", msg)
-                                                }
-                                                @android.webkit.JavascriptInterface
-                                                fun sendBypassStatus(status: String) {
+                                                },
+                                                onSendBypassStatus = { status ->
                                                     android.os.Handler(android.os.Looper.getMainLooper()).post {
                                                         if (isFailed && bypassStatus != "CLOUDFLARE") return@post
                                                         if (status == "NORMAL" && (bypassStatus == "CHECKING_CLOUDFLARE" || bypassStatus == "CLOUDFLARE")) {
@@ -294,9 +292,8 @@ Dialog(
                                                             }
                                                         }
                                                     }
-                                                }
-                                                @android.webkit.JavascriptInterface
-                                                fun sendFailed() {
+                                                },
+                                                onSendFailed = {
                                                     android.os.Handler(android.os.Looper.getMainLooper()).post {
                                                         if (isManualBrowserOpen) return@post
                                                         if (bypassStatus == "CLOUDFLARE") return@post
@@ -306,9 +303,8 @@ Dialog(
                                                             retryTrigger++
                                                         }
                                                     }
-                                                }
-                                                @android.webkit.JavascriptInterface
-                                                fun sendServersV2(serversJson: String, url: String) {
+                                                },
+                                                onSendServersV2 = { serversJson, url ->
                                                     try {
                                                         android.util.Log.d("ExtServers", "sendServersV2 called with: " + serversJson)
                                                         val serversData = org.json.JSONArray(serversJson)
@@ -348,9 +344,8 @@ Dialog(
                                                             }
                                                         }
                                                     } catch (e: Exception) { e.printStackTrace() }
-                                                }
-                                                @android.webkit.JavascriptInterface
-                                                fun sendServers(serversStr: String, url: String) {
+                                                },
+                                                onSendServers = { serversStr, url ->
                                                     val servers = serversStr.split(",").filter { it.isNotBlank() }.distinct()
                                                     if (servers.isNotEmpty() && extractedServers.isEmpty()) {
                                                         android.os.Handler(android.os.Looper.getMainLooper()).post {
@@ -366,7 +361,8 @@ Dialog(
                                                         }
                                                     }
                                                 }
-                                            }, "AndroidBridge")
+                                            )
+                                            addJavascriptInterface(bridge, "AndroidBridge")
                                             
                                             webChromeClient = object : android.webkit.WebChromeClient() {
                                                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
@@ -1214,3 +1210,26 @@ fun StatusBadge(text: String, icon: androidx.compose.ui.graphics.vector.ImageVec
         Spacer(modifier = Modifier.width(2.dp))
         Box(modifier = Modifier.size(6.dp).background(statusColor, CircleShape))
 }}
+
+class ServerSelectionBridge(
+    private val onLogDebug: (String) -> Unit,
+    private val onSendBypassStatus: (String) -> Unit,
+    private val onSendFailed: () -> Unit,
+    private val onSendServersV2: (String, String) -> Unit,
+    private val onSendServers: (String, String) -> Unit
+) {
+    @android.webkit.JavascriptInterface
+    fun logDebug(msg: String) { onLogDebug(msg) }
+
+    @android.webkit.JavascriptInterface
+    fun sendBypassStatus(status: String) { onSendBypassStatus(status) }
+
+    @android.webkit.JavascriptInterface
+    fun sendFailed() { onSendFailed() }
+
+    @android.webkit.JavascriptInterface
+    fun sendServersV2(serversJson: String, url: String) { onSendServersV2(serversJson, url) }
+
+    @android.webkit.JavascriptInterface
+    fun sendServers(serversStr: String, url: String) { onSendServers(serversStr, url) }
+}
