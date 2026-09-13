@@ -111,7 +111,7 @@ fun MediaActionBottomSheet(
             
             if (step == 0 || step == 2) {
                 Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(color = Color.DarkGray)
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier

@@ -3,6 +3,8 @@ package com.example.ui.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import com.example.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -24,8 +26,7 @@ fun DownloadQualitySheet(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Text(
-                text = "Select Download Quality", 
+            Text(text = stringResource(R.string.select_download_quality), 
                 style = MaterialTheme.typography.titleLarge, 
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)

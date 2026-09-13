@@ -69,7 +69,7 @@ fun SearchScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 16.dp)
                 .clip(RoundedCornerShape(percent = 50))
-                .border(1.dp, Color.DarkGray, RoundedCornerShape(percent = 50))
+                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(percent = 50))
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(horizontal = 16.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -92,7 +92,7 @@ fun SearchScreen(
                 ),
                 singleLine = true
             )
-            Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.DarkGray))
+            Box(modifier = Modifier.width(1.dp).height(24.dp).background(MaterialTheme.colorScheme.surfaceVariant))
             Spacer(modifier = Modifier.width(12.dp))
             Icon(Icons.Default.FilterAlt, contentDescription = "Filter", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp).clickable { /* Filter */ })
         }
@@ -106,7 +106,7 @@ fun SearchScreen(
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(percent = 50))
-                        .border(1.dp, Color.DarkGray, RoundedCornerShape(percent = 50))
+                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(percent = 50))
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .clickable { searchQuery = text; viewModel.onQueryChange(text) },
                     verticalAlignment = Alignment.CenterVertically
@@ -134,8 +134,7 @@ fun SearchScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Browse by Category
-            Text(
-                text = "Browse by Category",
+            Text(text = stringResource(R.string.browse_by_category),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -160,7 +159,7 @@ fun SearchScreen(
                             .size(80.dp)
                             .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surface)
-                            .border(1.dp, Color.DarkGray, RoundedCornerShape(12.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                             .clickable { /* Select category */ },
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -254,7 +253,7 @@ fun SearchScreen(
                     .padding(16.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(80.dp).background(Color.DarkGray, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.size(80.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
                          Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
                     }
                     Spacer(modifier = Modifier.width(16.dp))
@@ -281,8 +280,7 @@ fun SearchScreen(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else {
-                Text(
-                    text = "Results for \"$searchQuery\"",
+                Text(text = stringResource(R.string.results_for) + searchQuery + "\"",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,

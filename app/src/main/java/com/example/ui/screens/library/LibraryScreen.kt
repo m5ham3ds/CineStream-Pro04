@@ -80,7 +80,7 @@ fun LibraryScreen(
                         .background(if (selectedTab == tab.name) MaterialTheme.colorScheme.primary else Color.Transparent)
                         .border(
                             1.dp,
-                            if (selectedTab == tab.name) Color.Transparent else Color.DarkGray,
+                            if (selectedTab == tab.name) Color.Transparent else MaterialTheme.colorScheme.surfaceVariant,
                             RoundedCornerShape(percent = 50)
                         )
                         .clickable { selectedTab = tab.name }
@@ -130,7 +130,7 @@ fun LibraryScreen(
                     Icon(
                         if (selectedTab == watchlistStr) Icons.Default.Favorite else Icons.Default.Download,
                         contentDescription = "Empty",
-                        tint = Color.DarkGray,
+                        tint = MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.size(64.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))

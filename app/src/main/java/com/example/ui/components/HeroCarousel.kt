@@ -112,7 +112,7 @@ fun HeroCarousel(
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f)),
+                                colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background.copy(alpha = 0.9f)),
                                 startY = 50f
                             )
                         )
@@ -125,17 +125,17 @@ fun HeroCarousel(
                 ) {
                     Box(
                         modifier = Modifier
-                            .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text(stringResource(R.string.new_release), color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.new_release), color = MaterialTheme.colorScheme.onBackground, fontSize = 8.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.titleLarge, // Slightly smaller text since box is smaller
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -148,9 +148,9 @@ fun HeroCarousel(
                             contentAlignment = Alignment.Center
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.play), color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                Text(stringResource(R.string.play), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
@@ -158,7 +158,7 @@ fun HeroCarousel(
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .border(1.dp, Color.White, CircleShape)
+                                .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
                                 .clickable {
                                     if (isBookmarked) {
                                         showRemoveDialog = item
@@ -173,7 +173,7 @@ fun HeroCarousel(
                             Icon(
                                 if (isBookmarked) Icons.Default.Check else Icons.Default.Add, 
                                 contentDescription = "Library", 
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -195,7 +195,7 @@ fun HeroCarousel(
                     modifier = Modifier
                         .size(if (isSelected) 16.dp else 4.dp, 4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray)
+                        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
         }

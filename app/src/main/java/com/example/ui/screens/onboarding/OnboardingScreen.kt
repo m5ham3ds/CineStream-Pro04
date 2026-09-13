@@ -8,7 +8,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import com.example.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,9 +78,9 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.3f),
-                            Color.Black.copy(alpha = 0.7f),
-                            Color.Black.copy(alpha = 0.9f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.3f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.7f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.9f),
                             MaterialTheme.colorScheme.background
                         )
                     )
@@ -92,14 +95,12 @@ fun OnboardingScreen(onComplete: () -> Unit) {
         ) {
             Spacer(modifier = Modifier.height(48.dp))
             
-            Text(
-                text = "Welcome to",
+            Text(text = stringResource(R.string.welcome_to),
                 color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
-            Text(
-                text = "CineStream",
+            Text(text = stringResource(R.string.app_name),
                 color = MaterialTheme.colorScheme.primary,
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold
@@ -107,8 +108,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            Text(
-                text = "Your ultimate destination for\nmovies and series. Enjoy endless\nentertainment, anytime, anywhere.",
+            Text(text = stringResource(R.string.slogan2),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -151,7 +151,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 repeat(pages.size) { index ->
-                    val color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    val color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                     Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
                 }
             }

@@ -44,8 +44,7 @@ fun SourceSelectionSheet(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Select Server & Quality",
+            Text(text = stringResource(R.string.select_server_quality),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp)

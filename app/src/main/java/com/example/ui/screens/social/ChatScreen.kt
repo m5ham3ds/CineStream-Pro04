@@ -1,5 +1,8 @@
 package com.example.ui.screens.social
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -70,10 +73,10 @@ fun ChatScreen(
     val messages by viewModel.messages.collectAsState()
     var messageText by remember { mutableStateOf("") }
     
-    val bgColor = Color(0xFF121212)
-    val surfaceColor = Color(0xFF1C1C1E)
-    val primaryRed = Color(0xFFE50914)
-    val darkGray = Color(0xFF2C2C2E)
+    val bgColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val primaryRed = MaterialTheme.colorScheme.primary
+    val darkGray = MaterialTheme.colorScheme.surfaceVariant
 
     LaunchedEffect(conversationId) {
         viewModel.loadConversation(conversationId)
@@ -101,7 +104,7 @@ fun ChatScreen(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             } else {
-                                Text((otherUser?.displayName?.take(1) ?: "U").uppercase(), color = Color.White, fontWeight = FontWeight.Bold)
+                                Text((otherUser?.displayName?.take(1) ?: "U").uppercase(), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                             }
                             
                             // Online indicator
@@ -117,24 +120,24 @@ fun ChatScreen(
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text(otherUser?.displayName ?: "Loading...", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text(otherUser?.displayName ?: "Loading...", color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(modifier = Modifier.size(6.dp).background(primaryRed, CircleShape))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Online", color = Color.LightGray, fontSize = 12.sp)
+                                Text(stringResource(R.string.online), color = Color.LightGray, fontSize = 12.sp)
                             }
                         }
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 actions = {
                     IconButton(onClick = {}) { Icon(Icons.Default.Phone, contentDescription = "Call", tint = primaryRed) }
                     
-                    IconButton(onClick = {}) { Icon(Icons.Default.MoreVert, contentDescription = "More", tint = Color.White) }
+                    IconButton(onClick = {}) { Icon(Icons.Default.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onBackground) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = bgColor)
             )
@@ -167,12 +170,12 @@ fun ChatScreen(
                     
                     Box(modifier = Modifier.weight(1f)) {
                         if (messageText.isEmpty()) {
-                            Text(if (editingMessage != null) "Edit message..." else "Type a message...", color = Color.Gray, fontSize = 16.sp)
+                            Text(if (editingMessage != null) "Edit message..." else "Type a message...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
                         }
                         BasicTextField(
                             value = messageText,
                             onValueChange = { messageText = it },
-                            textStyle = TextStyle(color = Color.White, fontSize = 16.sp),
+                            textStyle = TextStyle(color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp),
                             cursorBrush = SolidColor(primaryRed),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -207,9 +210,9 @@ fun ChatScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         if (messageText.isNotBlank() || editingMessage != null) {
-                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onBackground)
                         } else {
-                            Icon(Icons.Outlined.MicNone, contentDescription = "Voice", tint = Color.White)
+                            Icon(Icons.Outlined.MicNone, contentDescription = "Voice", tint = MaterialTheme.colorScheme.onBackground)
                         }
                     }
                 }
@@ -251,7 +254,7 @@ fun ChatScreen(
                                         bottomEnd = if (isMe) 4.dp else 20.dp
                                     )
                                 )
-                                .border(if (isEffectivelyDeleted) 1.dp else 0.dp, if (isEffectivelyDeleted) Color.Gray else Color.Transparent, RoundedCornerShape(20.dp))
+                                .border(if (isEffectivelyDeleted) 1.dp else 0.dp, if (isEffectivelyDeleted) MaterialTheme.colorScheme.onSurfaceVariant else Color.Transparent, RoundedCornerShape(20.dp))
                                 .combinedClickable(
                                     onClick = {},
                                     onLongClick = {
@@ -264,9 +267,9 @@ fun ChatScreen(
                         ) {
                             if (isEffectivelyDeleted) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Block, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Block, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(text = "تم حذف هذه الرسالة", color = Color.Gray, fontSize = 14.sp)
+                                    Text(text = stringResource(R.string.msg_deleted), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                                 }
                             } else if (msg.isVoice) {
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
@@ -275,17 +278,17 @@ fun ChatScreen(
                                         viewModel.deleteMessage(msg.id, true)
                                     }
                                 }) {
-                                    Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(24.dp))
+                                    Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Box(modifier = Modifier.width(100.dp).height(2.dp).background(Color.White.copy(alpha = 0.5f)))
+                                    Box(modifier = Modifier.width(100.dp).height(2.dp).background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("0:12", color = Color.White, fontSize = 12.sp)
+                                    Text("0:12", color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp)
                                 }
                             } else {
                                 Column {
-                                    Text(text = msg.text, color = Color.White, fontSize = 15.sp)
+                                    Text(text = msg.text, color = MaterialTheme.colorScheme.onBackground, fontSize = 15.sp)
                                     if (msg.isEdited) {
-                                        Text(text = "Edited", color = Color.White.copy(alpha = 0.5f), fontSize = 10.sp, modifier = Modifier.align(Alignment.End))
+                                        Text(text = stringResource(R.string.edited), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f), fontSize = 10.sp, modifier = Modifier.align(Alignment.End))
                                     }
                                 }
                             }
@@ -295,14 +298,14 @@ fun ChatScreen(
                         if (!isEffectivelyDeleted && msg.reactions.isNotEmpty()) {
                             Row(modifier = Modifier.padding(top = 2.dp)) {
                                 msg.reactions.values.distinct().forEach { emoji ->
-                                    Text(text = emoji, fontSize = 14.sp, modifier = Modifier.background(Color(0xFF2C2C2E), CircleShape).padding(horizontal = 4.dp, vertical = 2.dp))
+                                    Text(text = emoji, fontSize = 14.sp, modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape).padding(horizontal = 4.dp, vertical = 2.dp))
                                 }
                             }
                         }
                         
                         val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-                            Text(sdf.format(Date(msg.timestamp)), fontSize = 11.sp, color = Color.Gray)
+                            Text(sdf.format(Date(msg.timestamp)), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             if (isMe) {
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Icon(Icons.Default.DoneAll, contentDescription = "Read", tint = primaryRed, modifier = Modifier.size(14.dp))
@@ -325,7 +328,7 @@ fun ChatScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Security, contentDescription = "Encrypted", tint = primaryRed, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Messages are end-to-end encrypted.\nYour privacy is our priority.", color = Color.LightGray, fontSize = 12.sp, lineHeight = 16.sp)
+                            Text(stringResource(R.string.e2e_encryption), color = Color.LightGray, fontSize = 12.sp, lineHeight = 16.sp)
                         }
                     }
                     
@@ -336,7 +339,7 @@ fun ChatScreen(
                             .background(surfaceColor, RoundedCornerShape(16.dp))
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Text("Today", color = Color.White, fontSize = 12.sp)
+                        Text(stringResource(R.string.today), color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp)
                     }
                 }
             }
@@ -344,7 +347,7 @@ fun ChatScreen(
     }
 
     if (selectedMessage != null) {
-        ModalBottomSheet(onDismissRequest = { selectedMessage = null }, containerColor = Color(0xFF1E1E1E)) {
+        ModalBottomSheet(onDismissRequest = { selectedMessage = null }, containerColor = MaterialTheme.colorScheme.surface) {
             val msg = selectedMessage!!
             val isMe = msg.senderId == currentUser?.uid
             val isLastMessage = messages.firstOrNull { it.senderId == currentUser?.uid }?.id == msg.id
@@ -368,16 +371,16 @@ fun ChatScreen(
                     }
                 }
                 
-                HorizontalDivider(color = Color.DarkGray)
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                 
                 if (!msg.isVoice) {
                     ListItem(
-                        headlineContent = { Text("Copy", color = Color.White) },
-                        leadingContent = { Icon(Icons.Outlined.ContentCopy, contentDescription = null, tint = Color.White) },
+                        headlineContent = { Text(stringResource(R.string.copy), color = MaterialTheme.colorScheme.onBackground) },
+                        leadingContent = { Icon(Icons.Outlined.ContentCopy, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable {
                             val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("message", msg.text))
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText(context.getString(R.string.message), msg.text))
                             Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
                             selectedMessage = null
                         }
@@ -386,8 +389,8 @@ fun ChatScreen(
                 
                 if (isMe && isLastMessage && !msg.isVoice) {
                     ListItem(
-                        headlineContent = { Text("Edit", color = Color.White) },
-                        leadingContent = { Icon(Icons.Outlined.Edit, contentDescription = null, tint = Color.White) },
+                        headlineContent = { Text(stringResource(R.string.edit), color = MaterialTheme.colorScheme.onBackground) },
+                        leadingContent = { Icon(Icons.Outlined.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                         modifier = Modifier.clickable {
                             editingMessage = msg
@@ -398,8 +401,8 @@ fun ChatScreen(
                 }
                 
                 ListItem(
-                    headlineContent = { Text("Delete", color = Color(0xFFE50914)) },
-                    leadingContent = { Icon(Icons.Outlined.Delete, contentDescription = null, tint = Color(0xFFE50914)) },
+                    headlineContent = { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.primary) },
+                    leadingContent = { Icon(Icons.Outlined.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     modifier = Modifier.clickable {
                         if (isMe) {
@@ -417,23 +420,23 @@ fun ChatScreen(
     if (showDeleteConfirm && selectedMessage != null) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Delete Message", color = Color.White) },
-            text = { Text("Who do you want to delete this message for?", color = Color.Gray) },
+            title = { Text(stringResource(R.string.delete_message), color = MaterialTheme.colorScheme.onBackground) },
+            text = { Text(stringResource(R.string.delete_msg_prompt), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteMessage(selectedMessage!!.id, true)
                     showDeleteConfirm = false
                     selectedMessage = null
-                }) { Text("Delete for Everyone", color = Color(0xFFE50914)) }
+                }) { Text(stringResource(R.string.delete_everyone), color = MaterialTheme.colorScheme.primary) }
             },
             dismissButton = {
                 TextButton(onClick = {
                     viewModel.deleteMessage(selectedMessage!!.id, false)
                     showDeleteConfirm = false
                     selectedMessage = null
-                }) { Text("Delete for Me", color = Color.White) }
+                }) { Text(stringResource(R.string.delete_for_me), color = MaterialTheme.colorScheme.onBackground) }
             },
-            containerColor = Color(0xFF1E1E1E)
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 

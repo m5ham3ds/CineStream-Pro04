@@ -1,5 +1,8 @@
 package com.example.ui.screens.profile
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,10 +50,10 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
 
     
 
-    val primaryRed = Color(0xFFE50914)
-    val bgColor = Color(0xFF121212)
-    val cardColor = Color(0xFF1E1E1E)
-    val iconBgColor = Color(0xFF2C2C2E)
+    val primaryRed = MaterialTheme.colorScheme.primary
+    val bgColor = MaterialTheme.colorScheme.background
+    val cardColor = MaterialTheme.colorScheme.surface
+    val iconBgColor = MaterialTheme.colorScheme.surfaceVariant
     var showEditPhoto by remember { mutableStateOf(false) }
     var showImageConfirmDialog by remember { mutableStateOf(false) }
     var showLogoutConfirm by remember { mutableStateOf(false) }
@@ -76,8 +79,8 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
     if (showLogoutConfirm) {
         AlertDialog(
             onDismissRequest = { showLogoutConfirm = false },
-            title = { Text("Sign Out", color = Color.White) },
-            text = { Text("Are you sure you want to sign out?", color = Color.Gray) },
+            title = { Text(stringResource(R.string.sign_out), color = MaterialTheme.colorScheme.onBackground) },
+            text = { Text(stringResource(R.string.confirm_sign_out), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -85,10 +88,10 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                         authViewModel.signOut()
                         onNavigateToAuth()
                     }
-                ) { Text("Sign Out", color = primaryRed) }
+                ) { Text(stringResource(R.string.sign_out), color = primaryRed) }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutConfirm = false }) { Text("Cancel", color = Color.White) }
+                TextButton(onClick = { showLogoutConfirm = false }) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onBackground) }
             },
             containerColor = cardColor
         )
@@ -100,7 +103,7 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                 showImageConfirmDialog = false 
                 selectedImageUri = null
             },
-            title = { Text("Update Profile Picture", color = Color.White) },
+            title = { Text(stringResource(R.string.update_profile_pic), color = MaterialTheme.colorScheme.onBackground) },
             text = { 
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     AsyncImage(
@@ -110,7 +113,7 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                         modifier = Modifier.size(120.dp).clip(CircleShape).border(2.dp, primaryRed, CircleShape)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Do you want to set this as your new profile picture?", color = Color.Gray)
+                    Text(stringResource(R.string.confirm_profile_pic), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (isLoading) {
                         Spacer(modifier = Modifier.height(16.dp))
                         CircularProgressIndicator(color = primaryRed)
@@ -137,7 +140,7 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                         }
                     },
                     enabled = !isLoading
-                ) { Text("Save", color = primaryRed) }
+                ) { Text(stringResource(R.string.save), color = primaryRed) }
             },
             dismissButton = {
                 TextButton(
@@ -146,7 +149,7 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                         selectedImageUri = null
                     },
                     enabled = !isLoading
-                ) { Text("Cancel", color = Color.White) }
+                ) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onBackground) }
             },
             containerColor = cardColor
         )
@@ -184,12 +187,12 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                     } else if (currentUser != null) {
                         Text(
                             text = (currentUser?.firstName?.take(1) ?: currentUser?.username?.take(1) ?: "U").uppercase(),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onBackground,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold
                         )
                     } else {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(40.dp))
+                        Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(40.dp))
                     }
                 }
                 if (currentUser != null) {
@@ -202,7 +205,7 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                             .clickable { showEditPhoto = true },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = Color.White, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Filled.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(14.dp))
                     }
                 }
             }
@@ -218,7 +221,7 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                 } else {
                     "Guest User"
                 }
-                Text(displayName, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text(displayName, color = MaterialTheme.colorScheme.onBackground, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 if (currentUser != null && !currentUser?.username.isNullOrEmpty()) {
                     Text(
                         text = "@${currentUser?.username}",
@@ -228,14 +231,14 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                             .clip(RoundedCornerShape(4.dp))
                             .clickable {
                                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("username", currentUser?.username)
+                                val clip = android.content.ClipData.newPlainText(context.getString(R.string.username_small), currentUser?.username)
                                 clipboard.setPrimaryClip(clip)
                                 Toast.makeText(context, "Username copied", Toast.LENGTH_SHORT).show()
                             }
                             .padding(2.dp)
                     )
                 }
-                Text(currentUser?.email ?: "Sign in to access features", color = Color.Gray, fontSize = 14.sp)
+                Text(currentUser?.email ?: "Sign in to access features", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -245,11 +248,11 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                     ) {
                         Text("👑", fontSize = 10.sp)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Premium Plan", color = Color(0xFFFF5252), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.premium_plan), color = Color(0xFFFF5252), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
-            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray)
+            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -285,9 +288,9 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text("You're Premium!", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.you_are_premium), color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Enjoy ad-free streaming and exclusive content.", color = Color.Gray, fontSize = 12.sp, lineHeight = 16.sp)
+                Text(stringResource(R.string.enjoy_ad_free), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(
@@ -296,14 +299,14 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
                 shape = RoundedCornerShape(24.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text("Manage Plan", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.manage_plan), color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // Account
-        Text("Account", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.account), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(12.dp))
         Column(modifier = Modifier.fillMaxWidth().background(cardColor, RoundedCornerShape(12.dp))) {
             ProfileListItem(Icons.Default.Person, "Account Information", "Update your personal details", false, primaryRed, iconBgColor, onClick = onNavigateToEditProfile)
@@ -317,10 +320,10 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
             Button(
                 onClick = { showLogoutConfirm = true },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C2C2E)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Sign Out", color = primaryRed, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(R.string.sign_out), color = primaryRed, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
 
@@ -333,9 +336,9 @@ fun StatItem(icon: ImageVector, count: String, label: String, tintColor: Color) 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(icon, contentDescription = null, tint = tintColor, modifier = Modifier.size(28.dp))
         Spacer(modifier = Modifier.height(8.dp))
-        Text(count, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(count, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(label, color = Color.Gray, fontSize = 12.sp)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
     }
 }
 
@@ -353,13 +356,13 @@ fun ProfileListItem(icon: ImageVector, title: String, subtitle: String, isLast: 
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text(title, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(subtitle, color = Color.Gray, fontSize = 12.sp)
+            Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray)
+        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     if (!isLast) {
-        HorizontalDivider(modifier = Modifier.padding(start = 72.dp), color = Color(0xFF2C2C2E))
+        HorizontalDivider(modifier = Modifier.padding(start = 72.dp), color = MaterialTheme.colorScheme.surfaceVariant)
     }
 }

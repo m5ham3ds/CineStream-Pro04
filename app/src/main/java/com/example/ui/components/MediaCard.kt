@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import com.example.data.repository.LibraryRepository
 import androidx.compose.runtime.collectAsState
-import androidx.compose.material.icons.filled.Bookmark
 
 import coil.compose.AsyncImage
 
@@ -119,7 +118,7 @@ fun MediaCard(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f)),
+                        colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background.copy(alpha = 0.9f)),
                         startY = 150f
                     )
                 )
@@ -139,7 +138,7 @@ fun MediaCard(
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
-                    Text(text = rank.toString(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(text = rank.toString(), color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             } else {
                 Spacer(modifier = Modifier.width(4.dp))
@@ -148,7 +147,7 @@ fun MediaCard(
             Icon(
                 imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder, 
                 contentDescription = "Bookmark", 
-                tint = if (isBookmarked) MaterialTheme.colorScheme.primary else Color.White,
+                tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -163,7 +162,7 @@ fun MediaCard(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -178,7 +177,7 @@ fun MediaCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(text = rating.toString(), color = Color.LightGray, fontSize = 11.sp)
                 }
-                Text(text = year, color = Color.Gray, fontSize = 11.sp)
+                Text(text = year, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
             }
         }
     }

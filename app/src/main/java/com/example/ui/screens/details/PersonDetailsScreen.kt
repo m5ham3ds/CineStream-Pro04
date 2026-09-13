@@ -1,5 +1,8 @@
 package com.example.ui.screens.details
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -57,10 +60,10 @@ fun PersonDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(uiState.person?.name ?: "", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
+                title = { Text(uiState.person?.name ?: "", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 actions = {
@@ -68,22 +71,22 @@ fun PersonDetailsScreen(
                         onClick = { /* Share */ },
                         modifier = Modifier
                             .padding(end = 8.dp)
-                            .background(Color(0xFF1C1C1E), CircleShape)
+                            .background(MaterialTheme.colorScheme.surface, CircleShape)
                             .size(36.dp)
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = "Share", tint = Color.White, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(18.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF0F0F11)
+                    containerColor = MaterialTheme.colorScheme.background
                 ),
                 windowInsets = WindowInsets(0.dp)
             )
         },
-        containerColor = Color(0xFF0F0F11)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Color(0xFFE50914)) }
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
         } else if (uiState.person != null) {
             val person = uiState.person!!
             Column(
@@ -103,7 +106,7 @@ fun PersonDetailsScreen(
                             .weight(0.42f)
                             .aspectRatio(0.7f)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color.DarkGray)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         AsyncImage(
                             model = person.profileUrl ?: "https://via.placeholder.com/150",
@@ -118,10 +121,10 @@ fun PersonDetailsScreen(
                                 .padding(8.dp)
                                 .size(32.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color.Black.copy(alpha = 0.6f)),
+                                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
                         }
                     }
 
@@ -135,15 +138,15 @@ fun PersonDetailsScreen(
                         val firstName = names.getOrNull(0) ?: ""
                         val lastName = names.getOrNull(1) ?: ""
                         
-                        Text(firstName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White, lineHeight = 32.sp)
+                        Text(firstName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, lineHeight = 32.sp)
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(lastName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE50914), lineHeight = 32.sp)
+                            Text(lastName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, lineHeight = 32.sp)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = Color(0xFFE50914), modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                         }
                         
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(person.knownFor ?: "Actor", fontSize = 14.sp, color = Color.Gray)
+                        Text(person.knownFor ?: "Actor", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
@@ -152,27 +155,27 @@ fun PersonDetailsScreen(
                             // Born
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(12.dp))
+                                    Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Born", fontSize = 11.sp, color = Color.Gray)
+                                    Text(stringResource(R.string.born), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Text(person.birthday ?: "-", fontSize = 11.sp, color = Color.LightGray, maxLines = 2)
                             }
                             // Birthplace
                             Column(modifier = Modifier.weight(1.2f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(12.dp))
+                                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Birthplace", fontSize = 11.sp, color = Color.Gray)
+                                    Text(stringResource(R.string.birthplace), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Text(person.placeOfBirth ?: "-", fontSize = 11.sp, color = Color.LightGray, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             }
                             // Known For
                             Column(modifier = Modifier.weight(0.8f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(12.dp))
+                                    Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Known For", fontSize = 11.sp, color = Color.Gray)
+                                    Text(stringResource(R.string.known_for), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Text(person.knownFor ?: "-", fontSize = 11.sp, color = Color.LightGray, maxLines = 2)
                             }
@@ -205,14 +208,14 @@ fun PersonDetailsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.width(3.dp).height(16.dp).background(Color(0xFFE50914), RoundedCornerShape(4.dp)))
+                                Box(modifier = Modifier.width(3.dp).height(16.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp)))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Biography", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(stringResource(R.string.biography), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(person.biography, color = Color.LightGray, fontSize = 14.sp, lineHeight = 20.sp)
@@ -254,16 +257,16 @@ fun StatBox(icon: androidx.compose.ui.graphics.vector.ImageVector, value: String
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFF1C1C1E))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(icon, contentDescription = label, tint = Color.Gray, modifier = Modifier.size(16.dp))
+            Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.height(4.dp))
-            Text(value, color = Color(0xFFE50914), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(value, color = MaterialTheme.colorScheme.primary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(label, color = Color.Gray, fontSize = 10.sp)
+            Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
         }
     }
 }
@@ -276,9 +279,9 @@ fun SectionHeader(title: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         }
-        Text("View all", fontSize = 12.sp, color = Color(0xFFE50914), modifier = Modifier.clickable { })
+        Text(stringResource(R.string.view_all_small), fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable { })
     }
 }
 
@@ -291,12 +294,12 @@ fun MediaCreditCard(title: String, posterUrl: String, year: Int, onClick: () -> 
             model = posterUrl,
             contentDescription = title,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxWidth().aspectRatio(2f/3f).clip(RoundedCornerShape(8.dp)).background(Color.DarkGray)
+            modifier = Modifier.fillMaxWidth().aspectRatio(2f/3f).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = title,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             fontSize = 13.sp,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
@@ -305,7 +308,7 @@ fun MediaCreditCard(title: String, posterUrl: String, year: Int, onClick: () -> 
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = year.toString(),
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp
             )
         }

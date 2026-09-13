@@ -1,5 +1,8 @@
 package com.example.ui.screens.player
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.foundation.verticalScroll
 
 import android.app.Activity
@@ -231,7 +234,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -312,12 +315,12 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
         }
         
         if (uiState.isLoading && !showInitialSelection && !isCloudflareChallenge) {
-            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(color = Color(0xFFE50914))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(16.dp))
                     val serverText = if (uiState.currentServer.isNotEmpty()) " / ${uiState.currentServer}" else ""
-                    Text("Connecting to ${uiState.currentWebsite}$serverText...", color = Color.White)
+                    Text("Connecting to ${uiState.currentWebsite}$serverText...", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
@@ -342,7 +345,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
             ) {
                 if (isLocked) {
                     // Only show unlock button if locked
@@ -352,7 +355,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                             .align(Alignment.CenterStart)
                             .padding(32.dp)
                     ) {
-                        Icon(Icons.Default.Lock, contentDescription = "Unlock", tint = Color.White, modifier = Modifier.size(32.dp))
+                        Icon(Icons.Default.Lock, contentDescription = "Unlock", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(32.dp))
                     }
                 } else {
                     // Top Bar
@@ -368,7 +371,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack, 
                                 contentDescription = "Back", 
-                                tint = Color.White, 
+                                tint = MaterialTheme.colorScheme.onBackground, 
                                 modifier = Modifier.size(28.dp).clickable { onBack() }
                             )
                             Spacer(modifier = Modifier.weight(1f))
@@ -377,16 +380,16 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 modifier = Modifier.clickable { showServerSheet = true }.padding(8.dp)
                             ) {
                                 val serverName = if (uiState.currentServer.isNotEmpty()) uiState.currentServer.uppercase() else "SERVER"
-                                Text(serverName, color = Color.Gray, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                Text(serverName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color(0xFFE50914), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                             }
                             Spacer(modifier = Modifier.weight(1f))
                         }
                         
                         // Center section
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1.2f)) {
-                            Text(if(uiState.isMovie) "Movie" else "Series", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(if(uiState.isMovie) "Movie" else "Series", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(uiState.title, color = Color.LightGray, fontSize = 14.sp)
                         }
@@ -398,15 +401,15 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.clickable { showWebsiteSheet = true }.padding(8.dp)
                             ) {
-                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color(0xFFE50914), modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(uiState.currentWebsite.uppercase(), color = Color.Gray, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                Text(uiState.currentWebsite.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                             }
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 Icons.Default.MoreVert, 
                                 contentDescription = "Menu", 
-                                tint = Color.White, 
+                                tint = MaterialTheme.colorScheme.onBackground, 
                                 modifier = Modifier.size(28.dp).clickable { /* Menu */ }
                             )
                         }
@@ -434,10 +437,10 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                             modifier = Modifier.align(Alignment.Center),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            CircularProgressIndicator(color = Color(0xFFE50914))
+                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.height(16.dp))
                             val serverText = if (uiState.currentServer.isNotEmpty()) " / ${uiState.currentServer}" else ""
-                            Text("Loading ${uiState.currentWebsite}$serverText...", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Loading ${uiState.currentWebsite}$serverText...", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                         }
                     } else {
                         Row(
@@ -449,23 +452,23 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .size(56.dp)
-                                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                                    .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), CircleShape)
                                     .clickable { exoPlayer.seekTo((exoPlayer.currentPosition - 10000).coerceAtLeast(0)) }
                             ) {
-                                Icon(Icons.Default.Replay10, contentDescription = "Rewind", tint = Color.White, modifier = Modifier.size(28.dp))
+                                Icon(Icons.Default.Replay10, contentDescription = "Rewind", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
                             }
                             
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .size(72.dp)
-                                    .border(2.dp, Color(0xFFE50914), CircleShape)
+                                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                                     .clickable { if (isPlaying) exoPlayer.pause() else exoPlayer.play() }
                             ) {
                                 Icon(
                                     if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                                     contentDescription = "Play/Pause",
-                                    tint = Color.White,
+                                    tint = MaterialTheme.colorScheme.onBackground,
                                     modifier = Modifier.size(36.dp)
                                 )
                             }
@@ -474,10 +477,10 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
                                     .size(56.dp)
-                                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                                    .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), CircleShape)
                                     .clickable { exoPlayer.seekTo((exoPlayer.currentPosition + 10000).coerceAtMost(exoPlayer.duration)) }
                             ) {
-                                Icon(Icons.Default.Forward10, contentDescription = "Forward", tint = Color.White, modifier = Modifier.size(28.dp))
+                                Icon(Icons.Default.Forward10, contentDescription = "Forward", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
                             }
                         }
                     }
@@ -494,7 +497,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(formatTime(currentTime), color = Color.White, fontSize = 14.sp)
+                            Text(formatTime(currentTime), color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
                             Spacer(modifier = Modifier.width(16.dp))
                             SimpleSlider(
                                 value = if (totalDuration > 0) (currentTime.toFloat() / totalDuration.toFloat()) else 0f,
@@ -506,7 +509,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(formatTime(totalDuration), color = Color.White, fontSize = 14.sp)
+                            Text(formatTime(totalDuration), color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -546,11 +549,11 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     if (showQualitySheet) {
         ModalBottomSheet(
             onDismissRequest = { showQualitySheet = false },
-            containerColor = Color(0xFF1C1C1E)
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
                 item {
-                    Text("Select Quality", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.select_quality), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 items(uiState.availableQualities) { q ->
@@ -561,7 +564,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(q, color = if (q == uiState.currentQuality) Color(0xFFE50914) else Color.White)
+                        Text(q, color = if (q == uiState.currentQuality) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)
                     }
                 }
                 item { Spacer(modifier = Modifier.height(32.dp)) }
@@ -572,11 +575,11 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     if (showEpisodesSheet) {
         ModalBottomSheet(
             onDismissRequest = { showEpisodesSheet = false },
-            containerColor = Color(0xFF1C1C1E)
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
                 item {
-                    Text("Episodes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.episodes), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 
@@ -590,7 +593,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                     ) {
                         Text(
                             "Episode ${ep.episodeNumber}: ${ep.title}", 
-                            color = if (ep.id == uiState.currentEpisodeId) Color(0xFFE50914) else Color.White
+                            color = if (ep.id == uiState.currentEpisodeId) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                         )
                     }
                 }
@@ -601,7 +604,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                             onClick = { viewModel.loadMoreEpisodes() },
                             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                         ) {
-                            Text("تحميل المزيد من الحلقات", color = Color(0xFFE50914), fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.load_more_eps), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -614,11 +617,11 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     if (showServerSheet) {
         ModalBottomSheet(
             onDismissRequest = { showServerSheet = false },
-            containerColor = Color(0xFF1C1C1E)
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
                 item {
-                    Text("Select Server", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.select_server), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 items(uiState.availableServers) { s ->
@@ -630,7 +633,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(s, color = if (s == uiState.currentServer) Color(0xFFE50914) else Color.White)
+                        Text(s, color = if (s == uiState.currentServer) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)
                     }
                 }
                 item { Spacer(modifier = Modifier.height(32.dp)) }
@@ -641,10 +644,10 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     if (showWebsiteSheet) {
         ModalBottomSheet(
             onDismissRequest = { showWebsiteSheet = false },
-            containerColor = Color(0xFF1C1C1E)
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
-                Text("Select Source Website", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.select_source), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 uiState.availableWebsites.forEach { w ->
                     TextButton(
@@ -655,7 +658,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(w, color = if (w == uiState.currentWebsite) Color(0xFFE50914) else Color.White)
+                        Text(w, color = if (w == uiState.currentWebsite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
@@ -689,26 +692,26 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
         }, properties = androidx.compose.ui.window.DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = false)) {
             androidx.compose.material3.Card(
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
-                colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color(0xFF1C1C1E)),
+                colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(24.dp).fillMaxWidth()) {
                     if (uiState.currentVideoUrl == null || uiState.isLoading) {
-                        CircularProgressIndicator(color = Color(0xFFE50914), modifier = Modifier.align(Alignment.CenterHorizontally))
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.CenterHorizontally))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Searching for video...", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
+                        Text(stringResource(R.string.searching_video), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Current Site: ${uiState.currentWebsite}", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+                        Text("Current Site: ${uiState.currentWebsite}", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
                     } else {
-                        Text("Ready to Play", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ready_to_play), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        Text("Source:", color = Color.Gray, fontSize = 14.sp)
-                        Text(uiState.currentWebsite, color = Color(0xFFE50914), fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.source_label), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                        Text(uiState.currentWebsite, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        Text("Quality:", color = Color.Gray, fontSize = 14.sp)
+                        Text(stringResource(R.string.quality_label), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                         androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(uiState.availableQualities) { q ->
                                 androidx.compose.material3.FilterChip(
@@ -716,8 +719,8 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                     onClick = { viewModel.selectQuality(q) },
                                     label = { Text(q) },
                                     colors = androidx.compose.material3.FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = Color(0xFFE50914),
-                                        selectedLabelColor = Color.White
+                                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        selectedLabelColor = MaterialTheme.colorScheme.onBackground,
                                     )
                                 )
                             }
@@ -732,11 +735,11 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 exoPlayer.play()
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFFE50914))
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Play Now")
+                            Text(stringResource(R.string.play_now))
                         }
                     }
                 }
@@ -751,6 +754,7 @@ fun VerticalSlider(
     onValueChange: (Float) -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        val onBgColor = MaterialTheme.colorScheme.onBackground
         Canvas(
             modifier = Modifier
                 .width(32.dp)
@@ -778,7 +782,7 @@ fun VerticalSlider(
             
             // Inactive Track (Full height)
             drawRoundRect(
-                color = Color.White.copy(alpha = 0.3f),
+                color = onBgColor.copy(alpha = 0.3f),
                 topLeft = Offset(centerX - trackWidth / 2f, 0f),
                 size = Size(trackWidth, height),
                 cornerRadius = CornerRadius(trackWidth / 2f)
@@ -786,7 +790,7 @@ fun VerticalSlider(
             
             // Active Track (From bottom to thumb)
             drawRoundRect(
-                color = Color.White,
+                color = onBgColor,
                 topLeft = Offset(centerX - trackWidth / 2f, thumbY),
                 size = Size(trackWidth, height - thumbY),
                 cornerRadius = CornerRadius(trackWidth / 2f)
@@ -794,7 +798,7 @@ fun VerticalSlider(
             
             // Thumb
             drawCircle(
-                color = Color.White,
+                color = onBgColor,
                 radius = thumbRadius,
                 center = Offset(centerX, thumbY)
             )
@@ -808,7 +812,7 @@ fun BottomAction(icon: ImageVector, text: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.clickable(onClick = onClick).padding(8.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Text(text, color = Color.LightGray, fontSize = 14.sp, fontWeight = FontWeight.Normal)
     }
@@ -820,16 +824,16 @@ fun QualityAction(currentQuality: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.clickable(onClick = onClick).padding(8.dp)
     ) {
-        Icon(Icons.Default.Settings, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Icon(Icons.Default.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(8.dp))
-        Text("Quality", color = Color.LightGray, fontSize = 14.sp, fontWeight = FontWeight.Normal)
+        Text(stringResource(R.string.quality), color = Color.LightGray, fontSize = 14.sp, fontWeight = FontWeight.Normal)
         Spacer(modifier = Modifier.width(6.dp))
         Box(
             modifier = Modifier
-                .border(1.dp, Color(0xFFE50914), CircleShape)
+                .border(1.dp, MaterialTheme.colorScheme.primary, CircleShape)
                 .padding(horizontal = 6.dp, vertical = 2.dp)
         ) {
-            Text(currentQuality, color = Color(0xFFE50914), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            Text(currentQuality, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -840,7 +844,7 @@ fun ActionDivider() {
         modifier = Modifier
             .width(1.dp)
             .height(16.dp)
-            .background(Color.DarkGray)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
     )
 }
 
@@ -857,13 +861,14 @@ fun SimpleSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
     modifier: Modifier = Modifier,
-    activeColor: Color = Color(0xFFE50914),
-    inactiveColor: Color = Color.DarkGray,
-    thumbColor: Color = Color(0xFFE50914),
+    activeColor: Color = MaterialTheme.colorScheme.primary,
+    inactiveColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    thumbColor: Color = MaterialTheme.colorScheme.primary,
     thumbRadius: Float = 12f,
     trackHeight: Float = 4f // Made track slightly thinner for elegance
 ) {
-    Canvas(
+    val onBgColor = MaterialTheme.colorScheme.onBackground
+        Canvas(
         modifier = modifier
             .fillMaxWidth()
             .height(32.dp) // Touch target height

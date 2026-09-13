@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +36,7 @@ fun CineStreamHeader(
     onSearchClick: () -> Unit,
     onMenuClick: () -> Unit
 ) {
-    val brandRed = Color(0xFFE50914)
+    val brandRed = MaterialTheme.colorScheme.primary
     val bgDark = Color(0xFF141416)
     val iconBorder = Color(0xFF2C2C30)
 
@@ -146,7 +147,7 @@ fun CineStreamHeader(
             ) {
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 28.sp)) {
+                        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.ExtraBold, fontSize = 28.sp)) {
                             append("Cine")
                         }
                         withStyle(style = SpanStyle(color = brandRed, fontWeight = FontWeight.ExtraBold, fontSize = 28.sp)) {
@@ -196,7 +197,7 @@ fun CineStreamHeader(
                         Icon(
                             imageVector = Icons.Default.Search,
                             contentDescription = "Search",
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -216,7 +217,7 @@ fun CineStreamHeader(
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Notifications",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.size(24.dp)
                             )
                             // Notification badge with glow
@@ -240,7 +241,7 @@ fun CineStreamHeader(
                                         .align(Alignment.Center),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text("1", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
+                                    Text("1", color = MaterialTheme.colorScheme.onBackground, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold)
                                 }
                             }
                         }
@@ -260,7 +261,7 @@ fun CineStreamHeader(
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Menu",
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(26.dp)
                         )
                     }

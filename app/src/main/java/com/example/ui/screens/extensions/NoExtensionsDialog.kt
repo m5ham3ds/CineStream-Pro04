@@ -6,7 +6,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import com.example.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +28,7 @@ fun NoExtensionsDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF19191C), RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                 .padding(24.dp)
         ) {
             Column(
@@ -35,20 +38,18 @@ fun NoExtensionsDialog(
                 Icon(
                     imageVector = Icons.Outlined.Extension,
                     contentDescription = null,
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(48.dp)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "لم يتم تثبيت أي إضافات",
-                    color = Color.White,
+                Text(text = stringResource(R.string.no_ext_installed),
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "يرجى تثبيت إضافة واحدة على الأقل لجلب الخوادم والروابط.",
-                    color = Color.Gray,
+                Text(text = stringResource(R.string.install_ext_prompt),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     textAlign = TextAlign.Center
                 )
@@ -57,22 +58,22 @@ fun NoExtensionsDialog(
                 Button(
                     onClick = onGoToExtensions,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE50914))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("الانتقال إلى الإضافات")
+                    Text(stringResource(R.string.go_to_extensions))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 TextButton(
                     onClick = onRetry,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("إعادة الفحص", color = Color.White)
+                    Text(stringResource(R.string.rescan), color = MaterialTheme.colorScheme.onBackground)
                 }
                 TextButton(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("إلغاء", color = Color.Gray)
+                    Text(stringResource(R.string.cancel_ar), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }

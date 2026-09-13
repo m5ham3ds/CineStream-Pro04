@@ -1,5 +1,8 @@
 package com.example.ui.screens.player
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.animation.togetherWith
 
 import com.example.extensions.ProviderExtension
@@ -205,7 +208,7 @@ Dialog(
                         .fillMaxWidth(0.9f)
                         .fillMaxHeight(0.85f)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White)
+                        .background(MaterialTheme.colorScheme.onBackground)
                         .zIndex(100f)
                 } else {
                     Modifier.size(1.dp).alpha(0.01f).zIndex(-1f)
@@ -213,13 +216,12 @@ Dialog(
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     if (isCloudflare) {
-                        Text(
-                            text = "يرجى تخطي الحماية للمتابعة...",
+                        Text(text = stringResource(R.string.skip_protect_prompt),
                             modifier = Modifier
                                 .padding(16.dp)
                                 .fillMaxWidth(),
                             textAlign = TextAlign.Center,
-                            color = Color.Black,
+                            color = MaterialTheme.colorScheme.background,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -236,9 +238,9 @@ Dialog(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .fillMaxWidth(),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFFE50914))
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
-                            Text("تم التحقق، متابعة", color = Color.White)
+                            Text(stringResource(R.string.verified_continue), color = MaterialTheme.colorScheme.onBackground)
                         }
                     }
                     
@@ -527,7 +529,7 @@ Dialog(
                         Icon(
                             imageVector = if (selectedServerForQuality != null) androidx.compose.material.icons.Icons.Default.ArrowBack else androidx.compose.material.icons.Icons.Outlined.CloudDownload,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -536,17 +538,15 @@ Dialog(
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "اختر السيرفر",
-                            color = Color.White,
+                        Text(text = stringResource(R.string.select_server_ar),
+                            color = MaterialTheme.colorScheme.onBackground,
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
-                        Text(
-                            text = "جاري الإتصال بالسيرفرات المتاحة...",
-                            color = Color.Gray,
+                        Text(text = stringResource(R.string.connecting_servers),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall,
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -566,7 +566,7 @@ Dialog(
                             .background(Color(0xFF222225), CircleShape)
                             .border(1.dp, Color(0xFF333333), CircleShape)
                     ) {
-                        Icon(Icons.Default.Close, contentDescription = "إغلاق", tint = Color.White, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Close, contentDescription = "إغلاق", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(18.dp))
                     }
                 }
 
@@ -608,16 +608,14 @@ Dialog(
                                                 modifier = Modifier.size(64.dp)
                                             )
                                             Spacer(modifier = Modifier.height(16.dp))
-                                            Text(
-                                                text = "حدث خطأ في الاتصال بالإنترنت",
-                                                color = Color.White,
+                                            Text(text = stringResource(R.string.net_error),
+                                                color = MaterialTheme.colorScheme.onBackground,
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            Text(
-                                                text = "يرجى التحقق من الشبكة والمحاولة مرة أخرى.",
-                                                color = Color.Gray,
+                                            Text(text = stringResource(R.string.check_net_retry),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 style = MaterialTheme.typography.bodySmall
                                             )
                                             Spacer(modifier = Modifier.height(24.dp))
@@ -629,7 +627,7 @@ Dialog(
                                                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = activeColor),
                                                 shape = RoundedCornerShape(12.dp)
                                             ) {
-                                                Text("إعادة المحاولة", color = Color.White, fontWeight = FontWeight.Bold)
+                                                Text(stringResource(R.string.retry), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                                             }
                                         }
                                     } else {
@@ -664,25 +662,25 @@ Dialog(
                                             val statusMsg = when (bypassStatus) {
                                                 "CHECKING_CLOUDFLARE" -> {
                                                     androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) { append("تأمين الاتصال بموقع ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFFE50914))) { append(currentSiteName) }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("تأمين الاتصال بموقع ") }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.primary)) { append(currentSiteName) }
                                                     }
                                                 }
                                                 "CLOUDFLARE" -> {
                                                     androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) { append("تخطي حماية ") }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("تخطي حماية ") }
                                                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFFFF1111))) { append("Cloudflare") }
                                                     }
                                                 }
                                                 "VERIFIED" -> {
                                                     androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) { append("تم التخطي ") }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("تم التخطي ") }
                                                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFF00C853))) { append("بنجاح") }
                                                     }
                                                 }
                                                 else -> {
                                                     androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) { append("جاري البحث في ") }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("جاري البحث في ") }
                                                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFF00C853))) { append(currentSiteName) }
                                                     }
                                                 }
@@ -697,9 +695,8 @@ Dialog(
                                                 modifier = Modifier.fillMaxWidth()
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            Text(
-                                                text = "الرجاء الإنتظار، يتم جلب أحدث المعلومات من السيرفرات.",
-                                                color = Color.Gray,
+                                            Text(text = stringResource(R.string.please_wait_servers),
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 style = MaterialTheme.typography.bodySmall,
                                                 textAlign = TextAlign.Center,
                                                 maxLines = 1,
@@ -725,7 +722,7 @@ Dialog(
                                                 StatusBadge(
                                                     text = "اتصال آمن",
                                                     icon = androidx.compose.material.icons.Icons.Outlined.Security,
-                                                    statusColor = if (bypassStatus == "VERIFIED" || bypassStatus == "NORMAL") Color(0xFF00C853) else Color.Gray
+                                                    statusColor = if (bypassStatus == "VERIFIED" || bypassStatus == "NORMAL") Color(0xFF00C853) else MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                             }
                                             Spacer(modifier = Modifier.height(24.dp))
@@ -754,8 +751,7 @@ Dialog(
                         )
                     }
                 } else if (isFailed) {
-                    Text(
-                        text = "عذراً، لم نتمكن من العثور على سيرفرات تعمل لهذا العمل في جميع المواقع المدعومة.",
+                    Text(text = stringResource(R.string.no_servers_found),
                         color = Color(0xFFFF1111),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
@@ -770,9 +766,9 @@ Dialog(
                             retryTrigger++
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE50914))
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text("إعادة المحاولة مجدداً", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.retry_again), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
@@ -780,9 +776,9 @@ Dialog(
                             showOpenBrowserConfirmDialog = true
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        Text("فتح المتصفح يدوياً للتحقق", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.open_browser_manual), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
@@ -790,16 +786,16 @@ Dialog(
                             showSkipSiteConfirmDialog = true
                         },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        Text("تخطي الموقع الحالي", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.skip_current), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
                     
                     if (showOpenBrowserConfirmDialog) {
                         androidx.compose.material3.AlertDialog(
                             onDismissRequest = { showOpenBrowserConfirmDialog = false },
-                            title = { Text("تأكيد فتح المتصفح", color = Color.White) },
-                            text = { Text("هل أنت متأكد من رغبتك في فتح المتصفح يدوياً للتحقق من الرابط؟", color = Color.LightGray) },
+                            title = { Text(stringResource(R.string.confirm_browser), color = MaterialTheme.colorScheme.onBackground) },
+                            text = { Text(stringResource(R.string.confirm_open_browser), color = Color.LightGray) },
                             containerColor = Color(0xFF222225),
                             confirmButton = {
                                 androidx.compose.material3.TextButton(
@@ -816,10 +812,10 @@ Dialog(
                                         bypassStatus = "CLOUDFLARE"
                                         retryTrigger++
                                     }
-                                ) { Text("نعم", color = Color(0xFFE50914)) }
+                                ) { Text(stringResource(R.string.yes_ar), color = MaterialTheme.colorScheme.primary) }
                             },
                             dismissButton = {
-                                androidx.compose.material3.TextButton(onClick = { showOpenBrowserConfirmDialog = false }) { Text("إلغاء", color = Color.White) }
+                                androidx.compose.material3.TextButton(onClick = { showOpenBrowserConfirmDialog = false }) { Text(stringResource(R.string.cancel_ar), color = MaterialTheme.colorScheme.onBackground) }
                             }
                         )
                     }
@@ -827,8 +823,8 @@ Dialog(
                     if (showSkipSiteConfirmDialog) {
                         androidx.compose.material3.AlertDialog(
                             onDismissRequest = { showSkipSiteConfirmDialog = false },
-                            title = { Text("تأكيد التخطي", color = Color.White) },
-                            text = { Text("هل أنت متأكد من رغبتك في تخطي هذا الموقع والانتقال للتالي؟", color = Color.LightGray) },
+                            title = { Text(stringResource(R.string.confirm_skip), color = MaterialTheme.colorScheme.onBackground) },
+                            text = { Text(stringResource(R.string.confirm_skip_site), color = Color.LightGray) },
                             containerColor = Color(0xFF222225),
                             confirmButton = {
                                 androidx.compose.material3.TextButton(
@@ -847,18 +843,18 @@ Dialog(
                                             showNoMoreExtensionsDialog = true
                                         }
                                     }
-                                ) { Text("نعم", color = Color(0xFFE50914)) }
+                                ) { Text(stringResource(R.string.yes_ar), color = MaterialTheme.colorScheme.primary) }
                             },
                             dismissButton = {
-                                androidx.compose.material3.TextButton(onClick = { showSkipSiteConfirmDialog = false }) { Text("إلغاء", color = Color.White) }
+                                androidx.compose.material3.TextButton(onClick = { showSkipSiteConfirmDialog = false }) { Text(stringResource(R.string.cancel_ar), color = MaterialTheme.colorScheme.onBackground) }
                             }
                         )
                     }
                     if (showNoMoreExtensionsDialog) {
                         androidx.compose.material3.AlertDialog(
                             onDismissRequest = { showNoMoreExtensionsDialog = false },
-                            title = { Text("لا توجد إضافات أخرى", color = Color.White) },
-                            text = { Text("لم يتم تثبيت أي إضافات أخرى للمتابعة. ماذا تريد أن تفعل؟", color = Color.LightGray) },
+                            title = { Text(stringResource(R.string.no_other_ext), color = MaterialTheme.colorScheme.onBackground) },
+                            text = { Text(stringResource(R.string.no_other_ext_prompt), color = Color.LightGray) },
                             containerColor = Color(0xFF222225),
                             confirmButton = {
                                 Row {
@@ -871,20 +867,20 @@ Dialog(
                                             currentExtension = safeSites[0]
                                             retryTrigger++
                                         }
-                                    ) { Text("إعادة المحاولة", color = Color(0xFF00C853)) }
+                                    ) { Text(stringResource(R.string.retry), color = Color(0xFF00C853)) }
                                     androidx.compose.material3.TextButton(
                                         onClick = {
                                             showNoMoreExtensionsDialog = false
                                             onNavigateToExtensions()
                                         }
-                                    ) { Text("صفحة الإضافات", color = Color(0xFF2196F3)) }
+                                    ) { Text(stringResource(R.string.extensions_page), color = Color(0xFF2196F3)) }
                                 }
                             },
                             dismissButton = {
                                 androidx.compose.material3.TextButton(onClick = { 
                                     showNoMoreExtensionsDialog = false
                                     onDismiss()
-                                }) { Text("إلغاء تماماً", color = Color(0xFFE50914)) }
+                                }) { Text(stringResource(R.string.cancel_completely), color = MaterialTheme.colorScheme.primary) }
                             }
                         )
                     }
@@ -892,13 +888,13 @@ Dialog(
                     if (selectedServerForQuality != null) {
                         if (isExtractingQuality) {
                             CircularProgressIndicator(
-                                color = Color(0xFFE50914),
+                                color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(50.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = qualityExtractionMessage,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
@@ -908,13 +904,13 @@ Dialog(
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "السيرفر: $selectedServerForQuality",
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = MaterialTheme.typography.bodySmall
                             )
                         } else if (extractedQualities.isNotEmpty()) {
                             Text(
                                 text = "اختر الجودة ($selectedServerForQuality)",
-                                color = Color(0xFFE50914),
+                                color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(bottom = 16.dp)
@@ -946,7 +942,7 @@ Dialog(
                                         ) {
                                             Text(
                                                 text = quality.name,
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.onBackground,
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -960,11 +956,10 @@ Dialog(
                                 selectedServerForQuality = null
                                 extractedQualities = emptyList()
                             }) {
-                                Text("العودة لاختيار سيرفر آخر", color = Color.LightGray)
+                                Text(stringResource(R.string.back_select_server), color = Color.LightGray)
                             }
                         } else {
-                            Text(
-                                text = "فشل في العثور على أي جودة",
+                            Text(text = stringResource(R.string.no_quality_found),
                                 color = Color(0xFFFF1111),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
@@ -979,7 +974,7 @@ Dialog(
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853))
                             ) {
-                                Text("إعادة محاولة استخراج الجودات", color = Color.White)
+                                Text(stringResource(R.string.retry_extract), color = MaterialTheme.colorScheme.onBackground)
                             }
                             
                             androidx.compose.material3.OutlinedButton(
@@ -990,7 +985,7 @@ Dialog(
                                 modifier = Modifier.fillMaxWidth(),
                                 colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = Color.LightGray)
                             ) {
-                                Text("العودة لاختيار سيرفر آخر")
+                                Text(stringResource(R.string.back_select_server))
                             }
                         }
                     } else {
@@ -1028,7 +1023,7 @@ Dialog(
                                     ) {
                                         Text(
                                             text = server,
-                                            color = Color.White,
+                                            color = MaterialTheme.colorScheme.onBackground,
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -1038,8 +1033,7 @@ Dialog(
                             
                             if (extractedDownloadLinks.isNotEmpty()) {
                                 item {
-                                    Text(
-                                        text = "روابط التحميل المباشرة",
+                                    Text(text = stringResource(R.string.direct_links),
                                         color = Color(0xFF00C853),
                                         style = MaterialTheme.typography.labelLarge,
                                         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
@@ -1075,7 +1069,7 @@ Dialog(
                                             )
                                             Text(
                                                 text = downloadName,
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.onBackground,
                                                 style = MaterialTheme.typography.titleMedium,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -1102,7 +1096,7 @@ Dialog(
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("البحث في موقع آخر", color = Color(0xFF00C853))
+                                Text(stringResource(R.string.search_other_site), color = Color(0xFF00C853))
                             }
                         }
                     }
@@ -1159,13 +1153,13 @@ Dialog(
             AlertDialog(
                 onDismissRequest = { showCancelConfirmDialog = false },
                 containerColor = Color(0xFF222225),
-                titleContentColor = Color.White,
+                titleContentColor = MaterialTheme.colorScheme.onBackground,
                 textContentColor = Color.LightGray,
                 title = {
-                    Text(text = "إلغاء العملية", fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.cancel_op), fontWeight = FontWeight.Bold)
                 },
                 text = {
-                    Text(text = "العملية لا تزال جارية، هل أنت متأكد أنك تريد الإلغاء؟")
+                    Text(text = stringResource(R.string.cancel_confirm))
                 },
                 confirmButton = {
                     TextButton(
@@ -1174,14 +1168,14 @@ Dialog(
                             onDismiss()
                         }
                     ) {
-                        Text("نعم، إلغاء", color = Color(0xFFFF1111))
+                        Text(stringResource(R.string.yes_cancel), color = Color(0xFFFF1111))
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showCancelConfirmDialog = false }
                     ) {
-                        Text("متابعة", color = Color.White)
+                        Text(stringResource(R.string.continue_btn), color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             )
@@ -1198,13 +1192,13 @@ fun StatusBadge(text: String, icon: androidx.compose.ui.graphics.vector.ImageVec
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .background(Color(0xFF19191C))
-            .border(1.dp, Color(0xFF2C2C2E), RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp))
             .padding(horizontal = 4.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Icon(icon, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(12.dp))
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
         Spacer(modifier = Modifier.width(2.dp))
         Text(text, color = Color.LightGray, fontSize = 9.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.width(2.dp))

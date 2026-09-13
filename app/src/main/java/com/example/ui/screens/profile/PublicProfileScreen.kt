@@ -1,5 +1,8 @@
 package com.example.ui.screens.profile
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -34,9 +37,9 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
     var userProfile by remember { mutableStateOf<UserProfile?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     
-    val bgColor = Color(0xFF121212)
-    val surfaceColor = Color(0xFF1C1C1E)
-    val primaryRed = Color(0xFFE50914)
+    val bgColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val primaryRed = MaterialTheme.colorScheme.primary
     var selectedStat by remember { mutableStateOf<String?>(null) }
 
 
@@ -49,10 +52,10 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profile", color = Color.White) },
+                title = { Text(stringResource(R.string.profile), color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
@@ -62,9 +65,9 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding).background(bgColor)) {
             if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFFE50914))
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
             } else if (userProfile == null) {
-                Text("User not found", color = Color.White, modifier = Modifier.align(Alignment.Center))
+                Text(stringResource(R.string.user_not_found), color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.align(Alignment.Center))
             } else {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(24.dp),
@@ -87,7 +90,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                         } else {
                             Text(
                                 text = userProfile!!.displayName.take(1).uppercase(),
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onBackground,
                                 fontSize = 48.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -98,7 +101,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                     
                     Text(
                         text = userProfile!!.displayName,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -106,7 +109,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                     if (userProfile!!.username.isNotBlank()) {
                         Text(
                             text = "@${userProfile!!.username}",
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 16.sp
                         )
                     }
@@ -121,9 +124,9 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                         ) {
                             PaddingValues(16.dp)
                             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray)
+                                Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(modifier = Modifier.width(16.dp))
-                                Text("This account is private.", color = Color.Gray)
+                                Text(stringResource(R.string.private_account), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     } else {
@@ -137,14 +140,14 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
-                                modifier = Modifier.size(40.dp).clip(CircleShape).background(Color(0xFF2C2C2E)),
+                                modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text("👑", fontSize = 20.sp)
                             }
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Premium Member", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.premium_member), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                         
@@ -163,7 +166,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                         Spacer(modifier = Modifier.height(24.dp))
                         
                         if (selectedStat != null) {
-                            Text("$selectedStat Activity", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
+                            Text("$selectedStat Activity", color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             // Mock Grid
@@ -174,7 +177,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                                 modifier = Modifier.height(300.dp)
                             ) {
                                 items(9) { index ->
-                                    Box(modifier = Modifier.aspectRatio(0.7f).clip(RoundedCornerShape(8.dp)).background(Color.DarkGray)) {
+                                    Box(modifier = Modifier.aspectRatio(0.7f).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant)) {
                                         AsyncImage(
                                             model = "https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dENvU.jpg",
                                             contentDescription = null,
@@ -198,8 +201,8 @@ fun PublicStatItem(icon: androidx.compose.ui.graphics.vector.ImageVector, count:
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onClick() }.padding(4.dp)) {
         Icon(icon, contentDescription = null, tint = tintColor, modifier = Modifier.size(28.dp))
         Spacer(modifier = Modifier.height(8.dp))
-        Text(count, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(count, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(label, color = Color.Gray, fontSize = 12.sp)
+        Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
     }
 }

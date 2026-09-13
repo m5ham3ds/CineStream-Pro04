@@ -97,7 +97,7 @@ fun DownloadsScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(percent = 50))
-                        .border(1.dp, Color.DarkGray, RoundedCornerShape(percent = 50))
+                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(percent = 50))
                         .clickable { }
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                 ) {
@@ -162,7 +162,7 @@ fun DownloadsScreen(
                         .padding(vertical = 48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Outlined.Download, contentDescription = null, tint = Color.DarkGray, modifier = Modifier.size(64.dp))
+                    Icon(Icons.Outlined.Download, contentDescription = null, tint = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(stringResource(R.string.no_downloads_yet), color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -334,7 +334,7 @@ fun DownloadStat(icon: androidx.compose.ui.graphics.vector.ImageVector, value: S
                 .size(36.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(if (isPrimary) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent)
-                .border(1.dp, if (isPrimary) MaterialTheme.colorScheme.primary else Color.DarkGray, RoundedCornerShape(8.dp)),
+                .border(1.dp, if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = if (isPrimary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
@@ -344,5 +344,4 @@ fun DownloadStat(icon: androidx.compose.ui.graphics.vector.ImageVector, value: S
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
-
 

@@ -16,6 +16,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,8 +58,8 @@ fun HiddenVideoExtractor(
     if (showConfirmDialog) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text("تأكيد") },
-            text = { Text("هل أنت متأكد أنك قمت بتخطي حماية Cloudflare بنجاح؟") },
+            title = { Text(stringResource(R.string.confirm)) },
+            text = { Text(stringResource(R.string.confirm_cf)) },
             confirmButton = {
                 androidx.compose.material3.TextButton(
                     onClick = {
@@ -66,14 +68,14 @@ fun HiddenVideoExtractor(
                         onCloudflareDetected?.invoke(false)
                     }
                 ) {
-                    Text("نعم، أكمل")
+                    Text(stringResource(R.string.yes_continue))
                 }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(
                     onClick = { showConfirmDialog = false }
                 ) {
-                    Text("إلغاء")
+                    Text(stringResource(R.string.cancel_ar))
                 }
             }
         )
@@ -82,7 +84,7 @@ fun HiddenVideoExtractor(
     Box(
         modifier = if (isCloudflareDetected) Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.8f))
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f))
             .zIndex(100f)
         else Modifier.size(1.dp).alpha(0f),
         contentAlignment = Alignment.Center
@@ -100,18 +102,17 @@ fun HiddenVideoExtractor(
                 .fillMaxWidth(0.9f)
                 .fillMaxHeight(0.8f)
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.onBackground)
             else Modifier.fillMaxSize()
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 if (isCloudflareDetected) {
-                    Text(
-                        text = "يرجى تخطي الحماية للمتابعة...",
+                    Text(text = stringResource(R.string.skip_protect_prompt),
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth(),
                         textAlign = TextAlign.Center,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.background,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -124,7 +125,7 @@ fun HiddenVideoExtractor(
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .fillMaxWidth()
                     ) {
-                        Text("تم التحقق، متابعة")
+                        Text(stringResource(R.string.verified_continue))
                     }
                 }
                 AndroidView(

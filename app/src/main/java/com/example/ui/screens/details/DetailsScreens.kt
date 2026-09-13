@@ -153,7 +153,7 @@ fun MovieDetailsScreen(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(String.format("%.1f", movie.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                             }
-                            Badge(containerColor = Color.DarkGray) { Text("18+", color = MaterialTheme.colorScheme.onBackground) }
+                            Badge(containerColor = MaterialTheme.colorScheme.surfaceVariant) { Text("18+", color = MaterialTheme.colorScheme.onBackground) }
                         }
                     }
                 } else {
@@ -166,7 +166,7 @@ fun MovieDetailsScreen(
                         )
                         Box(modifier = Modifier.fillMaxSize().background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha=0.6f), MaterialTheme.colorScheme.background),
+                                colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background.copy(alpha=0.6f), MaterialTheme.colorScheme.background),
                                 startY = 0f
                             )
                         ))
@@ -187,7 +187,7 @@ fun MovieDetailsScreen(
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(String.format("%.1f", movie.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                                 }
-                                Badge(containerColor = Color.DarkGray) { Text("18+", color = MaterialTheme.colorScheme.onBackground) } // Placeholder for age rating
+                                Badge(containerColor = MaterialTheme.colorScheme.surfaceVariant) { Text("18+", color = MaterialTheme.colorScheme.onBackground) } // Placeholder for age rating
                             }
                         }
                     }
@@ -232,7 +232,7 @@ fun MovieDetailsScreen(
 
                             }
                         },
-                        modifier = Modifier.size(50.dp).background(Color.DarkGray, CircleShape)
+                        modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
                         if (downloadItem?.isCompleted == true) {
                             Icon(Icons.Default.DownloadDone, contentDescription = "Downloaded", tint = Color.Green)
@@ -250,7 +250,7 @@ fun MovieDetailsScreen(
                                 else libraryRepository.addToLibrary(item)
                             }
                         },
-                        modifier = Modifier.size(50.dp).background(Color.DarkGray, CircleShape)
+                        modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
                         Icon(if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, contentDescription = "Favorite", tint = MaterialTheme.colorScheme.onBackground)
                     }
@@ -343,7 +343,7 @@ fun MovieDetailsScreen(
                 onClick = onBack,
                 modifier = Modifier
                     .padding(top = padding.calculateTopPadding() + 8.dp, start = 16.dp)
-                    .background(Color.Black.copy(alpha=0.3f), CircleShape)
+                    .background(MaterialTheme.colorScheme.background.copy(alpha=0.3f), CircleShape)
             ) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
             }
@@ -443,7 +443,7 @@ fun SeriesDetailsScreen(
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(String.format("%.1f", series.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                             }
-                            Badge(containerColor = Color.DarkGray) { Text("18+", color = MaterialTheme.colorScheme.onBackground) }
+                            Badge(containerColor = MaterialTheme.colorScheme.surfaceVariant) { Text("18+", color = MaterialTheme.colorScheme.onBackground) }
                         }
                     }
                 } else {
@@ -456,7 +456,7 @@ fun SeriesDetailsScreen(
                         )
                         Box(modifier = Modifier.fillMaxSize().background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color.Black.copy(alpha=0.6f), MaterialTheme.colorScheme.background),
+                                colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background.copy(alpha=0.6f), MaterialTheme.colorScheme.background),
                                 startY = 0f
                             )
                         ))
@@ -477,7 +477,7 @@ fun SeriesDetailsScreen(
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(String.format("%.1f", series.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                                 }
-                                Badge(containerColor = Color.DarkGray) { Text("18+", color = MaterialTheme.colorScheme.onBackground) } // Placeholder for age rating
+                                Badge(containerColor = MaterialTheme.colorScheme.surfaceVariant) { Text("18+", color = MaterialTheme.colorScheme.onBackground) } // Placeholder for age rating
                             }
                         }
                     }
@@ -505,7 +505,7 @@ fun SeriesDetailsScreen(
                         onClick = {
                             showBatchDownloadSheet = true
                         },
-                        modifier = Modifier.size(50.dp).background(Color.DarkGray, CircleShape)
+                        modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
                         Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
                     }
@@ -517,7 +517,7 @@ fun SeriesDetailsScreen(
                                 else libraryRepository.addToLibrary(item)
                             }
                         },
-                        modifier = Modifier.size(50.dp).background(Color.DarkGray, CircleShape)
+                        modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
                         Icon(if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, contentDescription = "Favorite", tint = MaterialTheme.colorScheme.onBackground)
                     }
@@ -609,10 +609,10 @@ fun SeriesDetailsScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        Text("جاري تحميل الحلقات...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                        Text(stringResource(R.string.loading_eps), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                                     }
                                 } else {
-                                    Text("اسحب للأعلى لتحميل المزيد", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                    Text(stringResource(R.string.swipe_to_load), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                                 }
                             }
                         }
@@ -670,9 +670,9 @@ fun SeriesDetailsScreen(
                 onClick = onBack,
                 modifier = Modifier
                     .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 8.dp, start = 16.dp)
-                    .background(Color.Black.copy(alpha=0.3f), CircleShape)
+                    .background(MaterialTheme.colorScheme.background.copy(alpha=0.3f), CircleShape)
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
             }
         }
     }
@@ -693,12 +693,12 @@ fun TrailerCard(trailer: VideoTrailer, onClick: () -> Unit) {
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-        Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha=0.3f)), contentAlignment = Alignment.Center) {
-            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(48.dp))
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha=0.3f)), contentAlignment = Alignment.Center) {
+            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(48.dp))
         }
         Text(
             text = trailer.name,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.labelSmall,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -714,7 +714,7 @@ fun CastMemberCard(cast: CastMember, onClick: () -> Unit) {
             model = cast.profileUrl ?: "https://via.placeholder.com/150",
             contentDescription = cast.name,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.size(72.dp).clip(CircleShape).background(Color.DarkGray)
+            modifier = Modifier.size(72.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(cast.name, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -748,9 +748,9 @@ fun EpisodeCard(
                 model = episode.thumbnailUrl,
                 contentDescription = episode.title,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize().background(Color.DarkGray)
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)
             )
-            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.align(Alignment.Center))
+            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.align(Alignment.Center))
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {

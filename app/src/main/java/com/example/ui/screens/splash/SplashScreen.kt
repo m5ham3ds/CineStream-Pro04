@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -135,8 +137,7 @@ fun SplashScreen(
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            Text(
-                text = "Your Cinematic World, Anytime, Anywhere.",
+            Text(text = stringResource(R.string.slogan1),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp
             )

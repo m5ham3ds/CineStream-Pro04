@@ -48,15 +48,13 @@ fun AboutScreen(onBack: () -> Unit = {}) {
             verticalAlignment = Alignment.Top
         ) {
             Column(modifier = Modifier.weight(0.6f)) {
-                Text(
-                    text = "About CineStream",
+                Text(text = stringResource(R.string.about_app),
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "CineStream is your premium cinematic experience. Stream your favorite movies and series in high quality, anytime, anywhere.",
+                Text(text = stringResource(R.string.app_desc_long),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     lineHeight = 20.sp

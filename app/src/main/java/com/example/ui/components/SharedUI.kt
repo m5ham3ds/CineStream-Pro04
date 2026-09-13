@@ -1,4 +1,7 @@
 package com.example.ui.components
+
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -18,7 +21,6 @@ import com.example.ui.components.*
 import coil.compose.AsyncImage
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import com.example.R
 import com.example.data.model.*
 import com.example.data.repository.*
 import com.example.domain.models.*
@@ -53,7 +55,7 @@ fun HeroSectionShared(title: String, backdropUrl: String, desc: String, tag: Str
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f)),
+                        colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background.copy(alpha = 0.9f)),
                         startY = 100f
                     )
                 )
@@ -69,14 +71,14 @@ fun HeroSectionShared(title: String, backdropUrl: String, desc: String, tag: Str
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.9f), RoundedCornerShape(4.dp))
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                Text(tag, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(tag, color = MaterialTheme.colorScheme.onBackground, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -96,9 +98,9 @@ fun HeroSectionShared(title: String, backdropUrl: String, desc: String, tag: Str
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = Color.White, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(R.string.play), color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.play), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.SemiBold)
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -106,11 +108,11 @@ fun HeroSectionShared(title: String, backdropUrl: String, desc: String, tag: Str
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .border(1.dp, Color.White, CircleShape)
+                        .border(1.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
                         .clickable { /* Add to list */ },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White)
+                    Icon(Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
@@ -123,9 +125,9 @@ fun HeroSectionShared(title: String, backdropUrl: String, desc: String, tag: Str
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Box(modifier = Modifier.size(16.dp, 4.dp).clip(RoundedCornerShape(2.dp)).background(MaterialTheme.colorScheme.primary))
-            Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(Color.Gray))
-            Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(Color.Gray))
-            Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(Color.Gray))
+            Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.onSurfaceVariant))
+            Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.onSurfaceVariant))
+            Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.onSurfaceVariant))
         }
     }
 }
@@ -149,7 +151,7 @@ fun SectionTitleShared(title: String, onSeeAllClick: (() -> Unit)? = null) {
                     text = firstWord,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 if (rest.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(6.dp))
@@ -157,7 +159,7 @@ fun SectionTitleShared(title: String, onSeeAllClick: (() -> Unit)? = null) {
                         text = rest,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE50914)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -167,7 +169,7 @@ fun SectionTitleShared(title: String, onSeeAllClick: (() -> Unit)? = null) {
                     .width(28.dp)
                     .height(3.dp)
                     .clip(RoundedCornerShape(1.5.dp))
-                    .background(Color(0xFFE50914))
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
         
@@ -179,13 +181,13 @@ fun SectionTitleShared(title: String, onSeeAllClick: (() -> Unit)? = null) {
                 Text(
                     text = stringResource(R.string.see_all),
                     style = MaterialTheme.typography.labelLarge,
-                    color = Color(0xFFE50914)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
                     contentDescription = "See All",
-                    tint = Color(0xFFE50914),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -201,8 +203,8 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
             .width(340.dp)
             .height(140.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF141414))
-            .border(1.dp, Color(0xFFE50914).copy(alpha=0.3f), RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.background)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.3f), RoundedCornerShape(16.dp))
             .clickable { onClick() }
     ) {
         Row(
@@ -226,7 +228,7 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f))
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.3f))
                 )
                 
                 // HD Badge top left
@@ -234,10 +236,10 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                     modifier = Modifier
                         .padding(8.dp)
                         .align(Alignment.TopStart)
-                        .border(1.dp, Color.White.copy(alpha=0.7f), RoundedCornerShape(4.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha=0.7f), RoundedCornerShape(4.dp))
                         .padding(horizontal=4.dp, vertical=2.dp)
                 ) {
-                    Text("HD", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.hd), color = MaterialTheme.colorScheme.onBackground, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
                 
                 // Pause Icon bottom left
@@ -246,18 +248,18 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                         .padding(start = 12.dp, bottom = 20.dp)
                         .align(Alignment.BottomStart)
                         .size(28.dp)
-                        .border(1.5.dp, Color.White, CircleShape)
+                        .border(1.5.dp, MaterialTheme.colorScheme.onBackground, CircleShape)
                         .padding(6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.width(8.dp).height(10.dp)) {
-                        Box(modifier = Modifier.width(2.5.dp).fillMaxHeight().background(Color.White))
-                        Box(modifier = Modifier.width(2.5.dp).fillMaxHeight().background(Color.White))
+                        Box(modifier = Modifier.width(2.5.dp).fillMaxHeight().background(MaterialTheme.colorScheme.onBackground))
+                        Box(modifier = Modifier.width(2.5.dp).fillMaxHeight().background(MaterialTheme.colorScheme.onBackground))
                     }
                 }
                 
                 // Time text
-                Text("32:14 / 1:54:20", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 20.dp, end = 12.dp))
+                Text("32:14 / 1:54:20", color = MaterialTheme.colorScheme.onBackground, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 20.dp, end = 12.dp))
                 
                 // Progress Bar
                 Box(
@@ -267,9 +269,9 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                         .fillMaxWidth()
                         .height(4.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha=0.3f))
+                        .background(MaterialTheme.colorScheme.onBackground.copy(alpha=0.3f))
                 ) {
-                    Box(modifier = Modifier.fillMaxWidth(0.3f).fillMaxHeight().background(Color(0xFFE50914)))
+                    Box(modifier = Modifier.fillMaxWidth(0.3f).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
                 }
             }
             
@@ -281,7 +283,7 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
             ) {
                 Text(
                     text = item.title, 
-                    color = Color.White, 
+                    color = MaterialTheme.colorScheme.onBackground, 
                     fontSize = 18.sp, 
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
@@ -289,20 +291,19 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("2023", color = Color.Gray, fontSize = 12.sp)
-                    Text("  |  " + (if (item.isMovie) "فيلم" else "مسلسل") + "  |  ", color = Color.Gray, fontSize = 12.sp)
-                    Box(modifier = Modifier.border(1.dp, Color.Gray, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 2.dp)) {
-                        Text("R", color = Color.Gray, fontSize = 10.sp)
+                    Text("2023", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    Text("  |  " + (if (item.isMovie) "فيلم" else "مسلسل") + "  |  ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    Box(modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 2.dp)) {
+                        Text(stringResource(R.string.rating_r), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
                     }
                     Spacer(modifier = Modifier.width(4.dp))
-                    Box(modifier = Modifier.border(1.dp, Color.Gray, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 2.dp)) {
-                        Text("HD", color = Color.Gray, fontSize = 10.sp)
+                    Box(modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 2.dp)) {
+                        Text(stringResource(R.string.hd), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "A group of men fight for survival in a world where trust is a luxury.", 
-                    color = Color.Gray, 
+                Text(stringResource(R.string.desc_sample), 
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, 
                     fontSize = 12.sp, 
                     lineHeight = 16.sp,
                     maxLines = 3, 
@@ -315,12 +316,12 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
         Icon(
             imageVector = Icons.Default.MoreVert,
             contentDescription = "Menu",
-            tint = Color.Gray,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(8.dp)
                 .size(24.dp)
-                .background(Color.Black.copy(alpha=0.5f), CircleShape)
+                .background(MaterialTheme.colorScheme.background.copy(alpha=0.5f), CircleShape)
                 .padding(2.dp)
         )
         
@@ -331,13 +332,13 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                 .padding(12.dp)
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFE50914)),
+                .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.PlayArrow, 
                 contentDescription = "Play", 
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(28.dp)
             )
         }

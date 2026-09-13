@@ -1,5 +1,8 @@
 package com.example.ui.screens.profile
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
-import com.example.R
 import androidx.compose.material.icons.filled.Edit
 
 import androidx.compose.ui.Alignment
@@ -57,21 +59,21 @@ fun EditProfileScreen(
     }
 
 
-    val primaryRed = Color(0xFFE50914)
+    val primaryRed = MaterialTheme.colorScheme.primary
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profile", color = Color.White) },
+                title = { Text(stringResource(R.string.edit_profile), color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF121212))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        containerColor = Color(0xFF121212)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -88,7 +90,7 @@ fun EditProfileScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
-                    .background(Color.DarkGray)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .clickable {
                         photoPickerLauncher.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -105,10 +107,10 @@ fun EditProfileScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.4f)),
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.4f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Photo", tint = Color.White, modifier = Modifier.size(32.dp))
+                    Icon(Icons.Default.Edit, contentDescription = "Edit Photo", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(32.dp))
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -117,12 +119,12 @@ fun EditProfileScreen(
 
                 value = firstName,
                 onValueChange = { firstName = it },
-                label = { Text("First Name", color = Color.Gray) },
+                label = { Text(stringResource(R.string.first_name), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryRed,
-                    unfocusedBorderColor = Color.DarkGray,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                     cursorColor = primaryRed
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -132,12 +134,12 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = lastName,
                 onValueChange = { lastName = it },
-                label = { Text("Last Name", color = Color.Gray) },
+                label = { Text(stringResource(R.string.last_name), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryRed,
-                    unfocusedBorderColor = Color.DarkGray,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                     cursorColor = primaryRed
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -147,12 +149,12 @@ fun EditProfileScreen(
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
-                label = { Text("Username", color = Color.Gray) },
+                label = { Text(stringResource(R.string.username), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryRed,
-                    unfocusedBorderColor = Color.DarkGray,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                     cursorColor = primaryRed
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -163,12 +165,12 @@ fun EditProfileScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
                     .padding(16.dp)
             ) {
-                Text("Privacy Settings", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.privacy_settings), color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Control what visitors can see about your profile.", color = Color.Gray, fontSize = 14.sp)
+                Text(stringResource(R.string.control_visibility), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Row(
@@ -177,17 +179,17 @@ fun EditProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Public Profile", color = Color.White, fontSize = 16.sp)
-                        Text("Allow others to search for you and see your profile", color = Color.Gray, fontSize = 12.sp)
+                        Text(stringResource(R.string.public_profile), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp)
+                        Text(stringResource(R.string.allow_search), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                     }
                     Switch(
                         checked = isProfilePublic,
                         onCheckedChange = { isProfilePublic = it },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
+                            checkedThumbColor = MaterialTheme.colorScheme.onBackground,
                             checkedTrackColor = primaryRed,
-                            uncheckedThumbColor = Color.Gray,
-                            uncheckedTrackColor = Color.DarkGray
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
                 }
@@ -214,9 +216,9 @@ fun EditProfileScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Save Changes", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.save_changes), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

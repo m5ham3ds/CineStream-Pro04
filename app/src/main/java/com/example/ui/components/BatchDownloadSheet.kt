@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -39,7 +42,7 @@ fun BatchDownloadSheet(
     if (showQualitySelector) {
         AlertDialog(
             onDismissRequest = { showQualitySelector = false },
-            title = { Text("Select Quality") },
+            title = { Text(stringResource(R.string.select_quality)) },
             text = {
                 Column {
                     listOf("1080p", "720p", "480p", "360p", "Auto").forEach { quality ->

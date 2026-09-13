@@ -112,7 +112,7 @@ fun ExpandableSearchBar(
                 // Dropdown Results
                 if (uiState.query.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    HorizontalDivider(color = Color.DarkGray)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                     
                     if (uiState.isSearching) {
                         Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {

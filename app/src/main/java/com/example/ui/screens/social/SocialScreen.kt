@@ -1,5 +1,8 @@
 package com.example.ui.screens.social
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.R
 import com.example.data.repository.Conversation
 import com.example.data.repository.UserProfile
 import java.text.SimpleDateFormat
@@ -46,18 +48,18 @@ fun SocialScreen(
     var selectedCategory by remember { mutableStateOf("All Messages") }
 
     
-    val primaryRed = Color(0xFFE50914)
-    val bgColor = Color(0xFF121212)
-    val surfaceColor = Color(0xFF1C1C1E)
+    val primaryRed = MaterialTheme.colorScheme.primary
+    val bgColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
     
     var searchQuery by remember { mutableStateOf("") }
 
     if (currentUser == null) {
         Box(modifier = Modifier.fillMaxSize().background(bgColor), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("CineStream Community", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(stringResource(R.string.community), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Sign in to chat and share with others", color = Color.Gray)
+                Text(stringResource(R.string.sign_in_social), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     } else {
@@ -78,8 +80,8 @@ fun SocialScreen(
                         searchQuery = it 
                         viewModel.searchUsers(it)
                     },
-                    placeholder = { Text("Search by username to message...", color = Color.Gray) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray) },
+                    placeholder = { Text(stringResource(R.string.search_username), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(1.dp, primaryRed.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
@@ -89,8 +91,8 @@ fun SocialScreen(
                         unfocusedContainerColor = surfaceColor,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground
                     ),
                     singleLine = true
                 )
@@ -119,8 +121,8 @@ fun SocialScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Stories", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Text("View all", color = primaryRed, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.stories), color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.view_all_small), color = primaryRed, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -141,7 +143,7 @@ fun SocialScreen(
                                 Icon(Icons.Default.Add, contentDescription = "Add Story", tint = primaryRed, modifier = Modifier.size(32.dp))
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Add Story", color = Color.White, fontSize = 12.sp)
+                            Text(stringResource(R.string.add_story), color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp)
                         }
                     }
                     // For now, no actual stories are rendered until fetched, we just show add story
@@ -217,10 +219,10 @@ fun CustomFilterChip(text: String, selected: Boolean, onClick: () -> Unit) {
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
-            .background(if (selected) Color(0xFFE50914) else Color(0xFF2C2C2E))
+            .background(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text(text, color = if (selected) Color.White else Color.Gray, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text(text, color = if (selected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -230,7 +232,7 @@ fun UserSearchResultItem(user: UserProfile, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF1C1C1E))
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -239,13 +241,13 @@ fun UserSearchResultItem(user: UserProfile, onClick: () -> Unit) {
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF2C2C2E)),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Text(user.displayName.take(1).uppercase(), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(user.displayName.take(1).uppercase(), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Text(user.displayName, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        Text(user.displayName, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -255,7 +257,7 @@ fun ChatListItem(name: String, message: String, time: String, unreadCount: Int, 
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF121212))
+            .background(MaterialTheme.colorScheme.background)
             .clickable(onClick = onClick)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -266,10 +268,10 @@ fun ChatListItem(name: String, message: String, time: String, unreadCount: Int, 
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF2C2C2E)),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Text(name.take(1).uppercase(), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(name.take(1).uppercase(), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
         }
         
@@ -277,27 +279,27 @@ fun ChatListItem(name: String, message: String, time: String, unreadCount: Int, 
         
         // Texts
         Column(modifier = Modifier.weight(1f)) {
-            Text(name, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text(name, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(message.ifEmpty { "Start a conversation" }, color = Color.Gray, fontSize = 14.sp, maxLines = 1)
+            Text(message.ifEmpty { "Start a conversation" }, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, maxLines = 1)
         }
         
         // Time & Badge
         Column(horizontalAlignment = Alignment.End) {
-            Text(time, color = if (unreadCount > 0) Color(0xFFE50914) else Color.Gray, fontSize = 12.sp)
+            Text(time, color = if (unreadCount > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(6.dp))
             if (unreadCount > 0) {
                 Box(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFE50914)),
+                        .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(unreadCount.toString(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(unreadCount.toString(), color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             } else {
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
             }
         }
     }

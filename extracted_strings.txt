@@ -1,0 +1,223 @@
+  |  
+$0.00 / month
+$9.99 / month
+$availableStr free
+$selectedStat Activity
+$type • $size
+$usedPercentageInt% used
+$usedStr / $totalStr used
+$year • ${if(isMovie) stringResource(R.string.movie_singular) else stringResource(R.string.series_singular)}
+${(item.progress * 100).toInt()}%
+${episode.duration}m
+${episode.episodeNumber}. ${episode.title}
+${groupedSeries[folderName]?.size ?: 0} Episodes
+${movie.year} • ${movie.genres.take(3).joinToString(
+${series.year} • ${series.genres.take(3).joinToString(
+0:12
+1
+16+
+18+
+2023
+2024
+32:14 / 1:54:20
+8.1
+@${currentUser?.username}
+@${userProfile!!.username}
+A group of men fight for survival in a world where trust is a luxury.
+About
+About CineStream
+Account
+Active Devices
+Active now • Riyadh, KSA
+Add Story
+Allow others to search for you and see your profile
+Android • Ready to connect
+App Crashed!
+App Settings
+Are you sure you want to sign out?
+Available Devices:
+Back to Folders
+Basic
+Batch Download - ${currentSeason?.seasonNumber?.let { 
+Biography
+Birthplace
+Born
+Browse by Category
+C
+Cancel
+Change Password
+Choose Content Type
+Choose Your Plan
+CineStream
+CineStream Community
+CineStream is your premium cinematic experience. Stream your favorite movies and series in high quality, anytime, anywhere.
+Completed
+Connect
+Connected to ${connectedEndpoint!!.name}
+Connected to ${connectedEndpoint?.name}
+Connecting to ${uiState.currentWebsite}$serverText...
+Connection Status
+Control what visitors can see about your profile.
+Copy
+Copy Error
+Crash Error
+Current Password
+Current Plan
+Current Site: ${uiState.currentWebsite}
+Delete
+Delete Message
+Delete for Everyone
+Delete for Me
+Do you want to set this as your new profile picture?
+Download (${selectedEpisodes.size})
+Edit
+Edit Profile
+Edited
+Email (Gmail)
+Enjoy ad-free streaming and exclusive content.
+Enter your email
+Ep ${episode.episodeNumber}: ${episode.title}
+Episode ${ep.episodeNumber}: ${ep.title}
+Episodes
+First Name
+Forgot Password?
+G 
+HD
+How it works?
+Known For
+Last Name
+Last active: Yesterday • Riyadh, KSA
+Loading ${uiState.currentWebsite}$serverText...
+Looking for devices...
+MacBook Air
+Make sure both devices have Wi-Fi and are close to each other. Large files may take some time to transfer.
+Make sure the sender is on the same Wi-Fi network or Bluetooth is enabled. Transfer uses high-speed Wi-Fi Direct.
+Manage Plan
+Messages are end-to-end encrypted.\nYour privacy is our priority.
+Movies
+Nearby Devices
+New Password
+No downloaded movies found.
+Offline Share
+Online
+Or continue with
+POPULAR
+Password
+Play Now
+Preferences
+Premium Member
+Premium Plan
+Premium 👑
+Privacy Settings
+Profile
+Public Profile
+Quality
+Quality:
+R
+Ready to Play
+Ready to receive
+Receive Content
+Receive Media
+Receive from nearby devices
+Recent Transfers
+Remember me
+Reset Password
+Restart App
+Results for \
+Save
+Save Changes
+Scan
+Search by username to message...
+Searching for video...
+Security
+Select Download Quality
+Select Quality
+Select Server
+Select Server & Quality
+Select Source Website
+Send
+Send Content
+Series / Anime
+Share movies, series or anime
+Sign Out
+Sign in to chat and share with others
+Sign in with Google
+Sign out
+Skip
+Source:
+Stories
+Subscription
+This account is private.
+Tips for faster transfer
+Today
+Update Password
+Update Profile Picture
+Upgrade to Premium
+Upgrade to Premium to unlock all features
+User not found
+Username
+View All
+View all
+Waiting for action
+Waiting for files...
+Welcome to
+Who do you want to delete this message for?
+You're Premium!
+Your Cinematic World, Anytime, Anywhere.
+Your ultimate destination for\nmovies and series. Enjoy endless\nentertainment, anytime, anywhere.
+iPhone 13 Pro
+message
+username
+إدارة مصادر المشاهدة واستمتع بمحتوى أكثر
+إعادة الفحص
+إعادة المحاولة
+إعادة المحاولة مجدداً
+إعادة محاولة استخراج الجودات
+إلغاء
+إلغاء التثبيت
+إلغاء العملية
+إلغاء تماماً
+اختر الجودة ($selectedServerForQuality)
+اختر السيرفر
+اسحب للأعلى لتحميل المزيد
+الإضافات
+الانتقال إلى الإضافات
+البحث في الإضافات...
+البحث في موقع آخر
+الرجاء الإنتظار، يتم جلب أحدث المعلومات من السيرفرات.
+السيرفر: $selectedServerForQuality
+العملية لا تزال جارية، هل أنت متأكد أنك تريد الإلغاء؟
+العودة لاختيار سيرفر آخر
+تأكيد
+تأكيد التخطي
+تأكيد فتح المتصفح
+تثبيت
+تحميل المزيد من الحلقات
+تخطي الموقع الحالي
+تم التحقق، متابعة
+تم جلب السيرفرات من: $currentSiteName
+تم حذف هذه الرسالة
+جاري الإتصال بالسيرفرات المتاحة...
+جاري تحميل الحلقات...
+حدث خطأ في الاتصال بالإنترنت
+روابط التحميل المباشرة
+صفحة الإضافات
+عذراً، لم نتمكن من العثور على سيرفرات تعمل لهذا العمل في جميع المواقع المدعومة.
+فتح المتصفح يدوياً للتحقق
+فشل في العثور على أي جودة
+لا توجد إضافات أخرى
+لم يتم تثبيت أي إضافات
+لم يتم تثبيت أي إضافات أخرى للمتابعة. ماذا تريد أن تفعل؟
+متابعة
+ملاحظة
+نعم
+نعم، أكمل
+نعم، إلغاء
+هل أنت متأكد أنك قمت بتخطي حماية Cloudflare بنجاح؟
+هل أنت متأكد من رغبتك في تخطي هذا الموقع والانتقال للتالي؟
+هل أنت متأكد من رغبتك في فتح المتصفح يدوياً للتحقق من الرابط؟
+يرجى التحقق من الشبكة والمحاولة مرة أخرى.
+يرجى تثبيت إضافة واحدة على الأقل لجلب الخوادم والروابط.
+يرجى تخطي الحماية للمتابعة...
+يمكنك تثبيت عدة إضافات للحصول على تجربة مشاهدة أفضل ومصادر أكثر.
+👑

@@ -43,7 +43,6 @@ import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf

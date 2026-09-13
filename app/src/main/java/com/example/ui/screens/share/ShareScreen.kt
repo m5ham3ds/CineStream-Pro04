@@ -1,5 +1,8 @@
 package com.example.ui.screens.share
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import android.Manifest
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
@@ -127,7 +130,7 @@ fun ShareScreen(
     }
 
     Scaffold(
-        containerColor = Color(0xFF0F0F11),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Row(
                 modifier = Modifier
@@ -135,10 +138,10 @@ fun ShareScreen(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Offline Share", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.offline_share), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { /* Help */ }) {
-                    Icon(Icons.Default.HelpOutline, contentDescription = "Help", tint = Color.White)
+                    Icon(Icons.Default.HelpOutline, contentDescription = "Help", tint = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
@@ -154,7 +157,7 @@ fun ShareScreen(
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF19191C)),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Row(
@@ -177,7 +180,7 @@ fun ShareScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Connection Status", color = Color.Gray, fontSize = 12.sp)
+                            Text(stringResource(R.string.connection_status), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                             val statusText = when (p2pState) {
                                 P2PState.DISCOVERING -> "DISCOVERING"
                                 P2PState.ADVERTISING -> "ADVERTISING"
@@ -186,17 +189,17 @@ fun ShareScreen(
                                 else -> "IDLE"
                             }
                             Text(statusText, color = Color.Red, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                            Text("Waiting for action", color = Color.Gray, fontSize = 12.sp)
+                            Text(stringResource(R.string.waiting_for_action), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                         }
                         
                         OutlinedButton(
                             onClick = { /* How it works */ },
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                            border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)),
                             shape = RoundedCornerShape(20.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
-                            Text("How it works?", fontSize = 12.sp)
+                            Text(stringResource(R.string.how_it_works), fontSize = 12.sp)
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(14.dp))
                         }
@@ -218,7 +221,7 @@ fun ShareScreen(
                                     p2pManager.startDiscovery()
                                 }
                             },
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE50914)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -229,17 +232,17 @@ fun ShareScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.2f)),
+                                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White, modifier = Modifier.size(20.dp))
+                                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Send Content", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("Share movies, series or anime", color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp, lineHeight = 14.sp)
+                                Text(stringResource(R.string.send_content), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(stringResource(R.string.share_desc), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f), fontSize = 11.sp, lineHeight = 14.sp)
                             }
-                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
                         }
                     }
 
@@ -253,7 +256,7 @@ fun ShareScreen(
                                     p2pManager.startAdvertising(Build.MODEL)
                                 }
                             },
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF19191C)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -264,17 +267,17 @@ fun ShareScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.1f)),
+                                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Download, contentDescription = "Receive", tint = Color.White, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Download, contentDescription = "Receive", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Receive Content", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text("Receive from nearby devices", color = Color.Gray, fontSize = 11.sp, lineHeight = 14.sp)
+                                Text(stringResource(R.string.receive_content), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(stringResource(R.string.receive_from_nearby), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 14.sp)
                             }
-                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -283,7 +286,7 @@ fun ShareScreen(
 
             // Content Type Selector
             item {
-                Text("Choose Content Type", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.choose_content_type), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -304,8 +307,8 @@ fun ShareScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Recent Transfers", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("View All", color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.recent_transfers), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.view_all), color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -320,7 +323,7 @@ fun ShareScreen(
                     isCompleted = true
                 )
                 
-                HorizontalDivider(color = Color(0xFF2A2A2E), modifier = Modifier.padding(vertical = 12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
                 
                 // Demo item 2
                 RecentTransferItem(
@@ -343,11 +346,11 @@ fun ShareScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Nearby Devices", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.nearby_devices), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { p2pManager.startDiscovery() }) {
                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.Red, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Scan", color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.scan), color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -355,7 +358,7 @@ fun ShareScreen(
                 if (discoveredEndpoints.isEmpty()) {
                     // Demo devices based on screenshot
                     NearbyDeviceItem("Ahmed's Phone")
-                    HorizontalDivider(color = Color(0xFF2A2A2E), modifier = Modifier.padding(vertical = 12.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
                     NearbyDeviceItem("Sara's Phone")
                 } else {
                     discoveredEndpoints.forEachIndexed { index, endpoint ->
@@ -363,7 +366,7 @@ fun ShareScreen(
                             p2pManager.requestConnection(endpoint.id, Build.MODEL)
                         }
                         if (index < discoveredEndpoints.size - 1) {
-                            HorizontalDivider(color = Color(0xFF2A2A2E), modifier = Modifier.padding(vertical = 12.dp))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
                         }
                     }
                 }
@@ -376,8 +379,8 @@ fun ShareScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF19191C)),
-                    border = BorderStroke(1.dp, Color(0xFF2A2A2E))
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     Row(modifier = Modifier.padding(16.dp)) {
                         Box(
@@ -388,9 +391,9 @@ fun ShareScreen(
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Tips for faster transfer", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(stringResource(R.string.tips_faster_transfer), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("Make sure both devices have Wi-Fi and are close to each other. Large files may take some time to transfer.", color = Color.Gray, fontSize = 12.sp, lineHeight = 18.sp)
+                            Text(stringResource(R.string.share_instruction_1), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 18.sp)
                         }
                     }
                 }
@@ -413,9 +416,9 @@ fun ShareScreen(
                 Column {
                     if (p2pState == P2PState.DISCOVERING && discoveredEndpoints.isEmpty()) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp))
-                        Text("Looking for devices...", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                        Text(stringResource(R.string.looking_for_devices), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     } else if (discoveredEndpoints.isNotEmpty() && connectedEndpoint == null) {
-                        Text("Available Devices:", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
+                        Text(stringResource(R.string.available_devices), fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
                         discoveredEndpoints.forEach { endpoint ->
                             Row(
                                 modifier = Modifier
@@ -435,14 +438,14 @@ fun ShareScreen(
                         
                         LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
                             if (completedDownloads.isEmpty()) {
-                                item { Text("No downloaded movies found.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                                item { Text(stringResource(R.string.no_downloads), color = MaterialTheme.colorScheme.onSurfaceVariant) }
                             } else {
                                 if (selectedFolder == null) {
                                     val movies = completedDownloads.filter { it.isMovie }
                                     val series = completedDownloads.filter { !it.isMovie }
                                     
                                     if (movies.isNotEmpty()) {
-                                        item { Text("Movies", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 8.dp)) }
+                                        item { Text(stringResource(R.string.movies), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 8.dp)) }
                                         items(movies) { item ->
                                             SendItemRow(item, context, p2pManager, connectedEndpoint) { 
                                                 showSendDialog = false 
@@ -452,7 +455,7 @@ fun ShareScreen(
                                     }
                                     
                                     if (series.isNotEmpty()) {
-                                        item { Text("Series / Anime", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 8.dp)) }
+                                        item { Text(stringResource(R.string.series_anime), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 8.dp)) }
                                         val groupedSeries = series.groupBy { it.title.split(" - ").firstOrNull() ?: it.title }
                                         items(groupedSeries.keys.toList()) { folderName ->
                                             Row(
@@ -480,7 +483,7 @@ fun ShareScreen(
                                         ) {
                                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text("Back to Folders", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                            Text(stringResource(R.string.back_to_folders), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                         }
                                     }
                                     val folderItems = completedDownloads.filter { !it.isMovie && (it.title.split(" - ").firstOrNull() ?: it.title) == selectedFolder }
@@ -501,7 +504,7 @@ fun ShareScreen(
                     showSendDialog = false
                     selectedFolder = null
                     p2pManager.stopAll()
-                }) { Text("Cancel") }
+                }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -512,7 +515,7 @@ fun ShareScreen(
                 showReceiveDialog = false
                 p2pManager.stopAll()
             },
-            title = { Text("Receive Media", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.receive_media), fontWeight = FontWeight.Bold) },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -522,22 +525,22 @@ fun ShareScreen(
                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Green, modifier = Modifier.size(64.dp))
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("Connected to ${connectedEndpoint!!.name}", fontWeight = FontWeight.Bold)
-                        Text("Waiting for files...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.waiting_for_files), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
                         Box(
                             modifier = Modifier
                                 .size(200.dp)
-                                .background(Color.White, RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.onBackground, RoundedCornerShape(16.dp))
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Outlined.QrCode2, contentDescription = "QR Code", tint = Color.Black, modifier = Modifier.fillMaxSize())
+                            Icon(Icons.Outlined.QrCode2, contentDescription = "QR Code", tint = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize())
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Ready to receive", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Text("Make sure the sender is on the same Wi-Fi network or Bluetooth is enabled. Transfer uses high-speed Wi-Fi Direct.", textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 16.dp))
+                        Text(stringResource(R.string.ready_to_receive), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text(stringResource(R.string.share_instruction_2), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
             },
@@ -545,7 +548,7 @@ fun ShareScreen(
                 TextButton(onClick = {
                     showReceiveDialog = false
                     p2pManager.stopAll()
-                }) { Text("Cancel") }
+                }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -558,7 +561,7 @@ fun RowScope.ContentTypeCard(title: String, icon: ImageVector, isSelected: Boole
             .weight(1f)
             .aspectRatio(1f)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF19191C)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
         border = if (isSelected) BorderStroke(1.dp, Color.Red) else null
     ) {
@@ -567,9 +570,9 @@ fun RowScope.ContentTypeCard(title: String, icon: ImageVector, isSelected: Boole
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(icon, contentDescription = title, tint = if (isSelected) Color.Red else Color.Gray, modifier = Modifier.size(28.dp))
+            Icon(icon, contentDescription = title, tint = if (isSelected) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, color = if (isSelected) Color.Red else Color.Gray, fontSize = 11.sp, textAlign = TextAlign.Center)
+            Text(title, color = if (isSelected) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, textAlign = TextAlign.Center)
         }
     }
 }
@@ -585,18 +588,18 @@ fun RecentTransferItem(title: String, type: String, size: String, isSent: Boolea
             modifier = Modifier
                 .size(60.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF2A2A2E)),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Outlined.Movie, contentDescription = null, tint = Color.Gray)
+            Icon(Icons.Outlined.Movie, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         
         Spacer(modifier = Modifier.width(12.dp))
         
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("$type • $size", color = Color.Gray, fontSize = 11.sp)
+                Text("$type • $size", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
                     if (isSent) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
@@ -607,16 +610,16 @@ fun RecentTransferItem(title: String, type: String, size: String, isSent: Boolea
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(if (isSent) "Sent" else "Received", color = if (isSent) Color.Red else Color(0xFF3b82f6), fontSize = 11.sp)
             }
-            Text(if (isSent) "To: $targetDevice" else "From: $targetDevice", color = Color.Gray, fontSize = 11.sp)
+            Text(if (isSent) "To: $targetDevice" else "From: $targetDevice", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
         
         Column(horizontalAlignment = Alignment.End) {
-            Text(time, color = Color.Gray, fontSize = 11.sp)
+            Text(time, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.CheckCircleOutline, contentDescription = null, tint = Color(0xFF10b981), modifier = Modifier.size(14.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Completed", color = Color(0xFF10b981), fontSize = 11.sp)
+                Text(stringResource(R.string.completed), color = Color(0xFF10b981), fontSize = 11.sp)
             }
         }
     }
@@ -632,8 +635,8 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF19191C))
-                .border(1.dp, Color(0xFF2A2A2E), CircleShape),
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = Color.Red, modifier = Modifier.size(20.dp))
@@ -642,8 +645,8 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
         Spacer(modifier = Modifier.width(12.dp))
         
         Column(modifier = Modifier.weight(1f)) {
-            Text(name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text("Android • Ready to connect", color = Color.Gray, fontSize = 11.sp)
+            Text(name, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(stringResource(R.string.android_ready), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
         
         Icon(Icons.Default.SignalCellularAlt, contentDescription = "Signal", tint = Color(0xFF10b981), modifier = Modifier.size(20.dp))
@@ -656,7 +659,7 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
             modifier = Modifier.height(32.dp)
         ) {
-            Text("Connect", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.connect), fontSize = 12.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -686,4 +689,3 @@ fun SendItemRow(item: DownloadItem, context: android.content.Context, p2pManager
         Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
     }
 }
-

@@ -1,5 +1,8 @@
 package com.example.ui.screens.auth
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,9 +67,9 @@ fun AuthScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val primaryRed = Color(0xFFE50914)
-    val bgColor = Color(0xFF121212)
-    val cardColor = Color(0xFF1E1E1E)
+    val primaryRed = MaterialTheme.colorScheme.primary
+    val bgColor = MaterialTheme.colorScheme.background
+    val cardColor = MaterialTheme.colorScheme.surface
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
@@ -126,12 +129,12 @@ fun AuthScreen(
         var resetEmail by remember { mutableStateOf(email) }
         AlertDialog(
             onDismissRequest = { showForgotPasswordDialog = false },
-            title = { Text("Reset Password") },
+            title = { Text(stringResource(R.string.reset_password)) },
             text = {
                 OutlinedTextField(
                     value = resetEmail,
                     onValueChange = { resetEmail = it },
-                    placeholder = { Text("Enter your email") },
+                    placeholder = { Text(stringResource(R.string.enter_email)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -143,12 +146,12 @@ fun AuthScreen(
                         showForgotPasswordDialog = false
                     }
                 }) {
-                    Text("Send", color = primaryRed)
+                    Text(stringResource(R.string.send), color = primaryRed)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showForgotPasswordDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -160,8 +163,7 @@ fun AuthScreen(
             .background(bgColor)
     ) {
         // Skip Button
-        Text(
-            text = "Skip",
+        Text(text = stringResource(R.string.skip),
             color = primaryRed,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -183,8 +185,7 @@ fun AuthScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "CineStream",
+            Text(text = stringResource(R.string.app_name),
                 color = primaryRed,
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.ExtraBold,
@@ -193,14 +194,14 @@ fun AuthScreen(
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = if (isSignUp) "Create Account" else "Welcome Back!",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold,
                 fontSize = 28.sp
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = if (isSignUp) "Sign up to start your cinematic journey" else "Sign in to continue your cinematic journey",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp
             )
             Spacer(modifier = Modifier.height(32.dp))
@@ -215,14 +216,14 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    placeholder = { Text("Email (Gmail)", color = Color.Gray) },
+                    placeholder = { Text(stringResource(R.string.email_hint), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     leadingIcon = { Icon(Icons.Outlined.Email, contentDescription = null, tint = primaryRed) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Gray,
-                        unfocusedBorderColor = Color.DarkGray,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                         cursorColor = primaryRed
                     ),
                     modifier = Modifier.fillMaxWidth(),
@@ -232,14 +233,14 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    placeholder = { Text("Password", color = Color.Gray) },
+                    placeholder = { Text(stringResource(R.string.password), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null, tint = primaryRed) },
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
                                 imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                 contentDescription = null,
-                                tint = Color.Gray
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     },
@@ -258,10 +259,10 @@ fun AuthScreen(
                         }
                     }),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.Gray,
-                        unfocusedBorderColor = Color.DarkGray,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                         cursorColor = primaryRed
                     ),
                     modifier = Modifier.fillMaxWidth(),
@@ -280,15 +281,14 @@ fun AuthScreen(
                             onCheckedChange = { rememberMe = it },
                             colors = CheckboxDefaults.colors(
                                 checkedColor = primaryRed,
-                                uncheckedColor = Color.Gray,
-                                checkmarkColor = Color.White
+                                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                checkmarkColor = MaterialTheme.colorScheme.onBackground
                             )
                         )
-                        Text("Remember me", color = Color.Gray, fontSize = 14.sp)
+                        Text(stringResource(R.string.remember_me), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     }
                     if (!isSignUp) {
-                        Text(
-                            text = "Forgot Password?",
+                        Text(text = stringResource(R.string.forgot_password),
                             color = primaryRed,
                             fontSize = 14.sp,
                             modifier = Modifier.clickable { showForgotPasswordDialog = true }
@@ -315,37 +315,37 @@ fun AuthScreen(
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
                     } else {
-                        Text(if (isSignUp) "Sign Up" else "Sign In", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(if (isSignUp) "Sign Up" else "Sign In", color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
-                Text("Or continue with", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 16.dp))
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.DarkGray)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.surfaceVariant)
+                Text(stringResource(R.string.continue_with), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, modifier = Modifier.padding(horizontal = 16.dp))
+                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.surfaceVariant)
             }
             Spacer(modifier = Modifier.height(32.dp))
             
             Button(
                 onClick = { signInWithGoogle() },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground),
                 shape = RoundedCornerShape(8.dp),
                 enabled = !isLoading
             ) {
-                Text("G ", color = Color.Black, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
-                Text("Sign in with Google", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text("G ", color = MaterialTheme.colorScheme.background, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                Text(stringResource(R.string.sign_in_google), color = MaterialTheme.colorScheme.background, fontSize = 16.sp, fontWeight = FontWeight.Medium)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = if (isSignUp) "Already have an account? " else "Don't have an account? ",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
                 Text(

@@ -1,5 +1,8 @@
 package com.example.ui.screens.crash
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,15 +27,14 @@ class CrashActivity : ComponentActivity() {
             MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.DarkGray
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(
                         modifier = Modifier
                             .padding(16.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        Text(
-                            text = "App Crashed!",
+                        Text(text = stringResource(R.string.app_crashed),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -45,16 +47,16 @@ class CrashActivity : ComponentActivity() {
                                 startActivity(intent)
                                 finish()
                             }) {
-                                Text("Restart App")
+                                Text(stringResource(R.string.restart_app))
                             }
                             
                             Button(onClick = {
                                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                val clip = ClipData.newPlainText("Crash Error", stackTrace)
+                                val clip = ClipData.newPlainText(this@CrashActivity.getString(R.string.crash_error), stackTrace)
                                 clipboard.setPrimaryClip(clip)
                                 Toast.makeText(this@CrashActivity, "Error copied!", Toast.LENGTH_SHORT).show()
                             }) {
-                                Text("Copy Error")
+                                Text(stringResource(R.string.copy_error))
                             }
                         }
                         
@@ -62,7 +64,7 @@ class CrashActivity : ComponentActivity() {
                         Text(
                             text = stackTrace,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }

@@ -142,7 +142,7 @@ fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f)),
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(32.dp))
@@ -153,7 +153,7 @@ fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
                     .align(Alignment.BottomStart)
                     .padding(8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6f))
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(

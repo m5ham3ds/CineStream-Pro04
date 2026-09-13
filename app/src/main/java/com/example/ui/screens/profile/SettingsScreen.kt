@@ -1,5 +1,8 @@
 package com.example.ui.screens.profile
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,18 +28,18 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
-    val bgColor = Color(0xFF121212)
-    val surfaceColor = Color(0xFF1C1C1E)
-    val primaryRed = Color(0xFFE50914)
-    val iconBgColor = Color(0xFF2C2C2E)
+    val bgColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val primaryRed = MaterialTheme.colorScheme.primary
+    val iconBgColor = MaterialTheme.colorScheme.surfaceVariant
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("App Settings", color = Color.White) },
+                title = { Text(stringResource(R.string.app_settings), color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
@@ -47,7 +50,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)
         ) {
-            Text("Preferences", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.preferences), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(12.dp))
             Column(modifier = Modifier.fillMaxWidth().background(surfaceColor, RoundedCornerShape(12.dp))) {
                 SettingsListItem(Icons.Outlined.Settings, "General", "Language, theme", false, primaryRed, iconBgColor)
@@ -55,12 +58,12 @@ fun SettingsScreen(onBack: () -> Unit) {
                 SettingsListItem(Icons.Outlined.Notifications, "Notifications", "Manage your notification preferences", true, primaryRed, iconBgColor)
             }
             Spacer(modifier = Modifier.height(24.dp))
-            Text("About", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.about), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(12.dp))
             Column(modifier = Modifier.fillMaxWidth().background(surfaceColor, RoundedCornerShape(12.dp))) {
-                SettingsListItem(Icons.Outlined.Settings, "Version", "1.0.0", false, Color.Gray, iconBgColor)
-                SettingsListItem(Icons.Outlined.Settings, "Terms of Service", "", false, Color.Gray, iconBgColor)
-                SettingsListItem(Icons.Outlined.Settings, "Privacy Policy", "", true, Color.Gray, iconBgColor)
+                SettingsListItem(Icons.Outlined.Settings, "Version", "1.0.0", false, MaterialTheme.colorScheme.onSurfaceVariant, iconBgColor)
+                SettingsListItem(Icons.Outlined.Settings, "Terms of Service", "", false, MaterialTheme.colorScheme.onSurfaceVariant, iconBgColor)
+                SettingsListItem(Icons.Outlined.Settings, "Privacy Policy", "", true, MaterialTheme.colorScheme.onSurfaceVariant, iconBgColor)
             }
         }
     }
@@ -80,15 +83,15 @@ fun SettingsListItem(icon: ImageVector, title: String, subtitle: String, isLast:
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            Text(title, color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Medium)
             if (subtitle.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(subtitle, color = Color.Gray, fontSize = 12.sp)
+                Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
             }
         }
-        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray)
+        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     if (!isLast) {
-        HorizontalDivider(modifier = Modifier.padding(start = 72.dp), color = Color(0xFF2C2C2E))
+        HorizontalDivider(modifier = Modifier.padding(start = 72.dp), color = MaterialTheme.colorScheme.surfaceVariant)
     }
 }

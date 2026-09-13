@@ -1,4 +1,7 @@
 package com.example.ui.screens.home
+
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -18,7 +21,6 @@ import com.example.ui.components.*
 import coil.compose.AsyncImage
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import com.example.R
 import com.example.data.model.*
 import com.example.data.repository.*
 import com.example.domain.models.*
@@ -114,7 +116,7 @@ fun HomeScreen(
                         .background(if (selectedCategory == category) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
                         .border(
                             width = 1.dp,
-                            color = if (selectedCategory == category) Color.Transparent else Color.DarkGray,
+                            color = if (selectedCategory == category) Color.Transparent else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(8.dp)
                         )
                         .clickable {
@@ -448,7 +450,7 @@ fun SectionTitle(title: String, onSeeAllClick: (() -> Unit)? = null) {
                     text = firstWord,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 if (rest.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(6.dp))
@@ -456,7 +458,7 @@ fun SectionTitle(title: String, onSeeAllClick: (() -> Unit)? = null) {
                         text = rest,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE50914)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -466,7 +468,7 @@ fun SectionTitle(title: String, onSeeAllClick: (() -> Unit)? = null) {
                     .width(28.dp)
                     .height(3.dp)
                     .clip(RoundedCornerShape(1.5.dp))
-                    .background(Color(0xFFE50914))
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
         
@@ -478,17 +480,16 @@ fun SectionTitle(title: String, onSeeAllClick: (() -> Unit)? = null) {
                 Text(
                     text = stringResource(R.string.see_all),
                     style = MaterialTheme.typography.labelLarge,
-                    color = Color(0xFFE50914)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
                     contentDescription = "See All",
-                    tint = Color(0xFFE50914),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
             }
         }
     }
 }
-

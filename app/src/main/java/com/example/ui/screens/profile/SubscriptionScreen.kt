@@ -1,5 +1,8 @@
 package com.example.ui.screens.profile
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -19,17 +22,17 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionScreen(onBack: () -> Unit) {
-    val bgColor = Color(0xFF121212)
-    val surfaceColor = Color(0xFF1C1C1E)
-    val primaryRed = Color(0xFFE50914)
+    val bgColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val primaryRed = MaterialTheme.colorScheme.primary
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Subscription", color = Color.White) },
+                title = { Text(stringResource(R.string.subscription), color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
@@ -41,9 +44,9 @@ fun SubscriptionScreen(onBack: () -> Unit) {
             modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Choose Your Plan", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.choose_plan), color = MaterialTheme.colorScheme.onBackground, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Upgrade to Premium to unlock all features", color = Color.Gray, fontSize = 16.sp)
+            Text(stringResource(R.string.upgrade_premium_desc), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(32.dp))
             
             // Basic Plan
@@ -53,7 +56,7 @@ fun SubscriptionScreen(onBack: () -> Unit) {
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text("Basic", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.basic_plan), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("$0.00 / month", color = primaryRed, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
@@ -64,10 +67,10 @@ fun SubscriptionScreen(onBack: () -> Unit) {
                     Button(
                         onClick = { },
                         modifier = Modifier.fillMaxWidth().height(48.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Current Plan", color = Color.White)
+                        Text(stringResource(R.string.current_plan), color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             }
@@ -82,9 +85,9 @@ fun SubscriptionScreen(onBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Premium 👑", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.premium_crown), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Box(modifier = Modifier.background(primaryRed, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                            Text("POPULAR", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.popular_badge), color = MaterialTheme.colorScheme.onBackground, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -101,7 +104,7 @@ fun SubscriptionScreen(onBack: () -> Unit) {
                         colors = ButtonDefaults.buttonColors(containerColor = primaryRed),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Upgrade to Premium", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.upgrade_premium), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -112,8 +115,8 @@ fun SubscriptionScreen(onBack: () -> Unit) {
 @Composable
 fun PlanFeature(text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
-        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFFE50914), modifier = Modifier.size(16.dp))
+        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text, color = Color.White, fontSize = 14.sp)
+        Text(text, color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
     }
 }

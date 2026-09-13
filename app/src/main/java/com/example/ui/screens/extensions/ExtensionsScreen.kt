@@ -1,5 +1,8 @@
 package com.example.ui.screens.extensions
 
+import androidx.compose.ui.res.stringResource
+import com.example.R
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -60,7 +63,7 @@ fun ExtensionsScreen(onBackClick: () -> Unit) {
     }
 
     Scaffold(
-        containerColor = Color(0xFF0F0F11)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -106,8 +109,8 @@ fun ExtensionsTopBar(onBackClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text("الإضافات", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text("إدارة مصادر المشاهدة واستمتع بمحتوى أكثر", color = Color.Gray, fontSize = 12.sp)
+            Text(stringResource(R.string.extensions), color = MaterialTheme.colorScheme.onBackground, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.manage_sources), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
         
         Box(
@@ -136,8 +139,8 @@ fun FilterTabs(selectedFilter: ExtensionFilter, onFilterSelected: (ExtensionFilt
             val isSelected = filter == selectedFilter
             Surface(
                 shape = RoundedCornerShape(24.dp),
-                color = if (isSelected) Color(0xFFE50914) else Color(0xFF19191C),
-                border = if (isSelected) null else BorderStroke(1.dp, Color(0xFF2A2A2E)),
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                border = if (isSelected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant),
                 modifier = Modifier.clickable { onFilterSelected(filter) }
             ) {
                 Row(
@@ -148,12 +151,12 @@ fun FilterTabs(selectedFilter: ExtensionFilter, onFilterSelected: (ExtensionFilt
                     Icon(
                         imageVector = filter.icon,
                         contentDescription = null,
-                        tint = if (isSelected) Color.White else Color.Gray,
+                        tint = if (isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
                         text = filter.title,
-                        color = if (isSelected) Color.White else Color.Gray,
+                        color = if (isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -180,7 +183,7 @@ fun SearchAndFilterRow(searchQuery: String, onSearchQueryChange: (String) -> Uni
                 .clickable { /* Filter logic */ },
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Filled.Tune, contentDescription = "Filter", tint = Color.White)
+            Icon(Icons.Filled.Tune, contentDescription = "Filter", tint = MaterialTheme.colorScheme.onBackground)
         }
         
         Spacer(modifier = Modifier.width(12.dp))
@@ -191,15 +194,15 @@ fun SearchAndFilterRow(searchQuery: String, onSearchQueryChange: (String) -> Uni
             modifier = Modifier
                 .weight(1f)
                 .height(52.dp),
-            placeholder = { Text("البحث في الإضافات...", color = Color.Gray) },
-            trailingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color.Gray) },
+            placeholder = { Text(stringResource(R.string.search_extensions), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            trailingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFF19191C),
-                unfocusedContainerColor = Color(0xFF19191C),
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedTextColor = MaterialTheme.colorScheme.onBackground
             ),
             shape = RoundedCornerShape(26.dp),
             singleLine = true
@@ -213,7 +216,7 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF19191C)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
@@ -227,7 +230,7 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 modifier = Modifier
                     .size(56.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF0F0F11)),
+                    .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center
             ) {
                 val context = LocalContext.current
@@ -252,7 +255,7 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 } else {
                     Text(
                         text = ext.name.take(2).uppercase(),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -266,7 +269,7 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = ext.name,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -276,7 +279,7 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 
                 Text(
                     text = ext.baseUrl,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -303,8 +306,8 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                         Badge(
                             text = ext.lang.uppercase(), 
                             icon = Icons.Outlined.Language, 
-                            color = Color.Gray, 
-                            bgColor = Color(0xFF2A2A2E)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                            bgColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     }
                 }
@@ -317,32 +320,32 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 if (isInstalled) {
                     OutlinedButton(
                         onClick = onUninstallClick,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                        border = BorderStroke(1.dp, Color(0xFF2A2A2E)),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceVariant),
                         shape = RoundedCornerShape(20.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
                         Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("إلغاء التثبيت", fontSize = 12.sp)
+                        Text(stringResource(R.string.uninstall), fontSize = 12.sp)
                     }
                 } else {
                     Button(
                         onClick = onInstallClick,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE50914)),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(20.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                         modifier = Modifier.height(36.dp)
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onBackground)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("تثبيت", fontSize = 12.sp, color = Color.White)
+                        Text(stringResource(R.string.install), fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
                 
                 IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = Color.Gray)
+                    Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -372,7 +375,7 @@ fun NoticeBanner(onDismiss: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF19191C)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.3f))
     ) {
@@ -395,18 +398,17 @@ fun NoticeBanner(onDismiss: () -> Unit) {
             Spacer(modifier = Modifier.width(12.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text("ملاحظة", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(R.string.note), color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    "يمكنك تثبيت عدة إضافات للحصول على تجربة مشاهدة أفضل ومصادر أكثر.",
-                    color = Color.Gray,
+                Text(stringResource(R.string.install_multiple_ext),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
                 )
             }
             
             IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-                Icon(Icons.Filled.Close, contentDescription = "Close", tint = Color.Gray)
+                Icon(Icons.Filled.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

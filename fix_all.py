@@ -1,83 +1,106 @@
-import os
-import re
+path = 'app/src/main/java/com/example/ui/screens/player/PlayerScreen.kt'
+with open(path, 'r') as f:
+    content = f.read()
 
-files = [
-    'app/src/main/java/com/example/ui/screens/home/TrendingScreen.kt',
-    'app/src/main/java/com/example/ui/screens/home/NewReleasesScreen.kt',
-    'app/src/main/java/com/example/ui/screens/home/PopularScreen.kt',
-    'app/src/main/java/com/example/ui/screens/home/WatchingScreen.kt',
-    'app/src/main/java/com/example/ui/screens/home/UpcomingScreen.kt'
-]
+# Replace ANY onBackgroundColor with MaterialTheme.colorScheme.onBackground
+content = content.replace('onBackgroundColor', 'MaterialTheme.colorScheme.onBackground')
+content = content.replace('MaterialTheme.colorScheme.onBackground,', 'MaterialTheme.colorScheme.onBackground')
+# Now, find Canvas(modifier =
+# and insert `val onBackgroundColor = MaterialTheme.colorScheme.onBackground` right above it!
+content = content.replace('val MaterialTheme.colorScheme.onBackground = MaterialTheme.colorScheme.onBackground', '')
+content = content.replace('val MaterialTheme.colorScheme.onBackground = MaterialTheme.colorScheme.onBackground', '')
 
-for file_path in files:
-    if not os.path.exists(file_path):
-        continue
-    with open(file_path, 'r') as f:
-        content = f.read()
+# Ensure we just have simple MaterialTheme.colorScheme.onBackground everywhere
+content = content.replace('color = MaterialTheme.colorScheme.onBackground', 'color = MaterialTheme.colorScheme.onBackground')
 
-    # Define anime string outside
-    anime_decl = 'val animeStr = stringResource(R.string.anime)'
-    if anime_decl not in content:
-        # insert after collectAsState
-        content = re.sub(r'(val uiState by viewModel.uiState.collectAsState\(\))', r'\1\n    ' + anime_decl, content)
-        # For WatchingScreen which might have different state
-        content = re.sub(r'(val historyItems by historyRepository.getHistoryItems\(\).collectAsState\(initial = emptyList\(\)\))', r'\1\n    ' + anime_decl, content)
-
-    # replace stringResource(R.string.anime) with animeStr
-    content = content.replace('stringResource(R.string.anime)', 'animeStr')
-
-    # Fix WatchingScreen
-    if 'WatchingScreen' in file_path:
-        # Add the definitions if missing
-        if 'val tabsList =' not in content:
-            # find where `val filteredItems = when` is
-            top_decl = '''val tabsList = listOf("All", "Movies", "TV Series", animeStr)
-    val pagerState = rememberPagerState(pageCount = { tabsList.size })
-    val coroutineScope = rememberCoroutineScope()
-    val selectedTab = tabsList[pagerState.currentPage]'''
-            content = re.sub(r'val filteredItems = when \(selectedTab\) \{', top_decl + '\n    val getItemsForTab = { tab: String -> when (tab) {', content)
-            
-            # also fix the end of `when` block
-            content = content.replace('else -> historyItems\n    }', 'else -> historyItems\n        }\n    }')
-            
-            # replace `filteredItems` with `items` everywhere
-            content = content.replace('filteredItems', 'items')
-            
-            # replace row
-            row_match = re.search(r'Row\(\s*modifier = Modifier.*?horizontalArrangement = Arrangement.SpaceEvenly\s*\)\s*\{.*?\n\s*Spacer\(modifier = Modifier.height\(8.dp\)\)', content, re.DOTALL)
-            if row_match:
-                row_content = row_match.group(0)
-                new_row = '''Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)).clip(RoundedCornerShape(12.dp)),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    tabsList.forEach { tab ->
-                        val isSelected = selectedTab == tab
-                        Box(
-                            modifier = Modifier.weight(1f).clickable { coroutineScope.launch { pagerState.animateScrollToPage(tabsList.indexOf(tab)) } }
-                                .background(if (isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent)
-                                .border(if (isSelected) 1.dp else 0.dp, if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, RoundedCornerShape(12.dp))
-                                .padding(vertical = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(tab, color = if (isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
-                        }
+# And specifically inside VerticalSlider, it needs to be fixed!
+# Let's fix the specific lines inside VerticalSlider
+target_slider = """        Canvas(modifier = Modifier
+            .fillMaxHeight()
+            .width(20.dp)
+            .pointerInput(Unit) {
+                detectDragGestures { change, _ ->
+                    val y = change.position.y
+                    val newValue = 1f - (y / size.height).coerceIn(0f, 1f)
+                    if (newValue != value) {
+                        onValueChange(newValue)
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))'''
-                content = content.replace(row_content, new_row)
+            }
+        ) {"""
+
+replacement_slider = """        val canvasColor = MaterialTheme.colorScheme.onBackground
+        Canvas(modifier = Modifier
+            .fillMaxHeight()
+            .width(20.dp)
+            .pointerInput(Unit) {
+                detectDragGestures { change, _ ->
+                    val y = change.position.y
+                    val newValue = 1f - (y / size.height).coerceIn(0f, 1f)
+                    if (newValue != value) {
+                        onValueChange(newValue)
+                    }
+                }
+            }
+        ) {"""
+content = content.replace(target_slider, replacement_slider)
+
+# Now inside that Canvas, change MaterialTheme.colorScheme.onBackground to canvasColor
+# It's at lines 784, 792, 800
+# 1. color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+# 2. color = MaterialTheme.colorScheme.onBackground,
+# 3. color = MaterialTheme.colorScheme.onBackground,
+target_canvas_body = """            val thumbY = height - (height * value)
             
-            # wrap LazyColumn
-            lazy_col_match = re.search(r'if \(items.isEmpty\(\)\) \{.*?LazyColumn\(.*?\)\s*\{\s*items\(items\)\s*\{.*?\}\s*\}\s*\}', content, re.DOTALL)
-            if lazy_col_match:
-                lazy_content = lazy_col_match.group(0)
-                new_lazy = '''HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-                    val currentTab = tabsList[page]
-                    val items = getItemsForTab(currentTab)
-                    ''' + lazy_content + '\n                }'
-                content = content.replace(lazy_content, new_lazy)
+            // Inactive Track (Full height)
+            drawRoundRect(
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f),
+                topLeft = Offset(centerX - trackWidth / 2f, 0f),
+                size = Size(trackWidth, height),
+                cornerRadius = CornerRadius(trackWidth / 2f)
+            )
+            
+            // Active Track (From bottom to thumb)
+            drawRoundRect(
+                color = MaterialTheme.colorScheme.onBackground,
+                topLeft = Offset(centerX - trackWidth / 2f, thumbY),
+                size = Size(trackWidth, height - thumbY),
+                cornerRadius = CornerRadius(trackWidth / 2f)
+            )
+            
+            // Thumb
+            drawCircle(
+                color = MaterialTheme.colorScheme.onBackground,
+                radius = thumbRadius,
+                center = Offset(centerX, thumbY)
+            )"""
 
-    with open(file_path, 'w') as f:
-        f.write(content)
+replacement_canvas_body = """            val thumbY = height - (height * value)
+            
+            // Inactive Track (Full height)
+            drawRoundRect(
+                color = canvasColor.copy(alpha = 0.3f),
+                topLeft = Offset(centerX - trackWidth / 2f, 0f),
+                size = Size(trackWidth, height),
+                cornerRadius = CornerRadius(trackWidth / 2f)
+            )
+            
+            // Active Track (From bottom to thumb)
+            drawRoundRect(
+                color = canvasColor,
+                topLeft = Offset(centerX - trackWidth / 2f, thumbY),
+                size = Size(trackWidth, height - thumbY),
+                cornerRadius = CornerRadius(trackWidth / 2f)
+            )
+            
+            // Thumb
+            drawCircle(
+                color = canvasColor,
+                radius = thumbRadius,
+                center = Offset(centerX, thumbY)
+            )"""
 
+content = content.replace(target_canvas_body, replacement_canvas_body)
+
+with open(path, 'w') as f:
+    f.write(content)
