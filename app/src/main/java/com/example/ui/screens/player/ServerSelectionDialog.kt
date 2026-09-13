@@ -224,7 +224,15 @@ Dialog(
                             fontWeight = FontWeight.Bold
                         )
                         androidx.compose.material3.Button(
-                            onClick = { showManualConfirmDialog = true },
+                            onClick = { 
+                                forceBypassComplete = true
+                                bypassStatus = "NORMAL"
+                                if (isFailed) {
+                                    isFailed = false
+                                    isLoading = true
+                                    retryTrigger++
+                                }
+                            },
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                                 .fillMaxWidth(),
@@ -679,7 +687,7 @@ Dialog(
                                                 else -> {
                                                     androidx.compose.ui.text.buildAnnotatedString {
                                                         withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color.White)) { append("جاري البحث في ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFFE50914))) { append(currentSiteName) }
+                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFF00C853))) { append(currentSiteName) }
                                                     }
                                                 }
                                             }
@@ -958,6 +966,36 @@ Dialog(
                             }) {
                                 Text("العودة لاختيار سيرفر آخر", color = Color.LightGray)
                             }
+                        } else {
+                            Text(
+                                text = "فشل في العثور على أي جودة",
+                                color = Color(0xFFFF1111),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                            
+                            androidx.compose.material3.Button(
+                                onClick = { 
+                                    isExtractingQuality = true
+                                    extractedQualities = emptyList()
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853))
+                            ) {
+                                Text("إعادة محاولة استخراج الجودات", color = Color.White)
+                            }
+                            
+                            androidx.compose.material3.OutlinedButton(
+                                onClick = { 
+                                    selectedServerForQuality = null
+                                    extractedQualities = emptyList()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = Color.LightGray)
+                            ) {
+                                Text("العودة لاختيار سيرفر آخر")
+                            }
                         }
                     } else {
                         Text(
@@ -1076,45 +1114,13 @@ Dialog(
         
             }
 
-                if (showManualConfirmDialog) {
-                    androidx.compose.material3.AlertDialog(
-                        onDismissRequest = { showManualConfirmDialog = false },
-                        title = { Text("تأكيد", color = Color.White) },
-                        text = { Text("هل أنت متأكد أنك قمت بتخطي حماية Cloudflare بنجاح؟", color = Color.LightGray) },
-                        containerColor = Color(0xFF222225),
-                        confirmButton = {
-                            androidx.compose.material3.TextButton(
-                                onClick = {
-                                    showManualConfirmDialog = false
-                                    forceBypassComplete = true
-                                    bypassStatus = "NORMAL"
-                                    if (isFailed) {
-                                        isFailed = false
-                                        isLoading = true
-                                        retryTrigger++
-                                    }
-                                }
-                            ) {
-                                Text("نعم، أكمل", color = Color(0xFFE50914))
-                            }
-                        },
-                        dismissButton = {
-                            androidx.compose.material3.TextButton(
-                                onClick = { showManualConfirmDialog = false }
-                            ) {
-                                Text("إلغاء", color = Color.White)
-                            }
-                        }
-                    )
-                }
+                // Manual confirm dialog removed.
 
         // Hidden Extractor for Quality
         if (isExtractingQuality && selectedServerForQuality != null) {
             LaunchedEffect(selectedServerForQuality) {
                 kotlinx.coroutines.delay(12000)
                 if (isExtractingQuality && extractedQualities.isEmpty()) {
-                    val serverUrl = extractedServerLinks[selectedServerForQuality] ?: extractedDownloadLinks[selectedServerForQuality] ?: finalWatchUrl ?: searchUrl
-                    extractedQualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", serverUrl))
                     isExtractingQuality = false
                 }
             }
@@ -1137,7 +1143,7 @@ Dialog(
                         }
                     } else {
                         // Not an m3u8, just show default
-                        val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", url))
+                        val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("فيديو مباشر", url))
                         extractedQualities = qualities
                         ServerStateStore.extractedQualities = qualities
                         isExtractingQuality = false
@@ -1145,7 +1151,7 @@ Dialog(
                 },
                 onIframeUrlFound = { iframeUrl ->
                     // Sometimes we get a new iframe url, we should probably follow it or just return it as quality
-                    val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("جودة أصلية (Default)", iframeUrl))
+                    val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("مشغل خارجي", iframeUrl))
                     extractedQualities = qualities
                     ServerStateStore.extractedQualities = qualities
                     isExtractingQuality = false
