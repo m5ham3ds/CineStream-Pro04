@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.data.model.DownloadItem
@@ -397,6 +398,20 @@ fun SeriesDetailsScreen(
 
         if (series != null) {
             val scrollState = rememberScrollState()
+    
+    val isScrollNearBottom by remember {
+        derivedStateOf { scrollState.value >= scrollState.maxValue - 150 && scrollState.maxValue > 0 }
+    }
+    
+    LaunchedEffect(isScrollNearBottom) {
+        if (isScrollNearBottom) {
+            if (uiState.episodes.isEmpty() && !uiState.isEpisodesLoading) {
+                viewModel.triggerInitialEpisodesLoad()
+            } else if (uiState.episodes.size > uiState.visibleEpisodesCount && !uiState.isLoadingMore) {
+                viewModel.loadMoreEpisodes()
+            }
+        }
+    }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -588,12 +603,17 @@ fun SeriesDetailsScreen(
                             )
                         }
                         
-                        if (uiState.episodes.size > uiState.visibleEpisodesCount) {
-                            TextButton(
-                                onClick = { viewModel.loadMoreEpisodes() },
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
-                            ) {
-                                Text("Load More Episodes", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        if (uiState.episodes.size > uiState.visibleEpisodesCount || uiState.isLoadingMore) {
+                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
+                                if (uiState.isLoadingMore) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text("جاري تحميل الحلقات...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                    }
+                                } else {
+                                    Text("اسحب للأعلى لتحميل المزيد", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                }
                             }
                         }
                     }

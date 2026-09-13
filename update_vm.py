@@ -1,42 +1,11 @@
-package com.example.ui.screens.details
+import os
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.domain.models.Episode
-import com.example.domain.models.Season
-import com.example.domain.models.Series
-import com.example.domain.repository.MediaRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+filepath = 'app/src/main/java/com/example/ui/screens/details/SeriesDetailsViewModel.kt'
+with open(filepath, 'r') as f:
+    content = f.read()
 
-data class SeriesDetailsUiState(
-    val isLoading: Boolean = false,
-    val series: Series? = null,
-    val error: String? = null,
-    val selectedSeason: Season? = null,
-    val episodes: List<Episode> = emptyList(),
-    val isEpisodesLoading: Boolean = false,
-    val visibleEpisodesCount: Int = 10,
-    val isLoadingMore: Boolean = false
-)
-
-class SeriesDetailsViewModel(
-    private val repository: MediaRepository
-) : ViewModel() {
-    companion object {
-        private val cache = mutableMapOf<String, SeriesDetailsUiState>()
-        fun getCachedState(seriesId: String): SeriesDetailsUiState? = cache[seriesId]
-        fun saveState(seriesId: String, state: SeriesDetailsUiState) {
-            cache[seriesId] = state
-        }
-    }
-
-    private val _uiState = MutableStateFlow(SeriesDetailsUiState())
-    val uiState: StateFlow<SeriesDetailsUiState> = _uiState.asStateFlow()
-
+# Replace the body of loadSeries to use cache
+new_load_series = '''
     fun loadSeries(seriesId: String) {
         val cached = getCachedState(seriesId)
         if (cached != null) {
@@ -63,8 +32,13 @@ class SeriesDetailsViewModel(
             }
         }
     }
+'''
 
-    
+import re
+content = re.sub(r'fun loadSeries\(seriesId: String\) \{.*?\n    \}', new_load_series.strip(), content, flags=re.DOTALL)
+
+# Add triggerInitialEpisodesLoad function
+new_funcs = '''
     fun triggerInitialEpisodesLoad() {
         val currentSeries = _uiState.value.series ?: return
         val currentSeason = _uiState.value.selectedSeason ?: return
@@ -77,23 +51,30 @@ class SeriesDetailsViewModel(
         _uiState.update { transform(it) }
         saveState(seriesId, _uiState.value)
     }
+'''
+content = content.replace('fun selectSeason(season: Season) {', new_funcs + '\n    fun selectSeason(season: Season) {')
 
+# Modify selectSeason to use updateAndCache
+new_select_season = '''
     fun selectSeason(season: Season) {
         val currentSeries = _uiState.value.series ?: return
         updateAndCache(currentSeries.id) { it.copy(selectedSeason = season, visibleEpisodesCount = 10, episodes = emptyList()) }
         loadEpisodes(currentSeries.id, season.seasonNumber)
     }
+'''
+content = re.sub(r'fun selectSeason\(season: Season\) \{.*?\n    \}', new_select_season.strip(), content, flags=re.DOTALL)
 
+# Modify loadMoreEpisodes
+new_load_more = '''
     fun loadMoreEpisodes() {
         val currentSeries = _uiState.value.series ?: return
-        if (_uiState.value.isLoadingMore) return
-        viewModelScope.launch {
-            updateAndCache(currentSeries.id) { it.copy(isLoadingMore = true) }
-            kotlinx.coroutines.delay(800) // Simulate network delay for UI feedback
-            updateAndCache(currentSeries.id) { it.copy(visibleEpisodesCount = it.visibleEpisodesCount + 10, isLoadingMore = false) }
-        }
+        updateAndCache(currentSeries.id) { it.copy(visibleEpisodesCount = it.visibleEpisodesCount + 10) }
     }
+'''
+content = re.sub(r'fun loadMoreEpisodes\(\) \{.*?\n    \}', new_load_more.strip(), content, flags=re.DOTALL)
 
+# Modify loadEpisodes
+new_load_episodes = '''
     private fun loadEpisodes(seriesId: String, seasonNumber: Int) {
         viewModelScope.launch {
             updateAndCache(seriesId) { it.copy(isEpisodesLoading = true, visibleEpisodesCount = 10) }
@@ -105,4 +86,9 @@ class SeriesDetailsViewModel(
             }
         }
     }
-}
+'''
+content = re.sub(r'private fun loadEpisodes\(seriesId: String, seasonNumber: Int\) \{.*?\}\n    \}', new_load_episodes.strip(), content, flags=re.DOTALL)
+
+
+with open(filepath, 'w') as f:
+    f.write(content)

@@ -107,7 +107,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(categories) { category ->
+            items(categories, key = { it }) { category ->
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -149,7 +149,7 @@ fun HomeScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(historyItems) { item ->
+                items(historyItems, key = { it.id }) { item ->
                     ContinueWatchingCardShared(item = item) {
                         if (item.isMovie) onMovieClick(item.id) else onSeriesClick(item.id)
                     }
@@ -168,7 +168,7 @@ fun HomeScreen(
                 val mix = (uiState.trendingMovies.take(5) + uiState.trendingSeries.map { 
                     Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
                 }.take(5)).shuffled()
-                itemsIndexed(mix) { index, item ->
+                itemsIndexed(mix, key = { index, item -> item.id }) { index, item ->
                     MediaCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
@@ -200,7 +200,7 @@ fun HomeScreen(
                 val mix = (uiState.newReleasesMovies.take(10) + uiState.newReleasesSeries.map { 
                     Movie(id = it.id, title = it.title, overview = it.overview, posterUrl = it.posterUrl, backdropUrl = it.backdropUrl, year = it.year, rating = it.rating, genres = it.genres, runtime = 0)
                 }.take(10)).shuffled()
-                itemsIndexed(mix) { index, item ->
+                itemsIndexed(mix, key = { index, item -> item.id }) { index, item ->
                     MediaCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
@@ -228,7 +228,7 @@ fun HomeScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                itemsIndexed(uiState.trendingMovies) { index, movie ->
+                itemsIndexed(uiState.trendingMovies, key = { index, movie -> movie.id }) { index, movie ->
                     MediaCard(
                         title = movie.title,
                         posterUrl = movie.posterUrl,
@@ -257,7 +257,7 @@ fun HomeScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                itemsIndexed(uiState.trendingSeries) { index, series ->
+                itemsIndexed(uiState.trendingSeries, key = { index, series -> series.id }) { index, series ->
                     MediaCard(
                         title = series.title,
                         posterUrl = series.posterUrl,
@@ -287,7 +287,7 @@ fun HomeScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                itemsIndexed(uiState.animeSeries) { index, series ->
+                itemsIndexed(uiState.animeSeries, key = { index, series -> series.id }) { index, series ->
                     MediaCard(
                         title = series.title,
                         posterUrl = series.posterUrl,
@@ -318,7 +318,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val mix = uiState.upcomingMovies.take(10).shuffled()
-                itemsIndexed(mix) { index, item ->
+                itemsIndexed(mix, key = { index, item -> item.id }) { index, item ->
                     MediaCard(
                         title = item.title,
                         posterUrl = item.posterUrl,

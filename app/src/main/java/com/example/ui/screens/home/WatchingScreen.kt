@@ -105,7 +105,7 @@ fun WatchingScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(items) { item ->
+                    items(items, key = { it.id }) { item ->
                         DetailedContinueWatchingCard(item = item, onClick = { onItemClick(item.id, item.isMovie) })
                     }
                 }

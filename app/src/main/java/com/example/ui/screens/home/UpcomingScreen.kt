@@ -87,7 +87,7 @@ fun UpcomingScreen(
                     com.example.ui.components.GridScreenSkeleton()
                 } else {
                     LazyVerticalGrid(columns = GridCells.Fixed(3), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        itemsIndexed(items) { index, (media, isMovie) ->
+                        itemsIndexed(items, key = { index, pair -> "${if(pair.second) (pair.first as com.example.domain.models.Movie).id else (pair.first as com.example.domain.models.Series).id}-$index" }) { index, (media, isMovie) ->
                             val title = if (isMovie) (media as com.example.domain.models.Movie).title else (media as com.example.domain.models.Series).title
                             val poster = if (isMovie) (media as com.example.domain.models.Movie).posterUrl else (media as com.example.domain.models.Series).posterUrl
                             val id = if (isMovie) (media as com.example.domain.models.Movie).id else (media as com.example.domain.models.Series).id
