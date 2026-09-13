@@ -1,4 +1,10 @@
 package com.example.ui.components
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 
 import androidx.compose.ui.res.stringResource
 import com.example.R
@@ -185,7 +191,7 @@ fun SectionTitleShared(title: String, onSeeAllClick: (() -> Unit)? = null) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = "See All",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
@@ -292,7 +298,7 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("2023", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                    Text("  |  " + (if (item.isMovie) "فيلم" else "مسلسل") + "  |  ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    Text(" | " + (if (item.isMovie) stringResource(R.string.movie_singular) else stringResource(R.string.series_singular)) + " | ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                     Box(modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant, RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 2.dp)) {
                         Text(stringResource(R.string.rating_r), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
                     }

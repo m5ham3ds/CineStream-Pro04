@@ -310,4 +310,12 @@
     <string name="confirm_color_change">هل أنت متأكد من تغيير اللون الأساسي؟</string>
     <string name="confirm_language_change">هل أنت متأكد من تغيير اللغة؟ سيتم إعادة التشغيل.</string>
     <string name="yes">نعم</string>
+    <string name="series">المسلسلات</string>
+    <string name="anime">الأنمي</string>
+    <string name="exit_app_title">الخروج من التطبيق</string>
+    <string name="exit_app_desc">هل أنت متأكد أنك تريد الخروج من التطبيق؟</string>
+    <string name="downloading">جاري التنزيل %s...</string>
+    <string name="download_complete">تم تنزيل %s بنجاح، يمكنك المشاهدة بدون إنترنت.</string>
+    <string name="download_count">تنزيل (%d)</string>
+    <string name="episode_format">حلقة %1$d: %2$s</string>
 </resources>

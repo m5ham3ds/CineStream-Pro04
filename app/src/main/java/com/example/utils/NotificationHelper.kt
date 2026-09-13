@@ -1,4 +1,5 @@
 package com.example.utils
+import com.example.R
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -35,7 +36,7 @@ object NotificationHelper {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentTitle("تنزيل جديد")
-            .setContentText("جاري تنزيل $title...")
+            .setContentText(context.getString(R.string.downloading, title))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
 
@@ -53,7 +54,7 @@ object NotificationHelper {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setContentTitle("اكتمل التنزيل")
-            .setContentText("تم تنزيل $title بنجاح، يمكنك المشاهدة بدون إنترنت.")
+            .setContentText(context.getString(R.string.download_complete, title))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
 

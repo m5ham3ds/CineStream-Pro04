@@ -18,6 +18,6 @@ val TextPrimary = Color(0xFFF5F5F1)
 val TextSecondary = Color(0xFF8C8D90)
 val OverlayDark = Color(0x99000000)
 
-val BackgroundLight = Color(0xFFF5F5F5)
-val SurfaceLight = Color(0xFFFFFFFF)
+val BackgroundLight = Color(0xFFF7F7F7)
+val SurfaceLight = Color(0xFFFCFCFC)
 val TextPrimaryLight = Color(0xFF121212)

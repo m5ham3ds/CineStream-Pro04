@@ -328,4 +328,10 @@
     <string name="confirm_theme_change">Are you sure you want to change the theme?</string>
     <string name="confirm_color_change">Are you sure you want to change the primary color?</string>
     <string name="confirm_language_change">Are you sure you want to change the language? This requires a restart.</string>
+    <string name="exit_app_title">Exit App</string>
+    <string name="exit_app_desc">Are you sure you want to exit the app?</string>
+    <string name="downloading">Downloading %s...</string>
+    <string name="download_complete">%s downloaded successfully, you can watch offline.</string>
+    <string name="download_count">Download (%d)</string>
+    <string name="episode_format">Ep %1$d: %2$s</string>
 </resources>

@@ -115,7 +115,7 @@ fun BatchDownloadSheet(
                     onClick = { showQualitySelector = true },
                     enabled = selectedEpisodes.isNotEmpty()
                 ) {
-                    Text("Download (${selectedEpisodes.size})")
+                    Text(stringResource(R.string.download_count, selectedEpisodes.size))
                 }
             }
 
@@ -146,7 +146,7 @@ fun BatchDownloadSheet(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Ep ${episode.episodeNumber}: ${episode.title}")
+                        Text(stringResource(R.string.episode_format, episode.episodeNumber, episode.title))
                     }
                 }
             }

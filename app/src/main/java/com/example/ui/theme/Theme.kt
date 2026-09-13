@@ -32,7 +32,7 @@ private fun getDarkColorScheme(primaryColorInt: Int) = darkColorScheme(
     onPrimary = TextPrimary,
     onBackground = TextPrimary,
     onSurface = TextPrimary,
-    onSurfaceVariant = TextSecondary
+    onSurfaceVariant = Color(0xFF666666)
 )
 
 private fun getLightColorScheme(primaryColorInt: Int) = lightColorScheme(
@@ -52,11 +52,11 @@ private fun getLightColorScheme(primaryColorInt: Int) = lightColorScheme(
     },
     background = BackgroundLight,
     surface = SurfaceLight,
-    surfaceVariant = Color(0xFFEEEEEE),
+    surfaceVariant = Color(0xFFE5E5E5),
     onPrimary = Color.White,
-    onBackground = TextPrimaryLight,
-    onSurface = TextPrimaryLight,
-    onSurfaceVariant = TextSecondary
+    onBackground = Color(0xFF1E1E1E),
+    onSurface = Color(0xFF1E1E1E),
+    onSurfaceVariant = Color(0xFF666666)
 )
 
 @Composable

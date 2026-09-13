@@ -1,4 +1,10 @@
 package com.example.ui.screens.home
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 
 import androidx.compose.ui.res.stringResource
 import com.example.R
@@ -79,8 +85,8 @@ fun HomeScreen(
     var selectedMediaTitle by remember { mutableStateOf("") }
     var selectedMediaPoster by remember { mutableStateOf("") }
 
-    var selectedCategory by remember { mutableStateOf("Home") }
-    val categories = listOf("Home", "Movies", "Series", stringResource(R.string.anime), "Documentaries")
+    val categories = listOf(stringResource(R.string.home), stringResource(R.string.movies), stringResource(R.string.series), stringResource(R.string.anime))
+    var selectedCategory by remember { mutableStateOf(categories[0]) }
     val ptrState = rememberPullToRefreshState()
     
     PullToRefreshBox(
@@ -121,7 +127,7 @@ fun HomeScreen(
                         )
                         .clickable {
                             if (selectedCategory == category) {
-                                selectedCategory = "Home"
+                                selectedCategory = categories[0]
                             } else {
                                 selectedCategory = category
                             }
@@ -143,7 +149,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         
-        if (selectedCategory == "Home") {
+        if (selectedCategory == categories[0]) {
         // 1. Continue Watching
         if (historyItems.isNotEmpty()) {
             SectionTitle(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
@@ -484,7 +490,7 @@ fun SectionTitle(title: String, onSeeAllClick: (() -> Unit)? = null) {
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = "See All",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)

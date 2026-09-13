@@ -1,4 +1,10 @@
 package com.example.ui.screens.player
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 
 import androidx.compose.ui.res.stringResource
 import com.example.R
@@ -527,7 +533,7 @@ Dialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = if (selectedServerForQuality != null) androidx.compose.material.icons.Icons.Default.ArrowBack else androidx.compose.material.icons.Icons.Outlined.CloudDownload,
+                            imageVector = if (selectedServerForQuality != null) Icons.AutoMirrored.Filled.ArrowBack else Icons.Outlined.CloudDownload,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(24.dp)

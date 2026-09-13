@@ -1,4 +1,5 @@
 package com.example.navigation
+import com.example.ui.components.swipeToNavigate
 import com.example.utils.SiteVerificationManager
 
 import androidx.compose.foundation.Image
@@ -301,7 +302,7 @@ fun AppNavigation() {
 
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text("الإضافات", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        label = { Text(stringResource(R.string.extensions), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
                         selected = currentRoute == Screen.Extensions.route,
                         colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                         onClick = {
@@ -317,7 +318,7 @@ fun AppNavigation() {
                     
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text("Community", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        label = { Text(stringResource(R.string.community), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
                         selected = currentRoute == Screen.Social.route,
                         colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                         onClick = {
@@ -333,7 +334,7 @@ fun AppNavigation() {
                     
                     NavigationDrawerItem(
                         icon = { Icon(Icons.Outlined.Share, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text("Offline Share", color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        label = { Text(stringResource(R.string.offline_share), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
                         selected = currentRoute == Screen.Share.route,
                         colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
                         onClick = {
@@ -441,16 +442,16 @@ fun AppNavigation() {
         if (showExitDialog) {
             AlertDialog(
                 onDismissRequest = { showExitDialog = false },
-                title = { Text("الخروج من التطبيق") },
-                text = { Text("هل أنت متأكد أنك تريد الخروج من التطبيق؟") },
+                title = { Text(stringResource(R.string.exit_app_title)) },
+                text = { Text(stringResource(R.string.exit_app_desc)) },
                 confirmButton = {
                     TextButton(onClick = {
                         val activity = context as? android.app.Activity
                         activity?.finish()
-                    }) { Text("نعم", color = Color.Red) }
+                    }) { Text(stringResource(R.string.yes), color = Color.Red) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showExitDialog = false }) { Text("لا", color = MaterialTheme.colorScheme.onSurface) }
+                    TextButton(onClick = { showExitDialog = false }) { Text(stringResource(R.string.no), color = MaterialTheme.colorScheme.onSurface) }
                 },
                 containerColor = MaterialTheme.colorScheme.surface,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
@@ -617,10 +618,38 @@ fun AppNavigation() {
                 }
             }
         ) { innerPadding ->
-            val navHostModifier = if (hasTopBar) {
+            val pagerRoutes = listOf(Screen.Home.route, Screen.Movies.route, Screen.Search.route, Screen.Series.route, Screen.Anime.route)
+            val baseNavHostModifier = if (hasTopBar) {
                 Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)
             } else {
                 Modifier.padding(innerPadding).consumeWindowInsets(innerPadding).then(Modifier.windowInsetsPadding(WindowInsets.statusBars).consumeWindowInsets(WindowInsets.statusBars))
+            }
+            
+            val navHostModifier = if (pagerRoutes.contains(currentRoute)) {
+                baseNavHostModifier.swipeToNavigate(
+                    onSwipeLeft = {
+                        val idx = pagerRoutes.indexOf(currentRoute)
+                        if (idx < pagerRoutes.size - 1) {
+                            navController.navigate(pagerRoutes[idx + 1]) {
+                                popUpTo(Screen.Home.route) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    },
+                    onSwipeRight = {
+                        val idx = pagerRoutes.indexOf(currentRoute)
+                        if (idx > 0) {
+                            navController.navigate(pagerRoutes[idx - 1]) {
+                                popUpTo(Screen.Home.route) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }
+                )
+            } else {
+                baseNavHostModifier
             }
             NavHost(
                 navController = navController,

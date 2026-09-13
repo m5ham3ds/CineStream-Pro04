@@ -1,31 +1,20 @@
-import glob
-
-for filepath in glob.glob('app/src/main/java/com/example/**/*.kt', recursive=True):
-    with open(filepath, 'r') as f:
+import re
+def fix_file(path, import_str):
+    with open(path, 'r') as f:
         content = f.read()
-
-    original_content = content
     
-    if 'stringResource(R.string' in content:
-        if 'import androidx.compose.ui.res.stringResource' not in content:
-            # Find the package declaration line and insert after it
-            lines = content.splitlines()
-            for i, line in enumerate(lines):
-                if line.startswith('package '):
-                    lines.insert(i + 1, '\nimport androidx.compose.ui.res.stringResource')
-                    lines.insert(i + 2, 'import com.example.R')
-                    break
-            content = '\n'.join(lines)
-        elif 'import com.example.R' not in content:
-            lines = content.splitlines()
-            for i, line in enumerate(lines):
-                if line.startswith('package '):
-                    lines.insert(i + 1, '\nimport com.example.R')
-                    break
-            content = '\n'.join(lines)
+    # Remove it if it was added at the very beginning
+    if content.startswith(import_str + '\n'):
+        content = content[len(import_str + '\n'):]
+        
+    # Find package declaration
+    match = re.search(r'package\s+[a-zA-Z0-9_\.]+\n', content)
+    if match:
+        idx = match.end()
+        if import_str not in content:
+            content = content[:idx] + import_str + '\n' + content[idx:]
+    with open(path, 'w') as f:
+        f.write(content)
 
-    if content != original_content:
-        with open(filepath, 'w') as f:
-            f.write(content)
-
-print("Import fix done.")
+fix_file("app/src/main/java/com/example/navigation/AppNavigation.kt", "import com.example.ui.components.swipeToNavigate")
+fix_file("app/src/main/java/com/example/utils/NotificationHelper.kt", "import com.example.R")
