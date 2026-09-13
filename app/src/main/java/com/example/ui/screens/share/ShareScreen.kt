@@ -170,11 +170,11 @@ fun ShareScreen(
                             modifier = Modifier
                                 .size(64.dp)
                                 .clip(CircleShape)
-                                .border(1.dp, Color.Red.copy(alpha = 0.3f), CircleShape)
-                                .background(Color.Red.copy(alpha = 0.1f)),
+                                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.WifiTethering, contentDescription = null, tint = Color.Red, modifier = Modifier.size(32.dp))
+                            Icon(Icons.Default.WifiTethering, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
                         }
                         
                         Spacer(modifier = Modifier.width(16.dp))
@@ -188,7 +188,7 @@ fun ShareScreen(
                                 P2PState.TRANSFERRING -> "TRANSFERRING"
                                 else -> "IDLE"
                             }
-                            Text(statusText, color = Color.Red, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(statusText, color = MaterialTheme.colorScheme.primary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             Text(stringResource(R.string.waiting_for_action), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                         }
                         
@@ -308,7 +308,7 @@ fun ShareScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(stringResource(R.string.recent_transfers), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text(stringResource(R.string.view_all), color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.view_all), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 
@@ -348,9 +348,9 @@ fun ShareScreen(
                 ) {
                     Text(stringResource(R.string.nearby_devices), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { p2pManager.startDiscovery() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.Red, modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(R.string.scan), color = Color.Red, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.scan), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -384,10 +384,10 @@ fun ShareScreen(
                 ) {
                     Row(modifier = Modifier.padding(16.dp)) {
                         Box(
-                            modifier = Modifier.size(32.dp).clip(CircleShape).background(Color.Red.copy(alpha = 0.1f)),
+                            modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Outlined.Shield, contentDescription = null, tint = Color.Red, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Outlined.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
@@ -433,7 +433,7 @@ fun ShareScreen(
                             }
                         }
                     } else if (connectedEndpoint != null) {
-                        Text("Connected to ${connectedEndpoint?.name}", color = Color.Green, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.connected_to, connectedEndpoint?.name ?: ""), color = Color(0xFF10b981), fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
@@ -469,7 +469,7 @@ fun ShareScreen(
                                                 Spacer(modifier = Modifier.width(16.dp))
                                                 Column(modifier = Modifier.weight(1f)) {
                                                     Text(folderName, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-                                                    Text("${groupedSeries[folderName]?.size ?: 0} Episodes", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                                                    Text(stringResource(R.string.episodes_count, groupedSeries[folderName]?.size ?: 0), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                                                 }
                                                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Open", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                                             }
@@ -522,9 +522,9 @@ fun ShareScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (connectedEndpoint != null) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Green, modifier = Modifier.size(64.dp))
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10b981), modifier = Modifier.size(64.dp))
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Connected to ${connectedEndpoint!!.name}", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.connected_to, connectedEndpoint!!.name), fontWeight = FontWeight.Bold)
                         Text(stringResource(R.string.waiting_for_files), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
                         Box(
@@ -563,16 +563,16 @@ fun RowScope.ContentTypeCard(title: String, icon: ImageVector, isSelected: Boole
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
-        border = if (isSelected) BorderStroke(1.dp, Color.Red) else null
+        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(icon, contentDescription = title, tint = if (isSelected) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
+            Icon(icon, contentDescription = title, tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, color = if (isSelected) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, textAlign = TextAlign.Center)
+            Text(title, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, textAlign = TextAlign.Center)
         }
     }
 }
@@ -604,11 +604,11 @@ fun RecentTransferItem(title: String, type: String, size: String, isSent: Boolea
                 Icon(
                     if (isSent) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
                     contentDescription = null,
-                    tint = if (isSent) Color.Red else Color(0xFF3b82f6),
+                    tint = if (isSent) MaterialTheme.colorScheme.primary else Color(0xFF3b82f6),
                     modifier = Modifier.size(12.dp)
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                Text(if (isSent) "Sent" else "Received", color = if (isSent) Color.Red else Color(0xFF3b82f6), fontSize = 11.sp)
+                Text(if (isSent) stringResource(R.string.sent) else stringResource(R.string.received), color = if (isSent) MaterialTheme.colorScheme.primary else Color(0xFF3b82f6), fontSize = 11.sp)
             }
             Text(if (isSent) "To: $targetDevice" else "From: $targetDevice", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
@@ -639,7 +639,7 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
                 .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = Color.Red, modifier = Modifier.size(20.dp))
+            Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
         }
         
         Spacer(modifier = Modifier.width(12.dp))
@@ -654,7 +654,7 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
         
         Button(
             onClick = onConnect,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.2f), contentColor = Color.Red),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), contentColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
             modifier = Modifier.height(32.dp)

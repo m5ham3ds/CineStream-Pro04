@@ -171,7 +171,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                         Spacer(modifier = Modifier.height(24.dp))
                         
                         if (selectedStat != null) {
-                            Text("$selectedStat Activity", color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
+                            Text(stringResource(R.string.stat_activity, selectedStat.toString()), color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             // Mock Grid

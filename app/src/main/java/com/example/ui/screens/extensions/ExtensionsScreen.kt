@@ -122,11 +122,11 @@ fun ExtensionsTopBar(onBackClick: () -> Unit) {
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, Color.Red.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                .background(Color.Red.copy(alpha = 0.1f)),
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Filled.Extension, contentDescription = null, tint = Color.Red, modifier = Modifier.size(24.dp))
+            Icon(Icons.Filled.Extension, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
         }
     }
 }
@@ -183,8 +183,8 @@ fun SearchAndFilterRow(searchQuery: String, onSearchQueryChange: (String) -> Uni
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .border(1.dp, Color.Red.copy(alpha = 0.5f), CircleShape)
-                .background(Color.Red.copy(alpha = 0.1f))
+                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                 .clickable { /* Filter logic */ },
             contentAlignment = Alignment.Center
         ) {
@@ -295,15 +295,15 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 // Badges
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (ext.isAnime) {
-                        Badge(text = "الأنمي", icon = Icons.Default.Face, color = Color.Red, bgColor = Color.Red.copy(alpha = 0.15f))
+                        Badge(text = stringResource(R.string.anime), icon = Icons.Default.Face, color = MaterialTheme.colorScheme.primary, bgColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
                     } else if (ext.isMovie || ext.isSeries) {
                         val badgeText = if(ext.isMovie && ext.isSeries) "شامل" else if (ext.isMovie) "أفلام" else "مسلسلات"
                         val badgeIcon = if(ext.isMovie && ext.isSeries) Icons.Default.GridView else if (ext.isMovie) Icons.Outlined.Movie else Icons.Outlined.Tv
                         Badge(
                             text = badgeText, 
                             icon = badgeIcon, 
-                            color = Color.Red, 
-                            bgColor = Color.Red.copy(alpha = 0.15f)
+                            color = MaterialTheme.colorScheme.primary, 
+                            bgColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                         )
                     }
                     
@@ -382,7 +382,7 @@ fun NoticeBanner(onDismiss: () -> Unit) {
             .padding(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -394,16 +394,16 @@ fun NoticeBanner(onDismiss: () -> Unit) {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.Red.copy(alpha = 0.1f)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Outlined.Lightbulb, contentDescription = null, tint = Color.Red)
+                Icon(Icons.Outlined.Lightbulb, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             }
             
             Spacer(modifier = Modifier.width(12.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text(stringResource(R.string.note), color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(R.string.note), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(stringResource(R.string.install_multiple_ext),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

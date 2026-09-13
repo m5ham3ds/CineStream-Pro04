@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
 
     <string name="app_name">CineStream</string>
@@ -95,7 +96,7 @@
     <string name="popular_searches">Popular Searches</string>
     <string name="recent_searches">Recent Searches</string>
     <string name="clear_all">Clear All</string>
-    <string name="edit_action">Edit ></string>
+    <string name="edit_action">Edit &gt;</string>
     <string name="see_all">See All</string>
     <string name="all">All</string>
     <string name="trending">Trending</string>
@@ -334,4 +335,4 @@
     <string name="download_complete">%s downloaded successfully, you can watch offline.</string>
     <string name="download_count">Download (%d)</string>
     <string name="episode_format">Ep %1$d: %2$s</string>
-</resources>
+<string name="connecting_to">Connecting to %1$s...</string><string name="loading_site">Loading %1$s...</string><string name="current_site">Current Site: %1$s</string><string name="used_space">%1$s / %2$s used</string><string name="used_percentage">%1$d%% used</string><string name="free_space">%1$s free</string><string name="episodes_count">%1$d Episodes</string><string name="connected_to">Connected to %1$s</string><string name="sent">Sent</string><string name="received">Received</string><string name="stat_activity">%1$s Activity</string><string name="per_month">%1$s / month</string></resources>

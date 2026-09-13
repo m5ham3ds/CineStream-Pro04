@@ -210,7 +210,7 @@ fun DownloadsScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(R.string.storage), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
-                        Text("$usedStr / $totalStr used", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                        Text(stringResource(R.string.used_space, usedStr, totalStr), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -222,8 +222,8 @@ fun DownloadsScreen(
                     
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("$usedPercentageInt% used", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                        Text("$availableStr free", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                        Text(stringResource(R.string.used_percentage, usedPercentageInt), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                        Text(stringResource(R.string.free_space, availableStr), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                     }
                 }
             }

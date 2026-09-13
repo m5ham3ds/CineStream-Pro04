@@ -325,7 +325,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(16.dp))
                     val serverText = if (uiState.currentServer.isNotEmpty()) " / ${uiState.currentServer}" else ""
-                    Text("Connecting to ${uiState.currentWebsite}$serverText...", color = MaterialTheme.colorScheme.onBackground)
+                    Text(stringResource(R.string.connecting_to, "${uiState.currentWebsite}$serverText"), color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
@@ -445,7 +445,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.height(16.dp))
                             val serverText = if (uiState.currentServer.isNotEmpty()) " / ${uiState.currentServer}" else ""
-                            Text("Loading ${uiState.currentWebsite}$serverText...", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.loading_site, "${uiState.currentWebsite}$serverText"), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                         }
                     } else {
                         Row(
@@ -706,7 +706,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(stringResource(R.string.searching_video), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Current Site: ${uiState.currentWebsite}", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+                        Text(stringResource(R.string.current_site, uiState.currentWebsite), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
                     } else {
                         Text(stringResource(R.string.ready_to_play), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))

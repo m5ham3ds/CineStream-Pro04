@@ -37,8 +37,13 @@ fun CineStreamHeader(
     onMenuClick: () -> Unit
 ) {
     val brandRed = MaterialTheme.colorScheme.primary
-    val bgDark = Color(0xFF141416)
-    val iconBorder = Color(0xFF2C2C30)
+    val bgDark = MaterialTheme.colorScheme.background
+    val iconBorder = MaterialTheme.colorScheme.surfaceVariant
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val primary30 = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+    val bgColor = MaterialTheme.colorScheme.background
+    val surfaceColor = MaterialTheme.colorScheme.surface
+
 
     Box(
         modifier = Modifier
@@ -47,7 +52,7 @@ fun CineStreamHeader(
             // Entire header background with angled red glows
             .drawBehind {
                 // Dark base
-                drawRect(Color(0xFF0C0C0E))
+                drawRect(bgColor)
                 
                 // Left red diagonal highlight
                 val leftPath = Path().apply {
@@ -60,7 +65,7 @@ fun CineStreamHeader(
                 drawPath(
                     path = leftPath,
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF3A050A), Color.Transparent),
+                        colors = listOf(primary30, Color.Transparent),
                         start = Offset(0f, size.height / 2),
                         end = Offset(size.width * 0.25f, size.height / 2)
                     )
@@ -77,7 +82,7 @@ fun CineStreamHeader(
                 drawPath(
                     path = rightPath,
                     brush = Brush.linearGradient(
-                        colors = listOf(Color.Transparent, Color(0xFF3A050A)),
+                        colors = listOf(Color.Transparent, primary30),
                         start = Offset(size.width * 0.75f, size.height / 2),
                         end = Offset(size.width, size.height / 2)
                     )
@@ -85,13 +90,13 @@ fun CineStreamHeader(
                 
                 // Top and bottom faint borders
                 drawLine(
-                    color = Color(0xFF222225),
+                    color = surfaceColor,
                     start = Offset(0f, 0f),
                     end = Offset(size.width, 0f),
                     strokeWidth = 2f
                 )
                 drawLine(
-                    color = Color(0xFF222225),
+                    color = surfaceColor,
                     start = Offset(0f, size.height),
                     end = Offset(size.width, size.height),
                     strokeWidth = 2f
@@ -115,7 +120,7 @@ fun CineStreamHeader(
                         .fillMaxSize()
                         .background(
                             brush = Brush.radialGradient(
-                                colors = listOf(Color(0xFFFF1A1A).copy(alpha = 0.4f), Color.Transparent)
+                                colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), Color.Transparent)
                             ),
                             shape = CircleShape
                         )
@@ -125,15 +130,15 @@ fun CineStreamHeader(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF1E1E24))
-                        .border(2.dp, Color(0xFFFF2A2A), CircleShape),
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     IconButton(onClick = onProfileClick) {
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Profile",
-                            tint = Color(0xFFE0E0E0),
+                            tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -159,7 +164,7 @@ fun CineStreamHeader(
                 Text(
                     text = buildAnnotatedString {
                         val spacing = 4.sp
-                        val grayColor = Color(0xFFAAAAAA)
+                        val grayColor = MaterialTheme.colorScheme.onSurfaceVariant
                         withStyle(style = SpanStyle(color = grayColor, fontSize = 10.sp, letterSpacing = spacing, fontWeight = FontWeight.Bold)) {
                             append("MOVIES")
                         }
@@ -230,14 +235,14 @@ fun CineStreamHeader(
                                 Box(
                                     modifier = Modifier
                                         .size(22.dp)
-                                        .background(Brush.radialGradient(listOf(Color(0xFFFF3030).copy(alpha = 0.6f), Color.Transparent)), CircleShape)
+                                        .background(Brush.radialGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), Color.Transparent)), CircleShape)
                                         .align(Alignment.Center)
                                 )
                                 Box(
                                     modifier = Modifier
                                         .size(18.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFFFF2020))
+                                        .background(MaterialTheme.colorScheme.primary)
                                         .align(Alignment.Center),
                                     contentAlignment = Alignment.Center
                                 ) {

@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="app_name">CineStream</string>
     <string name="home">الرئيسية</string>
@@ -94,7 +95,7 @@
     <string name="popular_searches">عمليات البحث الشائعة</string>
     <string name="recent_searches">عمليات البحث الأخيرة</string>
     <string name="clear_all">مسح الكل</string>
-    <string name="edit_action">تعديل ></string>
+    <string name="edit_action">تعديل &gt;</string>
     <string name="see_all">عرض الكل</string>
     <string name="all">الكل</string>
     <string name="trending">رائج</string>
@@ -318,4 +319,4 @@
     <string name="download_complete">تم تنزيل %s بنجاح، يمكنك المشاهدة بدون إنترنت.</string>
     <string name="download_count">تنزيل (%d)</string>
     <string name="episode_format">حلقة %1$d: %2$s</string>
-</resources>
+<string name="connecting_to">جاري الاتصال بـ %1$s...</string><string name="loading_site">جاري تحميل %1$s...</string><string name="current_site">الموقع الحالي: %1$s</string><string name="used_space">مُستخدم %1$s / %2$s</string><string name="used_percentage">مُستخدم %1$d%%</string><string name="free_space">%1$s مساحة حرة</string><string name="episodes_count">%1$d حلقات</string><string name="connected_to">متصل بـ %1$s</string><string name="sent">تم الإرسال</string><string name="received">تم الاستلام</string><string name="stat_activity">نشاط %1$s</string><string name="per_month">%1$s / شهر</string></resources>

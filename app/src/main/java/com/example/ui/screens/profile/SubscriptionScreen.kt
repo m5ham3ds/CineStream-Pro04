@@ -63,7 +63,7 @@ fun SubscriptionScreen(onBack: () -> Unit) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text(stringResource(R.string.basic_plan), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("$0.00 / month", color = primaryRed, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.per_month, "$0.00"), color = primaryRed, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     PlanFeature("Ad-supported streaming")
                     PlanFeature("Standard quality (720p)")
@@ -96,7 +96,7 @@ fun SubscriptionScreen(onBack: () -> Unit) {
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("$9.99 / month", color = primaryRed, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.per_month, "$9.99"), color = primaryRed, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     PlanFeature("Ad-free experience")
                     PlanFeature("4K HDR & Dolby Atmos")
