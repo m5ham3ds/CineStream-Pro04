@@ -92,7 +92,7 @@ class HomeViewModel(
                 val trendingSeries = (trendingSeriesRaw.take(10) + arabicSeriesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
                 val newReleasesMovies = (newReleasesMoviesRaw.take(10) + arabicMoviesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
                 val newReleasesSeries = (newReleasesSeriesRaw.take(10) + arabicSeriesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
-                val upcomingMovies = (upcomingMoviesRaw.take(10) + arabicMoviesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
+                val upcomingMovies = upcomingMoviesRaw.sortedByDescending { it.rating }.distinctBy { it.id }
 
                 val actionMovies = allMovies.filter { m -> m.genres.contains("Action") }
                 

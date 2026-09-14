@@ -1,4 +1,5 @@
 package com.example.ui.screens.movies
+import kotlinx.coroutines.flow.map
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.combine
@@ -65,8 +66,8 @@ class MoviesViewModel(private val repository: MediaRepository) : ViewModel() {
             }
             
             launch {
-                repository.getUpcomingMovies().combine(repository.getArabicMovies()) { upcoming, arabic ->
-                    (upcoming.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
+                repository.getUpcomingMovies().map { upcoming ->
+                    upcoming.sortedByDescending { it.rating }.distinctBy { it.id }
                 }
                 .catch { e -> }
                 .collect { upcoming ->

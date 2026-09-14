@@ -1,4 +1,6 @@
-package com.example.ui.components
+import re
+
+new_code = """package com.example.ui.components
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -60,3 +62,8 @@ fun InlineYouTubePlayer(
         )
     }
 }
+"""
+
+with open("app/src/main/java/com/example/ui/components/YouTubePlayer.kt", "w") as f:
+    f.write(new_code)
+

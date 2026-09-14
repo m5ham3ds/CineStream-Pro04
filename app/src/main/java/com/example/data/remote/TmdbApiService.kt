@@ -59,9 +59,11 @@ interface TmdbApiService {
     ): TmdbSeasonDetails
     
 
-    @GET("movie/upcoming")
-    suspend fun getUpcomingMovies(
-        @Query("api_key") apiKey: String
+    @GET("discover/movie")
+    suspend fun getUpcomingMoviesDiscover(
+        @Query("api_key") apiKey: String,
+        @Query("sort_by") sortBy: String = "popularity.desc",
+        @Query("primary_release_date.gte") minDate: String
     ): TmdbResponse<TmdbMovie>
 
     @GET("discover/tv")
