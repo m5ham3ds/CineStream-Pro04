@@ -37,7 +37,17 @@ object RetrofitClient {
         OkHttpClient.Builder()
             .cache(Cache(File(com.example.di.AppContainer.application.cacheDir, "http_cache"), cacheSize))
             .addInterceptor { chain ->
-                var request = chain.request()
+                val originalRequest = chain.request()
+                val originalUrl = originalRequest.url
+                
+                val currentLanguage = java.util.Locale.getDefault().language
+                val tmdbLanguage = if (currentLanguage == "ar") "ar-SA" else "en-US"
+                
+                val urlWithLanguage = originalUrl.newBuilder()
+                    .addQueryParameter("language", tmdbLanguage)
+                    .build()
+                
+                var request = originalRequest.newBuilder().url(urlWithLanguage).build()
                 // Always try network first with short cache, unless explicitly offline
                 if (!isNetworkAvailable()) {
                     request = request.newBuilder()

@@ -139,15 +139,19 @@ fun PersonDetailsScreen(
                     Column(
                         modifier = Modifier.weight(0.58f)
                     ) {
-                        val names = person.name.split(" ", limit = 2)
-                        val firstName = names.getOrNull(0) ?: ""
-                        val lastName = names.getOrNull(1) ?: ""
-                        
-                        Text(firstName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, lineHeight = 32.sp)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(lastName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, lineHeight = 32.sp)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                        androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
+                            Column(horizontalAlignment = Alignment.Start) {
+                                val names = person.name.split(" ", limit = 2)
+                                val firstName = names.getOrNull(0) ?: ""
+                                val lastName = names.getOrNull(1) ?: ""
+                                
+                                Text(firstName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground, lineHeight = 32.sp)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(lastName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, lineHeight = 32.sp)
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                }
+                            }
                         }
                         
                         Spacer(modifier = Modifier.height(4.dp))
@@ -155,57 +159,51 @@ fun PersonDetailsScreen(
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        // Info Grid
-                        Row(modifier = Modifier.fillMaxWidth()) {
+                        // Info Grid - Changed to vertical list for better text alignment
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             // Born
-                            Column(modifier = Modifier.weight(1f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(stringResource(R.string.born), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp).padding(top = 2.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(stringResource(R.string.born), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
+                                        Text(person.birthday ?: "-", fontSize = 13.sp, color = MaterialTheme.colorScheme.onBackground, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    }
                                 }
-                                Text(person.birthday ?: "-", fontSize = 11.sp, color = Color.LightGray, maxLines = 2)
                             }
                             // Birthplace
-                            Column(modifier = Modifier.weight(1.2f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(stringResource(R.string.birthplace), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp).padding(top = 2.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(stringResource(R.string.birthplace), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
+                                        Text(person.placeOfBirth ?: "-", fontSize = 13.sp, color = MaterialTheme.colorScheme.onBackground, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                    }
                                 }
-                                Text(person.placeOfBirth ?: "-", fontSize = 11.sp, color = Color.LightGray, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             }
-                            // Known For
-                            Column(modifier = Modifier.weight(0.8f)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(stringResource(R.string.known_for), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                                Text(person.knownFor ?: "-", fontSize = 11.sp, color = Color.LightGray, maxLines = 2)
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        // Stats Row
-                        val firstCreditYear = (person.movies.map { it.year } + person.series.map { it.year }).filter { it > 0 }.minOrNull()
-                        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-                        val yearsActive = if (firstCreditYear != null && firstCreditYear > 0) {
-                            currentYear - firstCreditYear
-                        } else {
-                            0
-                        }
-                        val yearsActiveStr = if (yearsActive > 0) "${yearsActive}+" else "-"
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            StatBox(icon = Icons.Default.Movie, value = if (person.movies.isNotEmpty()) "${person.movies.size}+" else "-", label = "Movies", modifier = Modifier.weight(1f))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            StatBox(icon = Icons.Default.Tv, value = if (person.series.isNotEmpty()) "${person.series.size}+" else "-", label = "TV Shows", modifier = Modifier.weight(1f))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            StatBox(icon = Icons.Outlined.Star, value = yearsActiveStr, label = "Years Active", modifier = Modifier.weight(1f))
                         }
                     }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Stats Row
+                val firstCreditYear = (person.movies.map { it.year } + person.series.map { it.year }).filter { it > 0 }.minOrNull()
+                val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                val yearsActive = if (firstCreditYear != null && firstCreditYear > 0) {
+                    currentYear - firstCreditYear
+                } else {
+                    0
+                }
+                val yearsActiveStr = if (yearsActive > 0) "${yearsActive}+" else "-"
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    StatBox(icon = Icons.Default.Movie, value = if (person.movies.isNotEmpty()) "${person.movies.size}+" else "-", label = stringResource(R.string.movies), modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    StatBox(icon = Icons.Default.Tv, value = if (person.series.isNotEmpty()) "${person.series.size}+" else "-", label = stringResource(R.string.series), modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    StatBox(icon = Icons.Outlined.Star, value = yearsActiveStr, label = stringResource(R.string.years_active), modifier = Modifier.weight(1f))
                 }
                 
                 // Biography
@@ -223,7 +221,26 @@ fun PersonDetailsScreen(
                                 Text(stringResource(R.string.biography), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                             }
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text(person.biography, color = Color.LightGray, fontSize = 14.sp, lineHeight = 20.sp)
+                            
+                            var isBioExpanded by remember { mutableStateOf(false) }
+                            androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
+                                Text(
+                                    text = person.biography, 
+                                    color = Color.LightGray, 
+                                    fontSize = 14.sp, 
+                                    lineHeight = 20.sp,
+                                    maxLines = if (isBioExpanded) Int.MAX_VALUE else 4,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = if (isBioExpanded) stringResource(R.string.read_less) else stringResource(R.string.read_more),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.clickable { isBioExpanded = !isBioExpanded }.padding(vertical = 4.dp)
+                            )
                         }
                     }
                 }
@@ -231,7 +248,7 @@ fun PersonDetailsScreen(
                 // Movies
                 if (person.movies.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(24.dp))
-                    SectionHeader("Top Movies")
+                    SectionHeader(stringResource(R.string.top_movies))
                     Spacer(modifier = Modifier.height(12.dp))
                     LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(person.movies) { movie ->
@@ -243,7 +260,7 @@ fun PersonDetailsScreen(
                 // Series
                 if (person.series.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(24.dp))
-                    SectionHeader("Top TV Shows")
+                    SectionHeader(stringResource(R.string.top_shows))
                     Spacer(modifier = Modifier.height(12.dp))
                     LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(person.series) { series ->
