@@ -6,8 +6,13 @@ object ServerStateStore {
     var extractedServerLinks: Map<String, String> = emptyMap()
     var extractedServerIds: Map<String, String> = emptyMap()
     var extractedDownloadLinks: Map<String, String> = emptyMap()
-    var extractedQualities: List<com.example.utils.M3U8Parser.QualityInfo> = emptyList()
     
+    // Server Name -> List of Qualities
+    var serverQualities: MutableMap<String, List<com.example.utils.M3U8Parser.QualityInfo>> = mutableMapOf()
+    
+    // Default or legacy, kept for compatibility, but we should use serverQualities map
+    var extractedQualities: List<com.example.utils.M3U8Parser.QualityInfo> = emptyList()
+
     fun clear() {
         currentMediaKey = null
         extractedServers = emptyList()
@@ -15,5 +20,6 @@ object ServerStateStore {
         extractedServerIds = emptyMap()
         extractedDownloadLinks = emptyMap()
         extractedQualities = emptyList()
+        serverQualities.clear()
     }
 }

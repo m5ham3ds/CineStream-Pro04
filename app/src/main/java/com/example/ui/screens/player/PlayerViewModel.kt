@@ -1,6 +1,7 @@
 package com.example.ui.screens.player
 
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import com.example.data.repository.TmdbMediaRepositoryImpl
 import com.example.domain.models.Episode
@@ -179,6 +180,23 @@ class PlayerViewModel : ViewModel() {
         val link = _uiState.value.availableServerLinks[server]
         val id = _uiState.value.availableServerIds[server]
         
+        val cachedQualities = com.example.ui.screens.player.ServerStateStore.serverQualities[server]
+        if (cachedQualities != null && cachedQualities.isNotEmpty()) {
+            val autoQuality = cachedQualities.firstOrNull()?.name ?: "Auto"
+            val targetQuality = cachedQualities.find { it.name == _uiState.value.currentQuality } ?: cachedQualities.first()
+            _uiState.value = _uiState.value.copy(
+                currentServer = server,
+                isLoading = false,
+                currentVideoUrl = targetQuality.url,
+                extractionUrl = null,
+                serverIdToChange = id,
+                extractedQualitiesInfo = cachedQualities,
+                availableQualities = cachedQualities.map { it.name },
+                currentQuality = targetQuality.name
+            )
+            return
+        }
+
         var nextExtractionUrl = _uiState.value.extractionUrl
         if (link != null && link.isNotEmpty()) {
             nextExtractionUrl = link
@@ -193,7 +211,11 @@ class PlayerViewModel : ViewModel() {
         )
         
         if (nextExtractionUrl != null) {
-            startExtractionTimeout()
+            if (nextExtractionUrl.contains(".m3u8") || nextExtractionUrl.contains(".mp4") || nextExtractionUrl.contains("akamaized.net")) {
+                setFinalVideoUrl(nextExtractionUrl)
+            } else {
+                startExtractionTimeout()
+            }
         } else {
             generateExtractionUrl()
         }
@@ -210,13 +232,43 @@ class PlayerViewModel : ViewModel() {
         generateExtractionUrl()
     }
 
-    fun setFinalVideoUrl(url: String) {
+fun setFinalVideoUrl(url: String) {
         extractionTimeoutJob?.cancel()
-        if (_uiState.value.currentVideoUrl != url) {
-            _uiState.value = _uiState.value.copy(
-                currentVideoUrl = url,
-                isLoading = false
-            )
+        
+        // Immediately stop extraction to prevent multiple calls
+        _uiState.value = _uiState.value.copy(extractionUrl = null)
+        
+        viewModelScope.launch {
+            try {
+                val qualities = com.example.utils.M3U8Parser.getQualities(url)
+                val serverName = _uiState.value.currentServer
+                if (serverName.isNotEmpty()) {
+                    com.example.ui.screens.player.ServerStateStore.serverQualities[serverName] = qualities
+                }
+                
+                if (qualities.isNotEmpty()) {
+                    val prevQualityName = _uiState.value.currentQuality
+                    val targetQuality = qualities.find { it.name == prevQualityName } ?: qualities.first()
+                    
+                    _uiState.value = _uiState.value.copy(
+                        extractedQualitiesInfo = qualities,
+                        availableQualities = qualities.map { it.name },
+                        currentQuality = targetQuality.name,
+                        currentVideoUrl = targetQuality.url,
+                        isLoading = false
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        currentVideoUrl = url,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    currentVideoUrl = url,
+                    isLoading = false
+                )
+            }
         }
     }
 

@@ -87,6 +87,7 @@ fun ServerSelectionDialog(
     onPlay: (url: String, serverName: String, website: String) -> Unit,
     onNavigateToExtensions: () -> Unit = {}
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     
     
@@ -761,34 +762,38 @@ Dialog(
                                             .background(Color(0xFF16161A))
                                             .border(1.dp, Color(0xFF222225), RoundedCornerShape(16.dp))
                                             .clickable {
-                                                if (extractedQualities.isNotEmpty() && selectedServerForQuality == server) {
+                                                if (selectedServerForQuality == server) {
                                                     // Already selected
                                                 } else {
                                                     selectedServerForQuality = server
-                                                    extractedQualities = emptyList()
                                                     isExtractingQuality = true
-                                                    qualityExtractionMessage = "جاري استخراج الجودات المتاحة..."
+                                                    qualityExtractionMessage = "جاري الاتصال وقياس سرعة الإنترنت..."
                                                     
                                                     val finalUrl = extractedServerLinks[server] ?: ""
                                                     
                                                     kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
                                                         val qualities = com.example.utils.M3U8Parser.getQualities(finalUrl)
                                                         if (selectedServerForQuality == server) {
-                                                            if (qualities.size <= 1) {
+                                                            com.example.ui.screens.player.ServerStateStore.serverQualities[server] = qualities
+                                                            val bandwidth = com.example.utils.NetworkUtils.getEstimatedBandwidthKbps(context)
+                                                            val bestQuality = com.example.utils.NetworkUtils.selectBestQuality(qualities, bandwidth)
+                                                            
+                                                            val watchUrl = if (qualities.isEmpty() || qualities.size == 1 && qualities[0].name == "Auto") {
                                                                 val dLink = extractedDownloadLinks[server] ?: ""
-                                                                val watchUrl = if (finalUrl.contains("akamaized.net") || finalUrl.endsWith(".m3u8") || finalUrl.endsWith(".mp4")) {
+                                                                if (finalUrl.contains("akamaized.net") || finalUrl.endsWith(".m3u8") || finalUrl.endsWith(".mp4")) {
                                                                     finalUrl
                                                                 } else if (dLink.isNotEmpty()) {
                                                                     dLink
                                                                 } else {
                                                                     finalUrl
                                                                 }
-                                                                onPlay(watchUrl, server, currentSiteName)
                                                             } else {
-                                                                extractedQualities = qualities
-                                                                isExtractingQuality = false
-                                                                ServerStateStore.extractedQualities = qualities
+                                                                bestQuality.url
                                                             }
+                                                            
+                                                            com.example.ui.screens.player.ServerStateStore.extractedQualities = qualities
+                                                            isExtractingQuality = false
+                                                            onPlay(watchUrl, server, currentSiteName)
                                                         }
                                                     }
                                                 }
