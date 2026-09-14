@@ -1,4 +1,6 @@
-package com.example.ui.components
+import re
+
+new_code = """package com.example.ui.components
 
 import android.annotation.SuppressLint
 import android.view.ViewGroup
@@ -18,7 +20,7 @@ fun InlineYouTubePlayer(
     modifier: Modifier = Modifier,
     onFullscreenChange: (Boolean) -> Unit = {}
 ) {
-    val htmlData = """
+    val htmlData = \"\"\"
         <!DOCTYPE html>
         <html>
         <head>
@@ -36,7 +38,7 @@ fun InlineYouTubePlayer(
             </iframe>
         </body>
         </html>
-    """.trimIndent()
+    \"\"\".trimIndent()
 
     Box(modifier = modifier) {
         AndroidView(
@@ -70,3 +72,8 @@ fun InlineYouTubePlayer(
         )
     }
 }
+"""
+
+with open("app/src/main/java/com/example/ui/components/YouTubePlayer.kt", "w") as f:
+    f.write(new_code)
+

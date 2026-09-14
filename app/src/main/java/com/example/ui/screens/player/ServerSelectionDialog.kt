@@ -37,6 +37,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.animation.animateContentSize
+
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.border
@@ -480,714 +490,390 @@ Dialog(
                 }
             }
             
-            if (!isCloudflare) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.95f)
 
-                .wrapContentHeight()
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF16161A))
-                .border(1.dp, Color(0x33FF1111), RoundedCornerShape(24.dp))
-                .clickable(
-                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                    indication = null,
-                    onClick = {} // Consume clicks inside the dialog so they don't dismiss
-                )
-        ) {
-            // Subtle top-left / top-right radial gradient for the red glow
+        if (!isCloudflare) {
+            val displayTitle = when {
+                isFailed || extractedServers.isNotEmpty() -> "اختر السيرفر"
+                else -> "الاتصال بالسيرفر"
+            }
+            
+            val displaySubtitle = when {
+                isFailed -> "جاري الإتصال بالسيرفرات المتاحة..."
+                isExtractingQuality -> "اختر جودة العرض المتاحة"
+                extractedServers.isNotEmpty() -> "جاري جلب السيرفرات المتاحة..."
+                isVerified || isNormal -> "تم الاتصال ..."
+                else -> "جاري الاتصال..."
+            }
+            
+            val displayIcon = when {
+                isFailed -> androidx.compose.material.icons.Icons.Outlined.CloudOff
+                extractedServers.isNotEmpty() && !isFailed -> if (isExtractingQuality) androidx.compose.material.icons.Icons.Outlined.Storage else androidx.compose.material.icons.Icons.Outlined.CloudDownload
+                isVerified || isNormal -> androidx.compose.material.icons.Icons.Outlined.CloudDone
+                else -> androidx.compose.material.icons.Icons.Outlined.CloudDownload
+            }
+            
+            val iconTint = if (isFailed) Color(0xFFFF1111) else if (isVerified || isNormal) Color(0xFF00C853) else MaterialTheme.colorScheme.primary
+            
+            val isHorizontal = isLoading && !isCloudflare && extractedServers.isEmpty() && !isFailed
+            
             Box(
                 modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(Color(0x15FF1111), Color.Transparent),
-                            radius = 600f,
-                            center = androidx.compose.ui.geometry.Offset(0f, 0f)
-                        )
+                    .fillMaxWidth(0.95f)
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color(0xFF101014))
+                    .border(1.dp, iconTint.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
+                    .clickable(
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null,
+                        onClick = {}
                     )
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            androidx.compose.ui.graphics.Brush.radialGradient(
+                                colors = listOf(iconTint.copy(alpha = 0.15f), Color.Transparent),
+                                radius = 600f,
+                                center = androidx.compose.ui.geometry.Offset(0f, 0f)
+                            )
+                        )
+                )
+                
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                        .animateContentSize()
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(Color(0xFF330000), CircleShape)
-                            .clickable {
-                                if (selectedServerForQuality != null) {
-                                    selectedServerForQuality = null
-                                    extractedQualities = emptyList()
-                                    isExtractingQuality = false
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (selectedServerForQuality != null) Icons.AutoMirrored.Filled.ArrowBack else Icons.Outlined.CloudDownload,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = stringResource(R.string.select_server_ar),
-                            color = MaterialTheme.colorScheme.onBackground,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                        )
-                        Text(text = stringResource(R.string.connecting_servers),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
-                            maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    IconButton(
-                        onClick = {
-                            if (isLoading) {
-                                showCancelConfirmDialog = true
-                            } else {
-                                onDismiss()
-                            }
-                        },
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(Color(0xFF222225), CircleShape)
-                            .border(1.dp, Color(0xFF333333), CircleShape)
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = "إغلاق", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(18.dp))
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-
-
-                if (isLoading && !isFailed) {
-                    androidx.compose.animation.AnimatedContent(
-                        targetState = bypassStatus,
-                        transitionSpec = {
-                            androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) togetherWith androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(300))
-                        }, label = "BypassAnimation"
-                    ) { currentStatus ->
-                        Box(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            // 1. The WebView (Always present, but hidden by overlay if not Cloudflare)
-/* WEBVIEW WAS HERE */
-                            
-                            
-
-                            // 2. The Overlay UI (Shown when NOT CLOUDFLARE)
-                            if (currentStatus != "CLOUDFLARE") {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().wrapContentHeight().background(Color(0xFF16161A)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (isNetworkError) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.padding(16.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = androidx.compose.material.icons.Icons.Default.Close,
-                                                contentDescription = "Network Error",
-                                                tint = Color(0xFFFF1111),
-                                                modifier = Modifier.size(64.dp)
-                                            )
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                            Text(text = stringResource(R.string.net_error),
-                                                color = MaterialTheme.colorScheme.onBackground,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Text(text = stringResource(R.string.check_net_retry),
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                style = MaterialTheme.typography.bodySmall
-                                            )
-                                            Spacer(modifier = Modifier.height(24.dp))
-                                            Button(
-                                                onClick = { 
-                                                    isNetworkError = false
-                                                    retryTrigger++ 
-                                                },
-                                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = activeColor),
-                                                shape = RoundedCornerShape(12.dp)
-                                            ) {
-                                                Text(stringResource(R.string.retry), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-                                            }
-                                        }
-                                    } else {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            modifier = Modifier.padding(16.dp)
-                                        ) {
-                                            Box(
-                                                contentAlignment = Alignment.Center,
-                                                modifier = Modifier.size(140.dp)
-                                            ) {
-                                                androidx.compose.foundation.Canvas(modifier = Modifier.size(140.dp)) {
-                                                    drawCircle(
-                                                        color = Color(0x15FF1111),
-                                                        radius = size.minDimension / 2,
-                                                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
-                                                    )
-                                                    drawCircle(
-                                                        color = Color(0x25FF1111),
-                                                        radius = size.minDimension / 2 - 20f,
-                                                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
-                                                    )
-                                                }
-                                                CircularProgressIndicator(
-                                                    color = activeColor,
-                                                    trackColor = Color(0xFF222225),
-                                                    modifier = Modifier.size(90.dp),
-                                                    strokeWidth = 6.dp
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.height(32.dp))
-                                            val statusMsg = when (bypassStatus) {
-                                                "CHECKING_CLOUDFLARE" -> {
-                                                    androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("تأمين الاتصال بموقع ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.primary)) { append(currentSiteName) }
-                                                    }
-                                                }
-                                                "CLOUDFLARE" -> {
-                                                    androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("تخطي حماية ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFFFF1111))) { append("Cloudflare") }
-                                                    }
-                                                }
-                                                "VERIFIED" -> {
-                                                    androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("تم التخطي ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFF00C853))) { append("بنجاح") }
-                                                    }
-                                                }
-                                                else -> {
-                                                    androidx.compose.ui.text.buildAnnotatedString {
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = MaterialTheme.colorScheme.onBackground)) { append("جاري البحث في ") }
-                                                        withStyle(style = androidx.compose.ui.text.SpanStyle(color = Color(0xFF00C853))) { append(currentSiteName) }
-                                                    }
-                                                }
-                                            }
-                                            Text(
-                                                text = statusMsg,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                textAlign = TextAlign.Center,
-                                                maxLines = 1,
-                                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                                modifier = Modifier.fillMaxWidth()
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Text(text = stringResource(R.string.please_wait_servers),
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                textAlign = TextAlign.Center,
-                                                maxLines = 1,
-                                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                                modifier = Modifier.fillMaxWidth()
-                                            )
-                                            Spacer(modifier = Modifier.height(32.dp))
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                StatusBadge(
-                                                    text = "جاري التحقق",
-                                                    icon = androidx.compose.material.icons.Icons.Outlined.Storage,
-                                                    statusColor = activeColor
-                                                )
-                                                StatusBadge(
-                                                    text = "جلب السيرفرات",
-                                                    icon = androidx.compose.material.icons.Icons.Outlined.Sync,
-                                                    statusColor = activeColor
-                                                )
-                                                StatusBadge(
-                                                    text = "اتصال آمن",
-                                                    icon = androidx.compose.material.icons.Icons.Outlined.Security,
-                                                    statusColor = if (bypassStatus == "VERIFIED" || bypassStatus == "NORMAL") Color(0xFF00C853) else MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                            Spacer(modifier = Modifier.height(24.dp))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } // End AnimatedContent
-                    
-                    
-                    // Bottom progress line
-                    val progress = (currentSiteIndex.toFloat() / safeSites.size.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(Color(0xFF222225))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(if (progress == 0f) 0.1f else progress)
-                                .height(4.dp)
-                                .background(activeColor)
-                        )
-                    }
-                } else if (isFailed) {
-                    Text(text = stringResource(R.string.no_servers_found),
-                        color = Color(0xFFFF1111),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = {
-                            isFailed = false
-                            isLoading = true
-                            currentSiteIndex = 0
-                            currentExtension = safeSites[0]
-                            retryTrigger++
-                        },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(stringResource(R.string.retry_again), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            showOpenBrowserConfirmDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Text(stringResource(R.string.open_browser_manual), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            showSkipSiteConfirmDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Text(stringResource(R.string.skip_current), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-                    }
-                    
-                    if (showOpenBrowserConfirmDialog) {
-                        androidx.compose.material3.AlertDialog(
-                            onDismissRequest = { showOpenBrowserConfirmDialog = false },
-                            title = { Text(stringResource(R.string.confirm_browser), color = MaterialTheme.colorScheme.onBackground) },
-                            text = { Text(stringResource(R.string.confirm_open_browser), color = Color.LightGray) },
-                            containerColor = Color(0xFF222225),
-                            confirmButton = {
-                                androidx.compose.material3.TextButton(
-                                    onClick = {
-                                        isManualBrowserOpen = true
-                                        forceBypassComplete = false
-                                        showOpenBrowserConfirmDialog = false
-                                        isFailed = false
-                                        isLoading = true
-                                        currentSiteIndex = 0
-                                        currentExtension = safeSites[0]
-                                        android.webkit.CookieManager.getInstance().removeAllCookies(null)
-                                        android.webkit.CookieManager.getInstance().flush()
-                                        bypassStatus = "CLOUDFLARE"
-                                        retryTrigger++
-                                    }
-                                ) { Text(stringResource(R.string.yes_ar), color = MaterialTheme.colorScheme.primary) }
-                            },
-                            dismissButton = {
-                                androidx.compose.material3.TextButton(onClick = { showOpenBrowserConfirmDialog = false }) { Text(stringResource(R.string.cancel_ar), color = MaterialTheme.colorScheme.onBackground) }
-                            }
-                        )
-                    }
-                    
-                    if (showSkipSiteConfirmDialog) {
-                        androidx.compose.material3.AlertDialog(
-                            onDismissRequest = { showSkipSiteConfirmDialog = false },
-                            title = { Text(stringResource(R.string.confirm_skip), color = MaterialTheme.colorScheme.onBackground) },
-                            text = { Text(stringResource(R.string.confirm_skip_site), color = Color.LightGray) },
-                            containerColor = Color(0xFF222225),
-                            confirmButton = {
-                                androidx.compose.material3.TextButton(
-                                    onClick = {
-                                        showSkipSiteConfirmDialog = false
-                                        if (currentSiteIndex < safeSites.size - 1) {
-                                            isFailed = false
-                                            isLoading = true
-                                            currentSiteIndex++
-                                            currentExtension = safeSites[currentSiteIndex]
-                                            bypassStatus = "CLOUDFLARE"
-                                            isManualBrowserOpen = false
-                                            forceBypassComplete = false
-                                            retryTrigger++
-                                        } else {
-                                            showNoMoreExtensionsDialog = true
-                                        }
-                                    }
-                                ) { Text(stringResource(R.string.yes_ar), color = MaterialTheme.colorScheme.primary) }
-                            },
-                            dismissButton = {
-                                androidx.compose.material3.TextButton(onClick = { showSkipSiteConfirmDialog = false }) { Text(stringResource(R.string.cancel_ar), color = MaterialTheme.colorScheme.onBackground) }
-                            }
-                        )
-                    }
-                    if (showNoMoreExtensionsDialog) {
-                        androidx.compose.material3.AlertDialog(
-                            onDismissRequest = { showNoMoreExtensionsDialog = false },
-                            title = { Text(stringResource(R.string.no_other_ext), color = MaterialTheme.colorScheme.onBackground) },
-                            text = { Text(stringResource(R.string.no_other_ext_prompt), color = Color.LightGray) },
-                            containerColor = Color(0xFF222225),
-                            confirmButton = {
-                                Row {
-                                    androidx.compose.material3.TextButton(
-                                        onClick = {
-                                            showNoMoreExtensionsDialog = false
-                                            isFailed = false
-                                            isLoading = true
-                                            currentSiteIndex = 0
-                                            currentExtension = safeSites[0]
-                                            retryTrigger++
-                                        }
-                                    ) { Text(stringResource(R.string.retry), color = Color(0xFF00C853)) }
-                                    androidx.compose.material3.TextButton(
-                                        onClick = {
-                                            showNoMoreExtensionsDialog = false
-                                            onNavigateToExtensions()
-                                        }
-                                    ) { Text(stringResource(R.string.extensions_page), color = Color(0xFF2196F3)) }
-                                }
-                            },
-                            dismissButton = {
-                                androidx.compose.material3.TextButton(onClick = { 
-                                    showNoMoreExtensionsDialog = false
-                                    onDismiss()
-                                }) { Text(stringResource(R.string.cancel_completely), color = MaterialTheme.colorScheme.primary) }
-                            }
-                        )
-                    }
-                } else if (extractedServers.isNotEmpty()) {
-                    if (selectedServerForQuality != null) {
-                        if (isExtractingQuality) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(50.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = qualityExtractionMessage,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "السيرفر: $selectedServerForQuality",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        } else if (extractedQualities.isNotEmpty()) {
-                            Text(
-                                text = "اختر الجودة ($selectedServerForQuality)",
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                            
-                            LazyColumn(
-                                modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(extractedQualities) { quality ->
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                val serverNameOnly = selectedServerForQuality ?: "سيرفر"
-                                                onPlay(quality.url, serverNameOnly, currentSiteName)
-                                            },
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = Color(0xFF222225)
-                                        ),
-                                        shape = RoundedCornerShape(12.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Text(
-                                                text = quality.name,
-                                                color = MaterialTheme.colorScheme.onBackground,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            TextButton(onClick = { 
-                                selectedServerForQuality = null
-                                extractedQualities = emptyList()
-                            }) {
-                                Text(stringResource(R.string.back_select_server), color = Color.LightGray)
-                            }
-                        } else {
-                            Text(text = stringResource(R.string.no_quality_found),
-                                color = Color(0xFFFF1111),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                            
-                            androidx.compose.material3.Button(
-                                onClick = { 
-                                    isExtractingQuality = true
-                                    extractedQualities = emptyList()
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF00C853))
-                            ) {
-                                Text(stringResource(R.string.retry_extract), color = MaterialTheme.colorScheme.onBackground)
-                            }
-                            
-                            androidx.compose.material3.OutlinedButton(
-                                onClick = { 
-                                    selectedServerForQuality = null
-                                    extractedQualities = emptyList()
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(contentColor = Color.LightGray)
-                            ) {
-                                Text(stringResource(R.string.back_select_server))
+                                .size(48.dp)
+                                .background(iconTint.copy(alpha = 0.15f), CircleShape)
+                                .border(1.dp, iconTint.copy(alpha = 0.3f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(displayIcon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
+                        }
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(displayTitle, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(displaySubtitle, color = iconTint.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
+                        }
+                        
+                        if (isHorizontal) {
+                            Spacer(modifier = Modifier.width(16.dp))
+                            val progress = (currentSiteIndex.toFloat() / safeSites.size.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
+                            val animatedProgress by androidx.compose.animation.core.animateFloatAsState(targetValue = if (progress == 0f) 0.1f else progress)
+                            Box(modifier = Modifier.weight(1.5f).height(6.dp).clip(CircleShape).background(Color(0xFF222222))) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(animatedProgress)
+                                        .fillMaxHeight()
+                                        .background(iconTint)
+                                )
                             }
                         }
-                    } else {
-                        Text(
-                            text = "تم جلب السيرفرات من: $currentSiteName",
-                            color = Color(0xFF00C853),
-                            style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
                         
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(Color(0xFF222225), CircleShape)
+                                .border(1.dp, Color(0xFF333333), CircleShape)
+                                .clickable {
+                                    if (isLoading || isExtractingQuality) {
+                                        showCancelConfirmDialog = true
+                                    } else {
+                                        onDismiss()
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
                         ) {
-                            items(extractedServers) { server ->
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            selectedServerForQuality = server
-                                            isExtractingQuality = true
-                                            extractedQualities = emptyList()
-                                        },
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFF222225)
-                                    ),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
+                            Icon(Icons.Default.Close, contentDescription = "إغلاق", tint = Color.White, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                    
+                    if (!isHorizontal) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        if (isFailed) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF220000))
+                                    .border(1.dp, Color(0x33FF1111), RoundedCornerShape(12.dp))
+                                    .padding(16.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(androidx.compose.material.icons.Icons.Default.Error, contentDescription = null, tint = Color(0xFFFF1111), modifier = Modifier.size(24.dp))
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = "عذراً، لم نتمكن من العثور على سيرفرات تعمل لهذا العمل في جميع المواقع المدعومة.",
+                                        color = Color(0xFFFF4444),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        lineHeight = 18.sp
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            Button(
+                                onClick = {
+                                    isFailed = false
+                                    isLoading = true
+                                    currentSiteIndex = 0
+                                    currentExtension = safeSites[0]
+                                    retryTrigger++
+                                },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF1111)),
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                Icon(androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.retry_again), color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Button(
+                                onClick = { showOpenBrowserConfirmDialog = true },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF222225)),
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                Icon(androidx.compose.material.icons.Icons.Default.OpenInBrowser, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.open_browser_manual), color = Color.LightGray, fontWeight = FontWeight.Medium)
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            Button(
+                                onClick = { showSkipSiteConfirmDialog = true },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF222225)),
+                                shape = RoundedCornerShape(24.dp)
+                            ) {
+                                Icon(androidx.compose.material.icons.Icons.Default.Language, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(stringResource(R.string.skip_current), color = Color.LightGray, fontWeight = FontWeight.Medium)
+                            }
+                            
+                            if (showOpenBrowserConfirmDialog) {
+                                androidx.compose.material3.AlertDialog(
+                                    onDismissRequest = { showOpenBrowserConfirmDialog = false },
+                                    title = { Text(stringResource(R.string.confirm_browser), color = MaterialTheme.colorScheme.onBackground) },
+                                    text = { Text(stringResource(R.string.confirm_open_browser), color = Color.LightGray) },
+                                    containerColor = Color(0xFF222225),
+                                    confirmButton = {
+                                        androidx.compose.material3.TextButton(
+                                            onClick = {
+                                                isManualBrowserOpen = true
+                                                forceBypassComplete = false
+                                                showOpenBrowserConfirmDialog = false
+                                                isFailed = false
+                                                isLoading = true
+                                                currentSiteIndex = 0
+                                                currentExtension = safeSites[0]
+                                                android.webkit.CookieManager.getInstance().removeAllCookies(null)
+                                                android.webkit.CookieManager.getInstance().flush()
+                                                bypassStatus = "CLOUDFLARE"
+                                                retryTrigger++
+                                            }
+                                        ) { Text(stringResource(R.string.yes_ar), color = MaterialTheme.colorScheme.primary) }
+                                    },
+                                    dismissButton = {
+                                        androidx.compose.material3.TextButton(onClick = { showOpenBrowserConfirmDialog = false }) { Text(stringResource(R.string.cancel_ar), color = MaterialTheme.colorScheme.onBackground) }
+                                    }
+                                )
+                            }
+                            if (showSkipSiteConfirmDialog) {
+                                androidx.compose.material3.AlertDialog(
+                                    onDismissRequest = { showSkipSiteConfirmDialog = false },
+                                    title = { Text(stringResource(R.string.confirm_skip), color = MaterialTheme.colorScheme.onBackground) },
+                                    text = { Text(stringResource(R.string.confirm_skip_site), color = Color.LightGray) },
+                                    containerColor = Color(0xFF222225),
+                                    confirmButton = {
+                                        androidx.compose.material3.TextButton(
+                                            onClick = {
+                                                showSkipSiteConfirmDialog = false
+                                                if (currentSiteIndex < safeSites.size - 1) {
+                                                    isFailed = false
+                                                    isLoading = true
+                                                    currentSiteIndex++
+                                                    currentExtension = safeSites[currentSiteIndex]
+                                                    bypassStatus = "CLOUDFLARE"
+                                                    isManualBrowserOpen = false
+                                                    forceBypassComplete = false
+                                                    retryTrigger++
+                                                } else {
+                                                    showNoMoreExtensionsDialog = true
+                                                }
+                                            }
+                                        ) { Text(stringResource(R.string.yes_ar), color = MaterialTheme.colorScheme.primary) }
+                                    },
+                                    dismissButton = {
+                                        androidx.compose.material3.TextButton(onClick = { showSkipSiteConfirmDialog = false }) { Text(stringResource(R.string.cancel_ar), color = MaterialTheme.colorScheme.onBackground) }
+                                    }
+                                )
+                            }
+                            if (showNoMoreExtensionsDialog) {
+                                AlertDialog(
+                                    onDismissRequest = { showNoMoreExtensionsDialog = false },
+                                    title = { Text("لا يوجد مواقع أخرى", color = MaterialTheme.colorScheme.onBackground) },
+                                    text = { Text("عذراً، فشل البحث في جميع المواقع المتاحة.", color = Color.LightGray) },
+                                    containerColor = Color(0xFF222225),
+                                    confirmButton = {
+                                        TextButton(
+                                            onClick = {
+                                                showNoMoreExtensionsDialog = false
+                                                onDismiss()
+                                            }
+                                        ) {
+                                            Text("إغلاق", color = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                )
+                            }
+                        } else if (selectedServerForQuality == null) {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(extractedServers) { server ->
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(16.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(Color(0xFF16161A))
+                                            .border(1.dp, Color(0xFF222225), RoundedCornerShape(16.dp))
+                                            .clickable {
+                                                if (extractedQualities.isNotEmpty() && selectedServerForQuality == server) {
+                                                    // Already selected
+                                                } else {
+                                                    selectedServerForQuality = server
+                                                    extractedQualities = emptyList()
+                                                    isExtractingQuality = true
+                                                    qualityExtractionMessage = "جاري استخراج الجودات المتاحة..."
+                                                    
+                                                    val finalUrl = extractedServerLinks[server] ?: ""
+                                                    
+                                                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                        val qualities = com.example.utils.M3U8Parser.getQualities(finalUrl)
+                                                        if (selectedServerForQuality == server) {
+                                                            if (qualities.size <= 1) {
+                                                                val dLink = extractedDownloadLinks[server] ?: ""
+                                                                val watchUrl = if (finalUrl.contains("akamaized.net") || finalUrl.endsWith(".m3u8") || finalUrl.endsWith(".mp4")) {
+                                                                    finalUrl
+                                                                } else if (dLink.isNotEmpty()) {
+                                                                    dLink
+                                                                } else {
+                                                                    finalUrl
+                                                                }
+                                                                onPlay(watchUrl, server, currentSiteName)
+                                                            } else {
+                                                                extractedQualities = qualities
+                                                                isExtractingQuality = false
+                                                                ServerStateStore.extractedQualities = qualities
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            .padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            text = server,
-                                            color = MaterialTheme.colorScheme.onBackground,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            fontWeight = FontWeight.Bold
-                                        )
+                                        Box(
+                                            modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.primary.copy(alpha=0.15f), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                        }
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Text(server, color = Color.White, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
                                     }
                                 }
                             }
-                            
-                            if (extractedDownloadLinks.isNotEmpty()) {
-                                item {
-                                    Text(text = stringResource(R.string.direct_links),
-                                        color = Color(0xFF00C853),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-                                    )
+                        } else {
+                            if (isExtractingQuality) {
+                                Box(modifier = Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                                 }
-                                
-                                items(extractedDownloadLinks.keys.toList()) { downloadName ->
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                selectedServerForQuality = downloadName
-                                                isExtractingQuality = true
-                                                extractedQualities = emptyList()
-                                            },
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = Color(0xFF1E2732)
-                                        ),
-                                        shape = RoundedCornerShape(12.dp)
-                                    ) {
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(extractedQualities) { quality ->
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(16.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .background(Color(0xFF16161A))
+                                                .border(1.dp, Color(0xFF222225), RoundedCornerShape(16.dp))
+                                                .clickable {
+                                                    onPlay(quality.url, selectedServerForQuality ?: "", currentSiteName)
+                                                }
+                                                .padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(
-                                                imageVector = Icons.Outlined.CloudDownload,
-                                                contentDescription = "تحميل",
-                                                tint = Color(0xFF00C853),
-                                                modifier = Modifier.size(20.dp).padding(end = 8.dp)
-                                            )
-                                            Text(
-                                                text = downloadName,
-                                                color = MaterialTheme.colorScheme.onBackground,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold
-                                            )
+                                            Box(
+                                                modifier = Modifier.size(32.dp).background(Color(0x15FFFFFF), CircleShape),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                            }
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                            Text(quality.name, color = Color.White, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                            Spacer(modifier = Modifier.weight(1f))
+                                            
+                                            val badgeColor = when {
+                                                quality.name.contains("1080") || quality.name.contains("FHD") -> Color(0xFFE91E63)
+                                                quality.name.contains("720") || quality.name.contains("HD") -> Color(0xFF9C27B0)
+                                                else -> Color(0xFF607D8B)
+                                            }
+                                            val badgeText = when {
+                                                quality.name.contains("1080") || quality.name.contains("FHD") -> "FHD"
+                                                quality.name.contains("720") || quality.name.contains("HD") -> "HD"
+                                                else -> "SD"
+                                            }
+                                            Box(
+                                                modifier = Modifier.background(badgeColor.copy(alpha=0.2f), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp)
+                                            ) {
+                                                Text(badgeText, color = badgeColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        }
-                        
-                        if (currentSiteIndex < safeSites.size - 1) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            TextButton(
-                                onClick = {
-                                    currentSiteIndex++
-                                    currentExtension = safeSites[currentSiteIndex]
-                                    extractedServers = emptyList()
-                                    extractedServerLinks = emptyMap()
-                                    isLoading = true
-                                    isFailed = false
-                                    bypassStatus = "CLOUDFLARE"
-                                    isManualBrowserOpen = false
-                                    forceBypassComplete = false
-                                    retryTrigger++
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(stringResource(R.string.search_other_site), color = Color(0xFF00C853))
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "يمكنك التبديل إلى سيرفر آخر لاحقاً",
+                                    color = Color.Gray,
+                                    fontSize = 12.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
                             }
                         }
                     }
                 }
-        
             }
-
-                // Manual confirm dialog removed.
-
-        // Hidden Extractor for Quality
-        if (isExtractingQuality && selectedServerForQuality != null) {
-            LaunchedEffect(selectedServerForQuality) {
-                kotlinx.coroutines.delay(12000)
-                if (isExtractingQuality && extractedQualities.isEmpty()) {
-                    isExtractingQuality = false
-                }
-            }
-            val serverUrl = extractedServerLinks[selectedServerForQuality] ?: extractedDownloadLinks[selectedServerForQuality] ?: finalWatchUrl ?: searchUrl
-            HiddenVideoExtractor(
-                url = serverUrl,
-                isMovie = isMovie,
-                season = season,
-                episode = episode,
-                targetServer = selectedServerForQuality,
-                targetServerId = com.example.ui.screens.player.ServerStateStore.extractedServerIds[selectedServerForQuality],
-                onVideoUrlFound = { url ->
-                    if (url.contains(".m3u8")) {
-                        coroutineScope.launch {
-                            qualityExtractionMessage = "جاري تحليل الجودات..."
-                            val qualities = com.example.utils.M3U8Parser.getQualities(url)
-                            extractedQualities = qualities
-                            ServerStateStore.extractedQualities = qualities
-                            isExtractingQuality = false
-                        }
-                    } else {
-                        // Not an m3u8, just show default
-                        val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("فيديو مباشر", url))
-                        extractedQualities = qualities
-                        ServerStateStore.extractedQualities = qualities
-                        isExtractingQuality = false
-                    }
-                },
-                onIframeUrlFound = { iframeUrl ->
-                    // Sometimes we get a new iframe url, we should probably follow it or just return it as quality
-                    val qualities = listOf(com.example.utils.M3U8Parser.QualityInfo("مشغل خارجي", iframeUrl))
-                    extractedQualities = qualities
-                    ServerStateStore.extractedQualities = qualities
-                    isExtractingQuality = false
-                }
-            )
         }
-        
-        if (showCancelConfirmDialog) {
-            AlertDialog(
-                onDismissRequest = { showCancelConfirmDialog = false },
-                containerColor = Color(0xFF222225),
-                titleContentColor = MaterialTheme.colorScheme.onBackground,
-                textContentColor = Color.LightGray,
-                title = {
-                    Text(text = stringResource(R.string.cancel_op), fontWeight = FontWeight.Bold)
-                },
-                text = {
-                    Text(text = stringResource(R.string.cancel_confirm))
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showCancelConfirmDialog = false
-                            onDismiss()
-                        }
-                    ) {
-                        Text(stringResource(R.string.yes_cancel), color = Color(0xFFFF1111))
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { showCancelConfirmDialog = false }
-                    ) {
-                        Text(stringResource(R.string.continue_btn), color = MaterialTheme.colorScheme.onBackground)
-                    }
-                }
-            )
-        }
-    }
-}
 
 }
 }
