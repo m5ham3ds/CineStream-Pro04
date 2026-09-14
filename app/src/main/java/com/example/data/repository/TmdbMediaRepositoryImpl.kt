@@ -20,7 +20,7 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     
     // Fallback to empty string if missing
     private val apiKey = BuildConfig.TMDB_API_KEY
-    private val language = java.util.Locale.getDefault().toLanguageTag()
+    private val language = if (java.util.Locale.getDefault().language == "ar") "ar" else "en-US"
 
 
     override fun getUpcomingMovies(): Flow<List<Movie>> = flow {
