@@ -33,6 +33,9 @@ import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
@@ -168,7 +171,7 @@ fun AppNavigation() {
     }
     val bottomBarRoutes = listOf(Screen.Home.route, Screen.Movies.route, Screen.Search.route, Screen.Series.route, Screen.Anime.route)
     val hasTopBar = bottomBarRoutes.contains(currentRoute) || currentRoute in listOf(
-        Screen.Profile.route, Screen.Downloads.route, Screen.Settings.route, Screen.Extensions.route, Screen.Share.route, Screen.About.route, Screen.Social.route
+        Screen.Library.route, Screen.Profile.route, Screen.Downloads.route, Screen.Settings.route, Screen.Extensions.route, Screen.Share.route, Screen.About.route, Screen.Social.route
     )
 
     ModalNavigationDrawer(
@@ -201,7 +204,7 @@ fun AppNavigation() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                val displayName = if (isGuest || currentUser == null) "Guest User" else {
+                                val displayName = if (isGuest || currentUser == null) stringResource(R.string.guest_user) else {
                                     "${currentUser?.firstName ?: ""} ${currentUser?.lastName ?: ""}".trim().takeIf { it.isNotBlank() } ?: currentUser?.username ?: "User"
                                 }
                                 Text(
@@ -224,7 +227,7 @@ fun AppNavigation() {
                                         Spacer(modifier = Modifier.width(4.dp))
                                     }
                                     Text(
-                                        text = if (isGuest) "Free Account" else "Premium User",
+                                        text = if (isGuest) stringResource(R.string.free_account) else stringResource(R.string.premium_user),
                                         fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -262,12 +265,16 @@ fun AppNavigation() {
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = null, tint = if (currentRoute == Screen.Home.route) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground) },
-                        label = { Text(stringResource(R.string.home), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Default.Home, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.home), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Home.route,
                         colors = NavigationDrawerItemDefaults.colors(
                             selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            unselectedContainerColor = Color.Transparent
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         shape = RoundedCornerShape(16.dp),
                         onClick = {
@@ -283,10 +290,17 @@ fun AppNavigation() {
                     )
 
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Default.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.library), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Default.Favorite, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.library), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Library.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = {
                             scope.launch { drawerState.close() }
                             if (currentRoute == Screen.Library.route) {
@@ -300,10 +314,17 @@ fun AppNavigation() {
                     )
 
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.extensions), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.extensions), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Extensions.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.Extensions.route) {
@@ -316,10 +337,17 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.community), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Default.Person, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.community), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Social.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.Social.route) {
@@ -332,10 +360,17 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Share, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.offline_share), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Outlined.Share, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.offline_share), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Share.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.Share.route) {
@@ -348,10 +383,17 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.settings), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.settings), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Settings.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.Settings.route) {
@@ -364,10 +406,17 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Download, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.downloads), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Outlined.Download, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.downloads), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Downloads.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.Downloads.route) {
@@ -382,10 +431,17 @@ fun AppNavigation() {
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.about_app), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.Outlined.Info, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.about_app), fontSize = 16.sp) },
                         selected = currentRoute == Screen.About.route,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = {
                             scope.launch { drawerState.close() }
                             navController.navigate(Screen.About.route) {
@@ -398,10 +454,17 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface) },
-                        label = { Text(stringResource(R.string.help_support), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp) },
+                        icon = { Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        label = { Text(stringResource(R.string.help_support), fontSize = 16.sp) },
                         selected = false,
-                        colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent),
+                        colors = NavigationDrawerItemDefaults.colors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            unselectedContainerColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface
+                        ),
                         onClick = { scope.launch { drawerState.close() } },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
@@ -429,7 +492,7 @@ fun AppNavigation() {
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(if (isGuest) stringResource(R.string.login) else stringResource(R.string.logout), color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
+                        Text(if (isGuest) stringResource(R.string.login) else stringResource(R.string.logout), fontSize = 16.sp)
                         Spacer(modifier = Modifier.width(12.dp))
                         Icon(if (isGuest) Icons.Default.Person else Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Log", tint = MaterialTheme.colorScheme.primary)
                     }
@@ -486,6 +549,7 @@ fun AppNavigation() {
             topBar = {
                 Column {
                     if (hasTopBar) {
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -543,7 +607,7 @@ fun AppNavigation() {
                                     text = stringResource(id = titleRes),
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (titleRes == R.string.app_name) Color(0xFFE50914) else MaterialTheme.colorScheme.onBackground
+                                    color = if (titleRes == R.string.app_name) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
                                 )
                                 
                                 Spacer(modifier = Modifier.weight(1f))
@@ -573,7 +637,7 @@ fun AppNavigation() {
                                         tint = MaterialTheme.colorScheme.onBackground
                                     )
                                     androidx.compose.material3.Badge(
-                                        containerColor = Color(0xFFE50914),
+                                        containerColor = MaterialTheme.colorScheme.primary,
                                         contentColor = Color.White,
                                         modifier = Modifier.align(Alignment.TopEnd).offset(x = (-2).dp, y = 2.dp)
                                     ) {
@@ -607,6 +671,7 @@ fun AppNavigation() {
                             }
                         }
                     }
+                }
                 }
                 }
             },
