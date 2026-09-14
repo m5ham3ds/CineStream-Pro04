@@ -651,7 +651,7 @@ fun SeriesDetailsScreen(
                             scope.launch {
                                 val fullTitle = "${series.title} - S${uiState.selectedSeason?.seasonNumber}E${ep.episodeNumber}"
                                 downloadRepository.addToDownloads(com.example.data.model.DownloadItem(
-                                    id = ep.id, title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false, quality = serverName
+                                    id = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false, quality = serverName
                                 ))
                                 com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName")
                             }
@@ -660,7 +660,7 @@ fun SeriesDetailsScreen(
                                 val fullTitle = "${series.title} - S${uiState.selectedSeason?.seasonNumber}E${ep.episodeNumber}"
                                 historyRepository.addToHistory(
                                     com.example.data.model.HistoryItem(
-                                        id = ep.id, title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false
+                                        id = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false
                                     )
                                 )
                                 onPlay(fullTitle, url, serverName, website)

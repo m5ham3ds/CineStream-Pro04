@@ -37,8 +37,11 @@ fun UpcomingScreen(
     viewModel: HomeViewModel = viewModel(factory = ViewModelFactory())
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val allStr = stringResource(R.string.all)
+    val moviesStr = stringResource(R.string.movies)
+    val seriesStr = stringResource(R.string.series)
     val animeStr = stringResource(R.string.anime)
-    val tabsList = listOf("All", "Movies", "Series", animeStr)
+    val tabsList = listOf(allStr, moviesStr, seriesStr, animeStr)
     val pagerState = rememberPagerState(pageCount = { tabsList.size })
     val coroutineScope = rememberCoroutineScope()
     val selectedTab = tabsList[pagerState.currentPage]
@@ -46,8 +49,8 @@ fun UpcomingScreen(
     
     val getItemsForTab = { tab: String -> 
         when (tab) {
-            "Movies" -> uiState.upcomingMovies.map { it to true }
-        "Series" -> uiState.trendingSeries.map { it to false }
+            moviesStr -> uiState.upcomingMovies.map { it to true }
+        seriesStr -> uiState.trendingSeries.map { it to false }
         animeStr -> uiState.animeSeries.map { it to false }
         else -> (uiState.upcomingMovies.map { it to true } + uiState.trendingSeries.map { it to false } + uiState.animeSeries.map { it to false })
         }

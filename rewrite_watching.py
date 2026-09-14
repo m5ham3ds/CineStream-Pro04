@@ -1,140 +1,37 @@
-package com.example.ui.screens.home
-import com.example.ui.components.rememberCardMediaDetail
-import com.example.ui.components.CardMediaDetail
-import kotlin.math.absoluteValue
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.material.icons.filled.Pause
+import re
 
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+with open("app/src/main/java/com/example/ui/screens/home/WatchingScreen.kt", "r") as f:
+    text = f.read()
 
-import androidx.compose.foundation.background
-import androidx.compose.ui.res.stringResource
-import com.example.R
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import kotlinx.coroutines.launch
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.example.data.model.HistoryItem
-import com.example.data.repository.HistoryRepository
-import com.example.ui.components.CustomTopBar
+import_lines = "import com.example.ui.components.rememberCardMediaDetail\nimport com.example.ui.components.CardMediaDetail\nimport kotlin.math.absoluteValue\nimport androidx.compose.ui.text.style.TextOverflow\n"
+text = text.replace("import androidx.compose.runtime.Composable", "import androidx.compose.runtime.Composable\n" + import_lines)
 
-@Composable
-fun WatchingScreen(
-    onItemClick: (String, Boolean) -> Unit,
-    onBack: () -> Unit
-) {
-    val context = LocalContext.current
-    val historyRepository = remember { HistoryRepository(context) }
-    val historyItems by historyRepository.getHistoryItems().collectAsState(initial = emptyList())
-    val allStr = stringResource(R.string.all)
-    val moviesStr = stringResource(R.string.movies)
-    val seriesStr = stringResource(R.string.series)
-    val animeStr = stringResource(R.string.anime)
-    
+start_idx = text.find("@Composable\nfun DetailedContinueWatchingCard")
+if start_idx == -1:
+    print("Could not find DetailedContinueWatchingCard")
+    exit(1)
 
-    val tabsList = listOf(allStr, moviesStr, seriesStr, animeStr)
-    val pagerState = rememberPagerState(pageCount = { tabsList.size })
-    val coroutineScope = rememberCoroutineScope()
-    val selectedTab = tabsList[pagerState.currentPage]
-    val getItemsForTab = { tab: String -> when (tab) {
-        moviesStr -> historyItems.filter { it.isMovie }
-        seriesStr -> historyItems.filter { !it.isMovie } // Assume TV Series if not movie
-        animeStr -> emptyList() // You can adjust this if HistoryItem adds anime type
-        else -> historyItems
-        }
-    }
+brace_count = 0
+end_idx = -1
+in_function = False
+for i in range(start_idx, len(text)):
+    if text[i] == '{':
+        brace_count += 1
+        in_function = True
+    elif text[i] == '}':
+        brace_count -= 1
+        
+    if in_function and brace_count == 0:
+        end_idx = i + 1
+        break
 
-    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        CustomTopBar(
-            titleFirst = stringResource(R.string.watching_title_first),
-            titleSecond = stringResource(R.string.watching_title_second),
-            subtitle = stringResource(R.string.watching_subtitle),
-            onBack = onBack,
-            showFilter = false
-        )
-
-        // Pill Tabs
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            tabsList.forEach { tab ->
-                val isSelected = selectedTab == tab
-                Box(
-                    modifier = Modifier
-                        .clickable { coroutineScope.launch { pagerState.animateScrollToPage(tabsList.indexOf(tab)) } }
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = tab,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-        }
-        if (historyItems.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.no_watching_items), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
-            }
-        } else {
-            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-                val currentTab = tabsList[page]
-                val items = getItemsForTab(currentTab)
-                LazyColumn(
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(items, key = { it.id }) { item ->
-                        DetailedContinueWatchingCard(item = item, onClick = { onItemClick(item.id, item.isMovie) })
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
+new_func = """@Composable
 fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
     val mediaDetail = rememberCardMediaDetail(item) ?: CardMediaDetail(
         title = item.title, year = "", rating = "", overview = "", backdropUrl = item.posterUrl, isMovie = item.isMovie
     )
     val typeText = if (mediaDetail.isMovie) stringResource(R.string.movies) else stringResource(R.string.series)
-    val fakeProgress = (Math.abs(item.id.hashCode()) % 100) / 100f
+    val fakeProgress = (item.id.hashCode().absoluteValue % 100) / 100f
     
     Box(
         modifier = Modifier
@@ -289,3 +186,9 @@ fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
         }
     }
 }
+"""
+
+text = text[:start_idx] + new_func + text[end_idx:]
+
+with open("app/src/main/java/com/example/ui/screens/home/WatchingScreen.kt", "w") as f:
+    f.write(text)
