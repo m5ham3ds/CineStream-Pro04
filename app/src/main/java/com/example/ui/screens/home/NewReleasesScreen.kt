@@ -51,8 +51,8 @@ fun NewReleasesScreen(
         when (tab) {
             moviesStr -> uiState.newReleasesMovies.map { it to true }
         seriesStr -> uiState.newReleasesSeries.map { it to false }
-        animeStr -> uiState.animeSeries.map { it to false }
-        else -> (uiState.newReleasesMovies.map { it to true } + uiState.newReleasesSeries.map { it to false } + uiState.animeSeries.map { it to false })
+        animeStr -> uiState.newReleasesAnime.map { it to false }
+                else -> (uiState.newReleasesMovies.map { it to true } + uiState.newReleasesSeries.map { it to false } + uiState.newReleasesAnime.map { it to false })
         }
     }
     

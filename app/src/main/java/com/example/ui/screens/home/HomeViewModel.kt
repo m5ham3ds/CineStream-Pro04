@@ -21,6 +21,13 @@ data class HomeUiState(
     val allMovies: List<Movie> = emptyList(),
     val allSeries: List<Series> = emptyList(),
     val animeSeries: List<Series> = emptyList(),
+    val trendingAnime: List<Series> = emptyList(),
+    val popularMovies: List<Movie> = emptyList(),
+    val popularSeries: List<Series> = emptyList(),
+    val popularAnime: List<Series> = emptyList(),
+    val upcomingSeries: List<Series> = emptyList(),
+    val upcomingAnime: List<Series> = emptyList(),
+    val newReleasesAnime: List<Series> = emptyList(),
     val upcomingMovies: List<Movie> = emptyList(),
     val newReleasesMovies: List<Movie> = emptyList(),
     val newReleasesSeries: List<Series> = emptyList(),
@@ -50,6 +57,13 @@ class HomeViewModel(
                 val newReleasesMoviesDeferred = async { repository.getNewReleasesMovies().firstOrNull() ?: emptyList() }
                 val newReleasesSeriesDeferred = async { repository.getNewReleasesSeries().firstOrNull() ?: emptyList() }
                 val trendingSeriesDeferred = async { repository.getTrendingSeries().firstOrNull() ?: emptyList() }
+                val trendingAnimeDeferred = async { repository.getTrendingAnime().firstOrNull() ?: emptyList() }
+                val popularMoviesDeferred = async { repository.getMovies().firstOrNull() ?: emptyList() }
+                val popularSeriesDeferred = async { repository.getSeries().firstOrNull() ?: emptyList() }
+                val popularAnimeDeferred = async { repository.getAnimeSeries().firstOrNull() ?: emptyList() }
+                val upcomingSeriesDeferred = async { repository.getUpcomingSeries().firstOrNull() ?: emptyList() }
+                val upcomingAnimeDeferred = async { repository.getUpcomingAnime().firstOrNull() ?: emptyList() }
+                val newReleasesAnimeDeferred = async { repository.getNewReleasesAnime().firstOrNull() ?: emptyList() }
                 val allMoviesDeferred = async { repository.getMovies().firstOrNull() ?: emptyList() }
                 val allSeriesDeferred = async { repository.getSeries().firstOrNull() ?: emptyList() }
                 val arabicMoviesDeferred = async { repository.getArabicMovies().firstOrNull() ?: emptyList() }
@@ -65,6 +79,14 @@ class HomeViewModel(
                 val allSeries = allSeriesDeferred.await()
                 val arabicMoviesRaw = arabicMoviesDeferred.await()
                 val arabicSeriesRaw = arabicSeriesDeferred.await()
+                val trendingAnime = trendingAnimeDeferred.await()
+                val popularMoviesRaw = popularMoviesDeferred.await()
+                val popularSeriesRaw = popularSeriesDeferred.await()
+                val popularAnime = popularAnimeDeferred.await()
+                val upcomingSeriesRaw = upcomingSeriesDeferred.await()
+                val upcomingAnime = upcomingAnimeDeferred.await()
+                val newReleasesAnime = newReleasesAnimeDeferred.await()
+
                 
                 val trendingMovies = (trendingMoviesRaw.take(10) + arabicMoviesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
                 val trendingSeries = (trendingSeriesRaw.take(10) + arabicSeriesRaw.take(10)).sortedByDescending { it.rating }.distinctBy { it.id }
@@ -80,6 +102,13 @@ class HomeViewModel(
                     it.copy(
                         trendingMovies = trendingMovies,
                         animeSeries = animeSeries,
+trendingAnime = trendingAnime,
+                    popularMovies = popularMoviesRaw,
+                    popularSeries = popularSeriesRaw,
+                    popularAnime = popularAnime,
+                    upcomingSeries = upcomingSeriesRaw,
+                    upcomingAnime = upcomingAnime,
+                    newReleasesAnime = newReleasesAnime,
                         upcomingMovies = upcomingMovies,
                         newReleasesMovies = newReleasesMovies,
                         newReleasesSeries = newReleasesSeries,

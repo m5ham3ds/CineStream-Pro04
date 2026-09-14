@@ -49,10 +49,10 @@ fun PopularScreen(
     
     val getItemsForTab = { tab: String -> 
         when (tab) {
-            moviesStr -> uiState.trendingMovies.map { it to true }
-        seriesStr -> uiState.trendingSeries.map { it to false }
-        animeStr -> uiState.animeSeries.map { it to false }
-        else -> (uiState.trendingMovies.map { it to true } + uiState.trendingSeries.map { it to false } + uiState.animeSeries.map { it to false })
+            moviesStr -> uiState.popularMovies.map { it to true }
+        seriesStr -> uiState.popularSeries.map { it to false }
+        animeStr -> uiState.popularAnime.map { it to false }
+                else -> (uiState.popularMovies.map { it to true } + uiState.popularSeries.map { it to false } + uiState.popularAnime.map { it to false })
         }
     }
     

@@ -26,7 +26,8 @@ class TmdbMediaRepositoryImpl : MediaRepository {
 
     override fun getUpcomingMovies(): Flow<List<Movie>> = flow {
         val response = RetrofitClient.tmdbApi.getUpcomingMovies(apiKey)
-            emit(response.results.map { it.toDomain() })
+        val today = LocalDate.now().toString()
+        emit(response.results.filter { (it.releaseDate ?: "") > today }.map { it.toDomain() })
 
     }.catch {
         emit(emptyList())

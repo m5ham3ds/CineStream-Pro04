@@ -51,8 +51,8 @@ fun TrendingScreen(
         when (tab) {
             moviesStr -> uiState.trendingMovies.map { it to true }
         seriesStr -> uiState.trendingSeries.map { it to false }
-        animeStr -> uiState.animeSeries.map { it to false }
-        else -> (uiState.trendingMovies.map { it to true } + uiState.trendingSeries.map { it to false } + uiState.animeSeries.map { it to false })
+        animeStr -> uiState.trendingAnime.map { it to false }
+                else -> (uiState.trendingMovies.map { it to true } + uiState.trendingSeries.map { it to false } + uiState.trendingAnime.map { it to false })
         }
     }
     

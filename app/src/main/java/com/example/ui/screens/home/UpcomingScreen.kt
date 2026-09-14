@@ -50,9 +50,9 @@ fun UpcomingScreen(
     val getItemsForTab = { tab: String -> 
         when (tab) {
             moviesStr -> uiState.upcomingMovies.map { it to true }
-        seriesStr -> uiState.trendingSeries.map { it to false }
-        animeStr -> uiState.animeSeries.map { it to false }
-        else -> (uiState.upcomingMovies.map { it to true } + uiState.trendingSeries.map { it to false } + uiState.animeSeries.map { it to false })
+        seriesStr -> uiState.upcomingSeries.map { it to false }
+        animeStr -> uiState.upcomingAnime.map { it to false }
+        else -> (uiState.upcomingMovies.map { it to true } + uiState.upcomingSeries.map { it to false } + uiState.upcomingAnime.map { it to false })
         }
     }
     
