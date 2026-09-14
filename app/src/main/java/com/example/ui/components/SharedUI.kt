@@ -211,13 +211,15 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
         title = item.title, year = "", rating = "", overview = "", backdropUrl = item.posterUrl, isMovie = item.isMovie
     )
     val typeText = if (mediaDetail.isMovie) stringResource(R.string.movies) else stringResource(R.string.series)
+    val fakeProgress = (Math.abs(item.id.hashCode()) % 100) / 100f
     
     Box(
         modifier = Modifier
-            .width(340.dp)
-            .height(130.dp)
+            .width(320.dp)
+            .height(140.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.5f), RoundedCornerShape(16.dp))
             .clickable { onClick() }
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
@@ -228,104 +230,127 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
             ) {
-                AsyncImage(
+                coil.compose.AsyncImage(
                     model = mediaDetail.backdropUrl,
                     contentDescription = mediaDetail.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                // Dark overlay
-                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)))
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.2f)))
                 
-                // Center Play Triangle
-                Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Filled.PlayArrow,
-                    contentDescription = "Play",
-                    tint = Color.White,
-                    modifier = Modifier.align(Alignment.Center).size(36.dp)
-                )
-                
-                // Bottom Left Type Badge
+                // Bottom Left Badge "Movie"
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(8.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .padding(start = 8.dp, bottom = 16.dp)
+                        .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
-                    Text(text = typeText, color = Color.White, fontSize = 11.sp)
+                    Text(text = typeText, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+                
+                // Bottom Right Time
+                Text(
+                    text = "32:14 / 1:54:20",
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 16.dp)
+                )
+                
+                // Progress Bar at the very bottom
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, bottom = 6.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color.Gray.copy(alpha=0.5f))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(fakeProgress.coerceAtLeast(0.1f))
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
                 }
             }
             
             // Right Content Section
-            Column(
+            Box(
                 modifier = Modifier
                     .weight(0.55f)
                     .fillMaxHeight()
-                    .padding(start = 12.dp, top = 12.dp, bottom = 12.dp, end = 12.dp),
-                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        text = typeText,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = mediaDetail.title,
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Filled.Star,
-                            contentDescription = "Rating",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = mediaDetail.title,
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(text = mediaDetail.rating, color = Color.White, fontSize = 12.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = mediaDetail.year, color = Color.Gray, fontSize = 12.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-                                .padding(horizontal = 4.dp, vertical = 2.dp)
-                        ) {
-                            Text(text = "16+", color = Color.Gray, fontSize = 10.sp)
-                        }
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.MoreVert,
+                            contentDescription = "More",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
+                    
+                    Spacer(modifier = Modifier.height(2.dp))
+                    
+                    Text(
+                        text = "${mediaDetail.year} | $typeText |",
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = mediaDetail.overview,
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        maxLines = 3,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        lineHeight = 16.sp
+                    )
+                }
+                
+                // Big FAB-like play button at bottom right
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 12.dp, bottom = 12.dp)
+                        .size(44.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = androidx.compose.material.icons.Icons.Filled.PlayArrow,
+                        contentDescription = "Play",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
+                    )
                 }
             }
         }
-        
-        // Right Edge Play Button Box
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 12.dp)
-                .size(48.dp)
-                .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
-                .clickable { onClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = androidx.compose.material.icons.Icons.Filled.PlayArrow,
-                contentDescription = "Play",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
-            )
-        }
     }
 }
+
 
 
 data class CardMediaDetail(

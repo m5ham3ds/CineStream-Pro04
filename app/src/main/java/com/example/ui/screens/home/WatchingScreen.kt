@@ -129,7 +129,7 @@ fun WatchingScreen(
 }
 
 @Composable
-fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
+fun DetailedContinueWatchingCard(item: com.example.data.model.HistoryItem, onClick: () -> Unit) {
     val mediaDetail = rememberCardMediaDetail(item) ?: CardMediaDetail(
         title = item.title, year = "", rating = "", overview = "", backdropUrl = item.posterUrl, isMovie = item.isMovie
     )
@@ -149,11 +149,11 @@ fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
             // Left Image Section
             Box(
                 modifier = Modifier
-                    .weight(0.4f)
+                    .weight(0.45f)
                     .fillMaxHeight()
                     .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
             ) {
-                AsyncImage(
+                coil.compose.AsyncImage(
                     model = mediaDetail.backdropUrl,
                     contentDescription = mediaDetail.title,
                     contentScale = ContentScale.Crop,
@@ -161,32 +161,15 @@ fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
                 )
                 Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.2f)))
                 
-                // Top Left HD
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
-                        .border(1.dp, Color.White.copy(alpha=0.8f), RoundedCornerShape(4.dp))
-                        .padding(horizontal=4.dp, vertical=2.dp)
-                ) {
-                    Text("HD", color=Color.White, fontSize=10.sp, fontWeight=FontWeight.Bold)
-                }
-                
-                // Bottom Left Pause Icon in circle
+                // Bottom Left Badge "Movie"
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(bottom=16.dp, start=8.dp)
-                        .size(32.dp)
-                        .border(1.dp, Color.White, CircleShape),
-                    contentAlignment = Alignment.Center
+                        .padding(start = 8.dp, bottom = 16.dp)
+                        .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
-                    Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Filled.Pause,
-                        contentDescription = "Pause",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Text(text = typeText, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 
                 // Bottom Right Time
@@ -195,16 +178,18 @@ fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
                     color = Color.White,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(bottom=16.dp, end=8.dp)
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 16.dp)
                 )
                 
-                // Progress Bar
+                // Progress Bar at the very bottom
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .fillMaxWidth()
+                        .padding(horizontal = 8.dp, bottom = 6.dp)
                         .height(4.dp)
-                        .background(Color.DarkGray)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color.Gray.copy(alpha=0.5f))
                 ) {
                     Box(
                         modifier = Modifier
@@ -216,76 +201,76 @@ fun DetailedContinueWatchingCard(item: HistoryItem, onClick: () -> Unit) {
             }
             
             // Right Content Section
-            Column(
+            Box(
                 modifier = Modifier
-                    .weight(0.6f)
+                    .weight(0.55f)
                     .fillMaxHeight()
-                    .padding(12.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp)
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = mediaDetail.title,
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.MoreVert,
+                            contentDescription = "More",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(2.dp))
+                    
                     Text(
-                        text = mediaDetail.title,
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
+                        text = "${mediaDetail.year} | $typeText |",
+                        color = Color.Gray,
+                        fontSize = 12.sp
                     )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = mediaDetail.overview,
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        maxLines = 3,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        lineHeight = 16.sp
+                    )
+                }
+                
+                // Big FAB-like play button at bottom right
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 12.dp, bottom = 12.dp)
+                        .size(44.dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.MoreVert,
-                        contentDescription = "More",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(20.dp)
+                        imageVector = androidx.compose.material.icons.Icons.Filled.PlayArrow,
+                        contentDescription = "Play",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                // Subtitle Row: 2023 | Movie | [R] [HD]
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "${mediaDetail.year} | $typeText | ", color = Color.Gray, fontSize = 12.sp)
-                    Box(modifier = Modifier.border(1.dp, Color.Gray, RoundedCornerShape(2.dp)).padding(horizontal=2.dp, vertical=1.dp)) {
-                        Text("R", color = Color.Gray, fontSize = 10.sp)
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Box(modifier = Modifier.border(1.dp, Color.Gray, RoundedCornerShape(2.dp)).padding(horizontal=2.dp, vertical=1.dp)) {
-                        Text("HD", color = Color.Gray, fontSize = 10.sp)
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = mediaDetail.overview,
-                    color = Color.Gray,
-                    fontSize = 12.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
             }
-        }
-        
-        // Big Yellow FAB-like play button at bottom right
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 12.dp, bottom = 12.dp)
-                .size(48.dp)
-                .background(MaterialTheme.colorScheme.primary, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = androidx.compose.material.icons.Icons.Filled.PlayArrow,
-                contentDescription = "Play",
-                tint = Color.White,
-                modifier = Modifier.size(28.dp)
-            )
         }
     }
 }
+
