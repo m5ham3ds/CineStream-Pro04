@@ -1,25 +1,11 @@
-import re
+with open("app/src/main/java/com/example/data/remote/RetrofitClient.kt", "r") as f:
+    text = f.read()
 
-file_path = "app/src/main/java/com/example/data/remote/RetrofitClient.kt"
-with open(file_path, "r") as f:
-    content = f.read()
+# Fix the language code to be just 'ar'
+text = text.replace('val tmdbLanguage = if (currentLanguage == "ar") "ar-SA" else "en-US"', 'val tmdbLanguage = if (currentLanguage == "ar") "ar" else "en-US"')
 
-target = """            .addInterceptor { chain ->
-                var request = chain.request()"""
+# Fix the aggressive 7-day cache to be just 1 hour
+text = text.replace('.header("Cache-Control", "public, max-age=" + 60 * 60 * 24 * 7) // Cache for 7 days', '.header("Cache-Control", "public, max-age=" + 60 * 60) // Cache for 1 hour')
 
-replacement = """            .addInterceptor { chain ->
-                val originalRequest = chain.request()
-                val originalUrl = originalRequest.url
-                
-                val currentLanguage = java.util.Locale.getDefault().language
-                val tmdbLanguage = if (currentLanguage == "ar") "ar-SA" else "en-US"
-                
-                val urlWithLanguage = originalUrl.newBuilder()
-                    .addQueryParameter("language", tmdbLanguage)
-                    .build()
-                
-                var request = originalRequest.newBuilder().url(urlWithLanguage).build()"""
-
-content = content.replace(target, replacement)
-with open(file_path, "w") as f:
-    f.write(content)
+with open("app/src/main/java/com/example/data/remote/RetrofitClient.kt", "w") as f:
+    f.write(text)

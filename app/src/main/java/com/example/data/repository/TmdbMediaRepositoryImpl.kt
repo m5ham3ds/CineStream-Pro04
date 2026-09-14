@@ -15,6 +15,7 @@ import com.example.domain.models.VideoTrailer
 import com.example.domain.models.Season
 import com.example.domain.models.Episode
 import com.example.domain.models.PersonDetails
+import java.time.LocalDate
 
 class TmdbMediaRepositoryImpl : MediaRepository {
     
@@ -100,21 +101,23 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     }
 
     override fun getUpcomingSeries(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getUpcomingSeriesDiscover(apiKey, minDate = "2026-09-11")
-        emit(response.results.map { it.toDomain() })
+        val response = RetrofitClient.tmdbApi.getUpcomingSeriesDiscover(apiKey, minDate = LocalDate.now().toString())
+        val today = LocalDate.now().toString()
+        emit(response.results.filter { (it.firstAirDate ?: "") > today }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getUpcomingAnime(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getUpcomingAnimeDiscover(apiKey, minDate = "2026-09-11")
-        emit(response.results.map { it.toDomain() })
+        val response = RetrofitClient.tmdbApi.getUpcomingAnimeDiscover(apiKey, minDate = LocalDate.now().toString())
+        val today = LocalDate.now().toString()
+        emit(response.results.filter { (it.firstAirDate ?: "") > today }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getNewReleasesAnime(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getAiringTodayAnime(apiKey, minDate = "2026-09-11", maxDate = "2026-10-11")
+        val response = RetrofitClient.tmdbApi.getAiringTodayAnime(apiKey, minDate = LocalDate.now().minusMonths(1).toString(), maxDate = LocalDate.now().toString())
         emit(response.results.map { it.toDomain() })
     }.catch {
         emit(emptyList())

@@ -300,7 +300,17 @@ fun SettingsScreen() {
                 TextButton(onClick = {
                     val lang = pendingLanguage
                     if (lang != null) {
-                        coroutineScope.launch { userPrefs.saveAppLanguage(lang) }
+                        coroutineScope.launch { 
+                            userPrefs.saveAppLanguage(lang)
+                            kotlinx.coroutines.delay(100) 
+                            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                            intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                            if (intent != null) {
+                                context.startActivity(intent)
+                                (context as? android.app.Activity)?.finishAffinity()
+                                Runtime.getRuntime().exit(0)
+                            }
+                        }
                     }
                     pendingLanguage = null
                 }) { Text(stringResource(R.string.yes), color = MaterialTheme.colorScheme.primary) }

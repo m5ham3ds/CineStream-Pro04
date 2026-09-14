@@ -41,7 +41,7 @@ object RetrofitClient {
                 val originalUrl = originalRequest.url
                 
                 val currentLanguage = java.util.Locale.getDefault().language
-                val tmdbLanguage = if (currentLanguage == "ar") "ar-SA" else "en-US"
+                val tmdbLanguage = if (currentLanguage == "ar") "ar" else "en-US"
                 
                 val urlWithLanguage = originalUrl.newBuilder()
                     .addQueryParameter("language", tmdbLanguage)
@@ -76,7 +76,7 @@ object RetrofitClient {
                     cacheControl.contains("must-revalidate") || cacheControl.contains("max-age=0")) {
                     response.newBuilder()
                         .removeHeader("Pragma")
-                        .header("Cache-Control", "public, max-age=" + 60 * 60 * 24 * 7) // Cache for 7 days
+                        .header("Cache-Control", "public, max-age=" + 60 * 60) // Cache for 1 hour
                         .build()
                 } else {
                     response

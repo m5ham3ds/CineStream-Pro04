@@ -81,6 +81,7 @@ fun MovieDetailsScreen(
     val isFavorite = libraryItems.any { it.id == movieId }
     val downloadItem = downloadItems.find { it.id == movieId }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showNotReleasedDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(movieId) {
         viewModel.loadMovie(movieId)
@@ -133,7 +134,20 @@ fun MovieDetailsScreen(
                     )
                 }
                 
-                // Hero Image or Video Player
+                
+    if (showNotReleasedDialog) {
+        AlertDialog(
+            onDismissRequest = { showNotReleasedDialog = false },
+            title = { Text(stringResource(R.string.coming_soon), color = MaterialTheme.colorScheme.onBackground) },
+            text = { Text("هذا العمل لم يُعرض بعد، ولكنه سيعرض قريباً.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            confirmButton = {
+                TextButton(onClick = { showNotReleasedDialog = false }) { Text("حسناً") }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    // Hero Image or Video Player
 
                 if (selectedTrailerId != null) {
                     Box(modifier = Modifier.fillMaxWidth().aspectRatio(16f/9f)) {
@@ -205,14 +219,17 @@ fun MovieDetailsScreen(
                             if (downloadItem?.isCompleted == true) {
                                 onPlay(movie.title, "local_offline_file://${downloadItem.id}", null, null)
                             } else {
-                                isDownloadMode = false
-                                
-                                        if (ExtensionManager.installedExtensions.value.isEmpty()) {
-                                            showNoExtensionsDialog = true
-                                        } else {
-                                            showSourceSheet = true
-                                        }
-
+                                val isReleased = (movie.releaseDate ?: "") <= java.time.LocalDate.now().toString()
+                                if (!isReleased) {
+                                    showNotReleasedDialog = true
+                                } else {
+                                    isDownloadMode = false
+                                    if (ExtensionManager.installedExtensions.value.isEmpty()) {
+                                        showNoExtensionsDialog = true
+                                    } else {
+                                        showSourceSheet = true
+                                    }
+                                }
                             }
                         },
                         modifier = Modifier.weight(1f).height(50.dp),
@@ -381,6 +398,7 @@ fun SeriesDetailsScreen(
     var selectedEpisodeForSource by remember { mutableStateOf<Episode?>(null) }
     var isDownloadMode by remember { mutableStateOf(false) }
     var showBatchDownloadSheet by remember { mutableStateOf(false) }
+    var showNotReleasedDialog by remember { mutableStateOf(false) }
     var selectedTrailerId by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(seriesId) {
@@ -428,7 +446,20 @@ fun SeriesDetailsScreen(
                 item {
                 val firstUnplayedEpisode = uiState.episodes.firstOrNull { !watchedEpisodeIds.contains(it.id) } ?: uiState.episodes.firstOrNull()
 
-                // Hero Image or Video Player
+                
+    if (showNotReleasedDialog) {
+        AlertDialog(
+            onDismissRequest = { showNotReleasedDialog = false },
+            title = { Text(stringResource(R.string.coming_soon), color = MaterialTheme.colorScheme.onBackground) },
+            text = { Text("هذا العمل لم يُعرض بعد، ولكنه سيعرض قريباً.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            confirmButton = {
+                TextButton(onClick = { showNotReleasedDialog = false }) { Text("حسناً") }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    // Hero Image or Video Player
                 if (selectedTrailerId != null) {
                     Box(modifier = Modifier.fillMaxWidth().aspectRatio(16f/9f)) {
                         com.example.ui.components.InlineYouTubePlayer(
@@ -496,7 +527,10 @@ fun SeriesDetailsScreen(
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Button(
                         onClick = {
-                            if (firstUnplayedEpisode != null) {
+                            val isReleased = (series.firstAirDate ?: "") <= java.time.LocalDate.now().toString()
+                            if (!isReleased) {
+                                showNotReleasedDialog = true
+                            } else if (firstUnplayedEpisode != null) {
                                 selectedEpisodeForSource = firstUnplayedEpisode
                                 isDownloadMode = false
                             } else {
