@@ -8,12 +8,6 @@ with open("app/src/main/java/com/example/data/remote/TmdbApiService.kt", "r") as
 text = re.sub(r'(@Query\("language"\) language: String,\s*)+', r'@Query("language") language: String,\n        ', text)
 text = re.sub(r',\s*@Query\("language"\) language: String\s*,\s*@Query\("language"\) language: String', r', @Query("language") language: String', text)
 
-# Just in case, let's restore it to original and add carefully
-text = text.replace('@Query("language") language: String,\n        @Query("language") language: String,', '@Query("language") language: String,')
-text = text.replace('@Query("language") language: String,\n        @Query("language") language: String', '@Query("language") language: String')
-text = text.replace('@Query("language") language: String, @Query("language") language: String', '@Query("language") language: String')
-text = re.sub(r'(@Query\("language"\) language: String,\s*)+@Query\("language"\) language: String', r'@Query("language") language: String', text)
-
 with open("app/src/main/java/com/example/data/remote/TmdbApiService.kt", "w") as f:
     f.write(text)
 
@@ -46,14 +40,16 @@ for filepath in ["app/src/main/java/com/example/ui/components/SharedUI.kt", "app
         ui_text = f.read()
     
     # fix padding
-    ui_text = ui_text.replace(".padding(start = 8.dp, bottom = 16.dp)", ".padding(start = 8.dp, top = 0.dp, end = 0.dp, bottom = 16.dp)")
-    ui_text = ui_text.replace(".padding(end = 8.dp, bottom = 16.dp)", ".padding(start = 0.dp, top = 0.dp, end = 8.dp, bottom = 16.dp)")
-    ui_text = ui_text.replace(".padding(bottom = 16.dp, start = 8.dp)", ".padding(start = 8.dp, top = 0.dp, end = 0.dp, bottom = 16.dp)")
-    ui_text = ui_text.replace(".padding(bottom = 16.dp, end = 8.dp)", ".padding(start = 0.dp, top = 0.dp, end = 8.dp, bottom = 16.dp)")
+    ui_text = ui_text.replace(".padding(bottom = 16.dp, start = 8.dp)", ".padding(start = 8.dp, bottom = 16.dp)")
+    ui_text = ui_text.replace(".padding(bottom = 16.dp, end = 8.dp)", ".padding(end = 8.dp, bottom = 16.dp)")
+    ui_text = ui_text.replace(".padding(start = 0.dp, top = 0.dp, end = 8.dp, bottom = 16.dp)", ".padding(end = 8.dp, bottom = 16.dp)")
+    ui_text = ui_text.replace(".padding(start = 8.dp, top = 0.dp, end = 0.dp, bottom = 16.dp)", ".padding(start = 8.dp, bottom = 16.dp)")
+    ui_text = ui_text.replace(".padding(horizontal = 8.dp, bottom = 6.dp)", ".padding(start = 8.dp, end = 8.dp, bottom = 6.dp)")
     
     # fix api call in rememberCardMediaDetail
-    ui_text = ui_text.replace("RetrofitClient.tmdbApi.getMovieDetails(idInt, apiKey)", "RetrofitClient.tmdbApi.getMovieDetails(idInt, apiKey, java.util.Locale.getDefault().toLanguageTag())")
-    ui_text = ui_text.replace("RetrofitClient.tmdbApi.getSeriesDetails(idInt, apiKey)", "RetrofitClient.tmdbApi.getSeriesDetails(idInt, apiKey, java.util.Locale.getDefault().toLanguageTag())")
+    if "java.util.Locale.getDefault().toLanguageTag()" not in ui_text:
+        ui_text = ui_text.replace("RetrofitClient.tmdbApi.getMovieDetails(idInt, apiKey)", "RetrofitClient.tmdbApi.getMovieDetails(idInt, apiKey, java.util.Locale.getDefault().toLanguageTag())")
+        ui_text = ui_text.replace("RetrofitClient.tmdbApi.getSeriesDetails(idInt, apiKey)", "RetrofitClient.tmdbApi.getSeriesDetails(idInt, apiKey, java.util.Locale.getDefault().toLanguageTag())")
 
     with open(filepath, "w") as f:
         f.write(ui_text)

@@ -263,7 +263,7 @@ fun ContinueWatchingCardShared(item: com.example.data.model.HistoryItem, onClick
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, bottom = 6.dp)
+                        .padding(start = 8.dp, end = 8.dp, bottom = 6.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(Color.Gray.copy(alpha=0.5f))
@@ -370,7 +370,7 @@ fun rememberCardMediaDetail(item: com.example.data.model.HistoryItem): CardMedia
             val idInt = item.id.toIntOrNull()
             if (idInt != null) {
                 if (item.isMovie) {
-                    val res = RetrofitClient.tmdbApi.getMovieDetails(idInt, apiKey)
+                    val res = RetrofitClient.tmdbApi.getMovieDetails(idInt, apiKey, java.util.Locale.getDefault().toLanguageTag())
                     val r = res.voteAverage ?: 0.0
                     value = CardMediaDetail(
                         title = (res.title ?: res.originalTitle ?: item.title).toString(),
@@ -381,7 +381,7 @@ fun rememberCardMediaDetail(item: com.example.data.model.HistoryItem): CardMedia
                         isMovie = true
                     )
                 } else {
-                    val res = RetrofitClient.tmdbApi.getSeriesDetails(idInt, apiKey)
+                    val res = RetrofitClient.tmdbApi.getSeriesDetails(idInt, apiKey, java.util.Locale.getDefault().toLanguageTag())
                     val r = res.voteAverage ?: 0.0
                     value = CardMediaDetail(
                         title = (res.name ?: res.originalName ?: item.title).toString(),

@@ -186,7 +186,7 @@ fun DetailedContinueWatchingCard(item: com.example.data.model.HistoryItem, onCli
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, bottom = 6.dp)
+                        .padding(start = 8.dp, end = 8.dp, bottom = 6.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(Color.Gray.copy(alpha=0.5f))

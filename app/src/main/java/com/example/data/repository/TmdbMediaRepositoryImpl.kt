@@ -20,10 +20,11 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     
     // Fallback to empty string if missing
     private val apiKey = BuildConfig.TMDB_API_KEY
+    private val language = java.util.Locale.getDefault().toLanguageTag()
 
 
     override fun getUpcomingMovies(): Flow<List<Movie>> = flow {
-        val response = RetrofitClient.tmdbApi.getUpcomingMovies(apiKey)
+        val response = RetrofitClient.tmdbApi.getUpcomingMovies(apiKey, language)
             emit(response.results.map { it.toDomain() })
 
     }.catch {
@@ -31,7 +32,7 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     }
 
     override fun getAnimeSeries(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getAnimeSeries(apiKey)
+        val response = RetrofitClient.tmdbApi.getAnimeSeries(apiKey, language)
             emit(response.results.map { it.toDomain() })
 
     }.catch {
@@ -39,7 +40,7 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     }
 
     override fun getAnimeMovies(): Flow<List<Movie>> = flow {
-        val response = RetrofitClient.tmdbApi.getAnimeMovies(apiKey)
+        val response = RetrofitClient.tmdbApi.getAnimeMovies(apiKey, language)
             emit(response.results.map { it.toDomain() })
 
     }.catch {
@@ -47,7 +48,7 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     }
 
     override fun getNewReleasesMovies(): Flow<List<Movie>> = flow {
-        val response = RetrofitClient.tmdbApi.getNewReleasesMovies(apiKey)
+        val response = RetrofitClient.tmdbApi.getNewReleasesMovies(apiKey, language)
             emit(response.results.map { it.toDomain() })
 
     }.catch {
@@ -55,14 +56,14 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     }
 
     override fun getNewReleasesSeries(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getNewReleasesSeries(apiKey)
+        val response = RetrofitClient.tmdbApi.getNewReleasesSeries(apiKey, language)
             emit(response.results.filter { it.genreIds?.contains(16) != true || it.originCountry?.contains("JP") != true }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getMovies(): Flow<List<Movie>> = flow {
-        val response = RetrofitClient.tmdbApi.getPopularMovies(apiKey)
+        val response = RetrofitClient.tmdbApi.getPopularMovies(apiKey, language)
             emit(response.results.map { it.toDomain() })
 
     }.catch {
@@ -70,14 +71,14 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     }
 
     override fun getSeries(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getPopularSeries(apiKey)
+        val response = RetrofitClient.tmdbApi.getPopularSeries(apiKey, language)
             emit(response.results.filter { it.genreIds?.contains(16) != true || it.originCountry?.contains("JP") != true }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getTrendingMovies(): Flow<List<Movie>> = flow {
-        val response = RetrofitClient.tmdbApi.getTrendingMovies(apiKey)
+        val response = RetrofitClient.tmdbApi.getTrendingMovies(apiKey, language)
             emit(response.results.map { it.toDomain() })
 
     }.catch {
@@ -85,49 +86,49 @@ class TmdbMediaRepositoryImpl : MediaRepository {
     }
 
     override fun getArabicMovies(): Flow<List<Movie>> = flow {
-        val response = RetrofitClient.tmdbApi.getArabicMovies(apiKey)
+        val response = RetrofitClient.tmdbApi.getArabicMovies(apiKey, language)
         emit(response.results.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getArabicSeries(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getArabicSeries(apiKey)
+        val response = RetrofitClient.tmdbApi.getArabicSeries(apiKey, language)
         emit(response.results.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getUpcomingSeries(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getUpcomingSeriesDiscover(apiKey, minDate = "2026-09-11")
+        val response = RetrofitClient.tmdbApi.getUpcomingSeriesDiscover(apiKey, language, minDate = "2026-09-11")
         emit(response.results.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getUpcomingAnime(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getUpcomingAnimeDiscover(apiKey, minDate = "2026-09-11")
+        val response = RetrofitClient.tmdbApi.getUpcomingAnimeDiscover(apiKey, language, minDate = "2026-09-11")
         emit(response.results.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getNewReleasesAnime(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getAiringTodayAnime(apiKey, minDate = "2026-09-11", maxDate = "2026-10-11")
+        val response = RetrofitClient.tmdbApi.getAiringTodayAnime(apiKey, language, minDate = "2026-09-11", maxDate = "2026-10-11")
         emit(response.results.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getTrendingSeries(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getTrendingSeries(apiKey)
+        val response = RetrofitClient.tmdbApi.getTrendingSeries(apiKey, language)
             emit(response.results.filter { it.genreIds?.contains(16) != true || it.originCountry?.contains("JP") != true }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
     }
 
     override fun getTrendingAnime(): Flow<List<Series>> = flow {
-        val response = RetrofitClient.tmdbApi.getTrendingSeries(apiKey)
+        val response = RetrofitClient.tmdbApi.getTrendingSeries(apiKey, language)
         emit(response.results.filter { it.genreIds?.contains(16) == true && (it.originCountry?.contains("JP") == true ) }.map { it.toDomain() })
     }.catch {
         emit(emptyList())
@@ -156,7 +157,7 @@ override suspend fun getMovieById(id: String): Movie? = withContext(Dispatchers.
             )
         }
         try {
-            val response = RetrofitClient.tmdbApi.getMovieDetails(id.toInt(), apiKey)
+            val response = RetrofitClient.tmdbApi.getMovieDetails(id.toInt(), apiKey, language)
             response.toDomainDetails()
         } catch (e: Exception) {
             null
@@ -186,7 +187,7 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
             )
         }
         try {
-            val response = RetrofitClient.tmdbApi.getSeriesDetails(id.toInt(), apiKey)
+            val response = RetrofitClient.tmdbApi.getSeriesDetails(id.toInt(), apiKey, language)
             response.toDomainDetails()
         } catch (e: Exception) {
             null
@@ -195,7 +196,7 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
     
     override suspend fun searchMulti(query: String): Pair<List<Movie>, List<Series>> = withContext(Dispatchers.IO) {
         try {
-            val response = RetrofitClient.tmdbApi.searchMulti(apiKey, query)
+            val response = RetrofitClient.tmdbApi.searchMulti(apiKey, language, query)
             val movies = mutableListOf<Movie>()
             val series = mutableListOf<Series>()
             
@@ -273,7 +274,7 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
     
     override suspend fun getPersonDetails(personId: String): PersonDetails? = withContext(Dispatchers.IO) {
         try {
-            val response = RetrofitClient.tmdbApi.getPersonDetails(personId.toInt(), apiKey)
+            val response = RetrofitClient.tmdbApi.getPersonDetails(personId.toInt(), apiKey, language)
             val movies = mutableListOf<Movie>()
             val series = mutableListOf<Series>()
             response.combinedCredits?.cast?.forEach { item ->
@@ -329,7 +330,7 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
 
     override suspend fun getSeasonEpisodes(seriesId: String, seasonNumber: Int): List<Episode> = withContext(Dispatchers.IO) {
         try {
-            val response = RetrofitClient.tmdbApi.getSeasonDetails(seriesId.toInt(), seasonNumber, apiKey)
+            val response = RetrofitClient.tmdbApi.getSeasonDetails(seriesId.toInt(), seasonNumber, apiKey, language)
             response.episodes?.map {
                 Episode(
                     id = it.id.toString(),

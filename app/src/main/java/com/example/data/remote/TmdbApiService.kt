@@ -8,23 +8,17 @@ interface TmdbApiService {
     // Movies
     @GET("trending/movie/day")
     suspend fun getTrendingMovies(
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
     
     @GET("movie/popular")
     suspend fun getPopularMovies(
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
     
     @GET("movie/now_playing")
     suspend fun getNewReleasesMovies(
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
 
     @GET("movie/{movie_id}")
@@ -38,23 +32,17 @@ interface TmdbApiService {
     // Series
     @GET("trending/tv/day")
     suspend fun getTrendingSeries(
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbResponse<TmdbSeries>
     
     @GET("tv/popular")
     suspend fun getPopularSeries(
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbResponse<TmdbSeries>
     
     @GET("tv/on_the_air")
     suspend fun getNewReleasesSeries(
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbResponse<TmdbSeries>
 
     @GET("tv/{tv_id}")
@@ -69,17 +57,13 @@ interface TmdbApiService {
     suspend fun getSeasonDetails(
         @Path("tv_id") seriesId: Int,
         @Path("season_number") seasonNumber: Int,
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbSeasonDetails
     
 
     @GET("movie/upcoming")
     suspend fun getUpcomingMovies(
-        @Query("api_key") apiKey: String,
-        @Query("language") language: String,
-        @Query("language") language: String
+        @Query("api_key") apiKey: String, @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
 
     @GET("discover/tv")
