@@ -1,35 +1,9 @@
-package com.example.ui.components
+with open("app/src/main/java/com/example/ui/components/YouTubePlayer.kt", "r") as f:
+    original = f.read()
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import android.content.pm.ActivityInfo
-import android.view.View
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.FullscreenListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import_part = original.split("@Composable")[0]
 
-fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
-}
-
-@Composable
+new_composable = """@Composable
 fun InlineYouTubePlayer(
     videoId: String,
     modifier: Modifier = Modifier,
@@ -99,3 +73,7 @@ fun InlineYouTubePlayer(
         )
     }
 }
+"""
+
+with open("app/src/main/java/com/example/ui/components/YouTubePlayer.kt", "w") as f:
+    f.write(import_part + new_composable)
