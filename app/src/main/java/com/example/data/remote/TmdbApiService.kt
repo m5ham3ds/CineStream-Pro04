@@ -8,46 +8,60 @@ interface TmdbApiService {
     // Movies
     @GET("trending/movie/day")
     suspend fun getTrendingMovies(
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
     
     @GET("movie/popular")
     suspend fun getPopularMovies(
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
     
     @GET("movie/now_playing")
     suspend fun getNewReleasesMovies(
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
 
     @GET("movie/{movie_id}")
     suspend fun getMovieDetails(
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("append_to_response") appendToResponse: String = "credits,videos"
     ): TmdbMovieDetails
 
     // Series
     @GET("trending/tv/day")
     suspend fun getTrendingSeries(
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbResponse<TmdbSeries>
     
     @GET("tv/popular")
     suspend fun getPopularSeries(
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbResponse<TmdbSeries>
     
     @GET("tv/on_the_air")
     suspend fun getNewReleasesSeries(
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbResponse<TmdbSeries>
 
     @GET("tv/{tv_id}")
     suspend fun getSeriesDetails(
         @Path("tv_id") seriesId: Int,
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("append_to_response") appendToResponse: String = "credits,videos"
     ): TmdbSeriesDetails
     
@@ -55,18 +69,23 @@ interface TmdbApiService {
     suspend fun getSeasonDetails(
         @Path("tv_id") seriesId: Int,
         @Path("season_number") seasonNumber: Int,
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbSeasonDetails
     
 
     @GET("movie/upcoming")
     suspend fun getUpcomingMovies(
-        @Query("api_key") apiKey: String
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("language") language: String
     ): TmdbResponse<TmdbMovie>
 
     @GET("discover/tv")
     suspend fun getAnimeSeries(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("with_genres") withGenres: String = "16",
         @Query("with_original_language") withOriginalLanguage: String = "ja",
         @Query("sort_by") sortBy: String = "popularity.desc"
@@ -75,6 +94,7 @@ interface TmdbApiService {
     @GET("discover/movie")
     suspend fun getAnimeMovies(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("with_genres") withGenres: String = "16",
         @Query("with_original_language") withOriginalLanguage: String = "ja",
         @Query("sort_by") sortBy: String = "popularity.desc"
@@ -84,6 +104,7 @@ interface TmdbApiService {
     @GET("discover/tv")
     suspend fun getUpcomingSeriesDiscover(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("without_genres") withoutGenres: String = "16",
         @Query("sort_by") sortBy: String = "popularity.desc",
         @Query("first_air_date.gte") minDate: String
@@ -92,6 +113,7 @@ interface TmdbApiService {
     @GET("discover/tv")
     suspend fun getUpcomingAnimeDiscover(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("with_genres") withGenres: String = "16",
         @Query("with_original_language") withOriginalLanguage: String = "ja",
         @Query("sort_by") sortBy: String = "popularity.desc",
@@ -101,6 +123,7 @@ interface TmdbApiService {
     @GET("discover/tv")
     suspend fun getAiringTodayAnime(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("with_genres") withGenres: String = "16",
         @Query("with_original_language") withOriginalLanguage: String = "ja",
         @Query("sort_by") sortBy: String = "popularity.desc",
@@ -111,6 +134,7 @@ interface TmdbApiService {
     @GET("discover/movie")
     suspend fun getArabicMovies(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("with_original_language") withOriginalLanguage: String = "ar",
         @Query("sort_by") sortBy: String = "popularity.desc"
     ): TmdbResponse<TmdbMovie>
@@ -118,6 +142,7 @@ interface TmdbApiService {
     @GET("discover/tv")
     suspend fun getArabicSeries(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("with_original_language") withOriginalLanguage: String = "ar",
         @Query("sort_by") sortBy: String = "popularity.desc"
     ): TmdbResponse<TmdbSeries>
@@ -126,6 +151,7 @@ interface TmdbApiService {
     @GET("search/multi")
     suspend fun searchMulti(
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("query") query: String
     ): TmdbResponse<TmdbMulti>
 
@@ -133,6 +159,7 @@ interface TmdbApiService {
     suspend fun getPersonDetails(
         @Path("person_id") personId: Int,
         @Query("api_key") apiKey: String,
+        @Query("language") language: String,
         @Query("append_to_response") appendToResponse: String = "combined_credits"
     ): TmdbPersonDetails
 }

@@ -174,8 +174,6 @@ fun AppNavigation() {
         Screen.Library.route, Screen.Profile.route, Screen.Downloads.route, Screen.Settings.route, Screen.Extensions.route, Screen.Share.route, Screen.About.route, Screen.Social.route
     )
 
-    val currentAppLayoutDirection = LocalLayoutDirection.current
-    CompositionLocalProvider(LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = drawerState.isOpen,
@@ -502,7 +500,6 @@ fun AppNavigation() {
             }
         }
     ) {
-        CompositionLocalProvider(LocalLayoutDirection provides currentAppLayoutDirection) {
         if (showExitDialog) {
             AlertDialog(
                 onDismissRequest = { showExitDialog = false },
@@ -1070,5 +1067,4 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
             }
         }
     }
-    }}
-}
+    }
