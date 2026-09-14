@@ -1,4 +1,6 @@
-package com.example.ui.components
+import re
+
+new_code = """package com.example.ui.components
 
 import android.app.Activity
 import android.content.Context
@@ -55,9 +57,6 @@ fun InlineYouTubePlayer(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 YouTubePlayerView(ctx).apply {
-                    layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
-                    layoutParams = android.view.ViewGroup.LayoutParams(-1,-1)
-                    setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                     enableAutomaticInitialization = false
                     lifecycleOwner.lifecycle.addObserver(this)
 
@@ -102,3 +101,7 @@ fun InlineYouTubePlayer(
         )
     }
 }
+"""
+
+with open("app/src/main/java/com/example/ui/components/YouTubePlayer.kt", "w") as f:
+    f.write(new_code)
