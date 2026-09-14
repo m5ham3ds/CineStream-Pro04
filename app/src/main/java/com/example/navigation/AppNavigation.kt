@@ -1038,10 +1038,6 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                     )
                 }
                 
-                composable("trailer/{trailerId}") { backStackEntry ->
-                    val trailerId = backStackEntry.arguments?.getString("trailerId") ?: return@composable
-                    com.example.ui.screens.player.TrailerScreen(trailerId = trailerId, onBack = { navController.popBackStack() })
-                }
 
                 composable("player?mediaId={mediaId}&isMovie={isMovie}&title={title}&url={url}&server={server}&website={website}") { backStackEntry ->
                     val mediaId = backStackEntry.arguments?.getString("mediaId") ?: ""
