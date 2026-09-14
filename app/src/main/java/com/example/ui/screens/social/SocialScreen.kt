@@ -50,7 +50,8 @@ fun SocialScreen(
     val currentUser by viewModel.currentUser.collectAsState()
     val conversations by viewModel.conversations.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
-    var selectedCategory by remember { mutableStateOf("All Messages") }
+    val categories = listOf(stringResource(R.string.all_messages), stringResource(R.string.unread), stringResource(R.string.groups), stringResource(R.string.requests))
+    var selectedCategory by remember { mutableStateOf(categories[0]) }
 
     
     val primaryRed = MaterialTheme.colorScheme.primary
@@ -169,7 +170,7 @@ fun SocialScreen(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            val categories = listOf("All Messages", "Unread", "Groups", "Requests")
+                            
                             items(categories) { category ->
                                 CustomFilterChip(
                                     text = category,
@@ -179,15 +180,20 @@ fun SocialScreen(
                             }
                         }
                         
+
+                        val strAll = stringResource(R.string.all_messages)
+                        val strUnread = stringResource(R.string.unread)
+                        val strGroups = stringResource(R.string.groups)
+                        val strReqs = stringResource(R.string.requests)
                         LazyColumn(
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             val filteredConversations = when (selectedCategory) {
-                                "All Messages" -> conversations.filter { !it.isGroup && !it.isRequest }
-                                "Unread" -> conversations.filter { (it.unreadCounts[currentUser?.uid ?: ""] ?: 0) > 0 }
-                                "Groups" -> conversations.filter { it.isGroup }
-                                "Requests" -> conversations.filter { it.isRequest }
+                                strAll -> conversations.filter { !it.isGroup && !it.isRequest }
+                                strUnread -> conversations.filter { (it.unreadCounts[currentUser?.uid ?: ""] ?: 0) > 0 }
+                                strGroups -> conversations.filter { it.isGroup }
+                                strReqs -> conversations.filter { it.isRequest }
                                 else -> conversations
                             }
                             items(filteredConversations) { conv ->

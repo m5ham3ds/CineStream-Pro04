@@ -309,10 +309,10 @@ fun ProfileScreen(onNavigateToAuth: () -> Unit = {}, onNavigateToEditProfile: ()
         Text(stringResource(R.string.account), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(12.dp))
         Column(modifier = Modifier.fillMaxWidth().background(cardColor, RoundedCornerShape(12.dp))) {
-            ProfileListItem(Icons.Default.Person, "Account Information", "Update your personal details", false, primaryRed, iconBgColor, onClick = onNavigateToEditProfile)
-            ProfileListItem(Icons.Outlined.Security, "Security", "Password, device management", false, primaryRed, iconBgColor, onClick = onNavigateToSecurity)
-            ProfileListItem(Icons.Outlined.CreditCard, "Subscription", "Manage your plan and billing", false, primaryRed, iconBgColor, onClick = onNavigateToSubscription)
-            ProfileListItem(Icons.Outlined.Settings, "Settings", "App preferences and settings", true, primaryRed, iconBgColor, onClick = onNavigateToSettings)
+            ProfileListItem(Icons.Default.Person, stringResource(R.string.account_info), stringResource(R.string.account_info_desc), false, primaryRed, iconBgColor, onClick = onNavigateToEditProfile)
+            ProfileListItem(Icons.Outlined.Security, stringResource(R.string.security), stringResource(R.string.security_desc), false, primaryRed, iconBgColor, onClick = onNavigateToSecurity)
+            ProfileListItem(Icons.Outlined.CreditCard, stringResource(R.string.subscription), stringResource(R.string.subscription_desc), false, primaryRed, iconBgColor, onClick = onNavigateToSubscription)
+            ProfileListItem(Icons.Outlined.Settings, "Settings", stringResource(R.string.settings_desc), true, primaryRed, iconBgColor, onClick = onNavigateToSettings)
         }
         
         if (currentUser != null) {

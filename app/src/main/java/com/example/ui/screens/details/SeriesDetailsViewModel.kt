@@ -6,6 +6,7 @@ import com.example.domain.models.Episode
 import com.example.domain.models.Season
 import com.example.domain.models.Series
 import com.example.domain.repository.MediaRepository
+import com.example.utils.NetworkUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -84,11 +85,20 @@ class SeriesDetailsViewModel(
         loadEpisodes(currentSeries.id, season.seasonNumber)
     }
 
-    fun loadMoreEpisodes() {
+    fun loadMoreEpisodes(context: android.content.Context) {
         val currentSeries = _uiState.value.series ?: return
         if (_uiState.value.isLoadingMore) return
+        
         viewModelScope.launch {
             updateAndCache(currentSeries.id) { it.copy(isLoadingMore = true) }
+            
+            // Check internet connection to ensure we only load if online
+            if (!NetworkUtils.isInternetAvailable(context)) {
+                kotlinx.coroutines.delay(300)
+                updateAndCache(currentSeries.id) { it.copy(isLoadingMore = false, error = "No internet connection to load more episodes") }
+                return@launch
+            }
+            
             kotlinx.coroutines.delay(800) // Simulate network delay for UI feedback
             updateAndCache(currentSeries.id) { it.copy(visibleEpisodesCount = it.visibleEpisodesCount + 10, isLoadingMore = false) }
         }

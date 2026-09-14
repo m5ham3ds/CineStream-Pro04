@@ -402,26 +402,30 @@ fun SeriesDetailsScreen(
         }
 
         if (series != null) {
-            val scrollState = rememberScrollState()
-    
-    val isScrollNearBottom by remember {
-        derivedStateOf { scrollState.value >= scrollState.maxValue - 150 && scrollState.maxValue > 0 }
-    }
+            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+        val isScrollNearBottom by remember {
+            derivedStateOf {
+                val layoutInfo = listState.layoutInfo
+                val totalItems = layoutInfo.totalItemsCount
+                val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                totalItems > 0 && lastVisibleItemIndex >= totalItems - 2
+            }
+        }
     
     LaunchedEffect(isScrollNearBottom) {
         if (isScrollNearBottom) {
             if (uiState.episodes.isEmpty() && !uiState.isEpisodesLoading) {
                 viewModel.triggerInitialEpisodesLoad()
             } else if (uiState.episodes.size > uiState.visibleEpisodesCount && !uiState.isLoadingMore) {
-                viewModel.loadMoreEpisodes()
+                viewModel.loadMoreEpisodes(context)
             }
         }
     }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
+            androidx.compose.foundation.lazy.LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState
             ) {
+                item {
                 val firstUnplayedEpisode = uiState.episodes.firstOrNull { !watchedEpisodeIds.contains(it.id) } ?: uiState.episodes.firstOrNull()
 
                 // Hero Image or Video Player
@@ -583,32 +587,36 @@ fun SeriesDetailsScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Episodes
-                    if (uiState.isEpisodesLoading) {
-                        Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-                    } else {
-                        uiState.episodes.take(uiState.visibleEpisodesCount).forEach { episode ->
-                            val isWatched = watchedEpisodeIds.contains(episode.id)
-                            EpisodeCard(
-                                episode = episode,
-                                isWatched = isWatched,
-                                onClick = {
-                                    selectedEpisodeForSource = episode
-                                    isDownloadMode = false
-                                },
-                                onLongClick = {
-                                    scope.launch {
-                                        if (isWatched) watchedRepo.markAsUnwatched(episode.id)
-                                        else watchedRepo.markAsWatched(episode.id)
-                                    }
-                                },
-                                onDownloadClick = {
-                                    selectedEpisodeForSource = episode
-                                    isDownloadMode = true
+                } // Close if block
+                } // Close item block
+                
+                if (uiState.isEpisodesLoading) {
+                    item { Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() } }
+                } else {
+                    items(uiState.episodes.take(uiState.visibleEpisodesCount)) { episode ->
+                        val isWatched = watchedEpisodeIds.contains(episode.id)
+                        EpisodeCard(
+                            episode = episode,
+                            isWatched = isWatched,
+                            onClick = {
+                                selectedEpisodeForSource = episode
+                                isDownloadMode = false
+                            },
+                            onLongClick = {
+                                scope.launch {
+                                    if (isWatched) watchedRepo.markAsUnwatched(episode.id)
+                                    else watchedRepo.markAsWatched(episode.id)
                                 }
-                            )
-                        }
-                        
-                        if (uiState.episodes.size > uiState.visibleEpisodesCount || uiState.isLoadingMore) {
+                            },
+                            onDownloadClick = {
+                                selectedEpisodeForSource = episode
+                                isDownloadMode = true
+                            }
+                        )
+                    }
+                    
+                    if (uiState.episodes.size > uiState.visibleEpisodesCount || uiState.isLoadingMore) {
+                        item {
                             Box(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
                                 if (uiState.isLoadingMore) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -622,8 +630,8 @@ fun SeriesDetailsScreen(
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(32.dp))
                 }
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
             
             if (selectedEpisodeForSource != null) {

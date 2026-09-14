@@ -38,7 +38,7 @@
     <string name="account">Account</string>
     <string name="preferences">Preferences</string>
     <string name="edit">Edit</string>
-    <string name="downloads_desc">Watch your content offline anytime, anywhere.</string>
+    <string name="downloads_desc">Wi-Fi only, smart downloads</string>
     <string name="storage">Storage</string>
     <string name="download_more">Download more content</string>
     <string name="download_more_desc">Find movies and series to download and watch offline.</string>
@@ -330,9 +330,9 @@
     <string name="confirm_color_change">Are you sure you want to change the primary color?</string>
     <string name="confirm_language_change">Are you sure you want to change the language? This requires a restart.</string>
     <string name="exit_app_title">Exit App</string>
-    <string name="exit_app_desc">Are you sure you want to exit the app?</string>
+    <string name="exit_app_desc">Are you sure you want to exit?</string>
     <string name="downloading">Downloading %s...</string>
     <string name="download_complete">%s downloaded successfully, you can watch offline.</string>
     <string name="download_count">Download (%d)</string>
     <string name="episode_format">Ep %1$d: %2$s</string>
-<string name="connecting_to">Connecting to %1$s...</string><string name="loading_site">Loading %1$s...</string><string name="current_site">Current Site: %1$s</string><string name="used_space">%1$s / %2$s used</string><string name="used_percentage">%1$d%% used</string><string name="free_space">%1$s free</string><string name="episodes_count">%1$d Episodes</string><string name="connected_to">Connected to %1$s</string><string name="sent">Sent</string><string name="received">Received</string><string name="stat_activity">%1$s Activity</string><string name="per_month">%1$s / month</string><string name="category_movies">Movies</string><string name="category_series">Series</string><string name="category_anime">Anime</string><string name="category_genres">Genres</string><string name="category_top_rated">Top Rated</string><string name="premium_user">Premium User</string><string name="free_account">Free Account</string><string name="guest_user">Guest User</string><string name="log_out">Log Out</string></resources>
+<string name="connecting_to">Connecting to %1$s...</string><string name="loading_site">Loading %1$s...</string><string name="current_site">Current Site: %1$s</string><string name="used_space">%1$s / %2$s used</string><string name="used_percentage">%1$d%% used</string><string name="free_space">%1$s free</string><string name="episodes_count">%1$d Episodes</string><string name="connected_to">Connected to %1$s</string><string name="sent">Sent</string><string name="received">Received</string><string name="stat_activity">%1$s Activity</string><string name="per_month">%1$s / month</string><string name="category_movies">Movies</string><string name="category_series">Series</string><string name="category_anime">Anime</string><string name="category_genres">Genres</string><string name="category_top_rated">Top Rated</string><string name="premium_user">Premium User</string><string name="free_account">Free Account</string><string name="guest_user">Guest User</string><string name="log_out">Log Out</string><string name="advanced_prefs">Advanced Preferences</string><string name="playback_settings">Playback</string><string name="playback_desc">Quality, subtitles, autoplay</string><string name="downloads_settings">Downloads</string><string name="notifications_settings">Notifications</string><string name="notifications_desc">Manage your notification preferences</string><string name="account_info">Account Information</string><string name="account_info_desc">Update your personal details</string><string name="security_desc">Password, device management</string><string name="subscription_desc">Manage your plan and billing</string><string name="settings_desc">App preferences and settings</string><string name="all_messages">All Messages</string><string name="unread">Unread</string><string name="groups">Groups</string><string name="requests">Requests</string></resources>

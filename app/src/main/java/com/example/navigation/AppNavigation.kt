@@ -265,7 +265,7 @@ fun AppNavigation() {
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Default.Home, contentDescription = null) },
                         label = { Text(stringResource(R.string.home), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Home.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -290,7 +290,7 @@ fun AppNavigation() {
                     )
 
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Default.Favorite, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
                         label = { Text(stringResource(R.string.library), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Library.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -314,7 +314,7 @@ fun AppNavigation() {
                     )
 
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
                         label = { Text(stringResource(R.string.extensions), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Extensions.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -337,7 +337,7 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Default.Person, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Default.Person, contentDescription = null) },
                         label = { Text(stringResource(R.string.community), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Social.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -360,7 +360,7 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Share, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Outlined.Share, contentDescription = null) },
                         label = { Text(stringResource(R.string.offline_share), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Share.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -383,7 +383,7 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
                         label = { Text(stringResource(R.string.settings), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Settings.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -406,7 +406,7 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Download, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Outlined.Download, contentDescription = null) },
                         label = { Text(stringResource(R.string.downloads), fontSize = 16.sp) },
                         selected = currentRoute == Screen.Downloads.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -431,7 +431,7 @@ fun AppNavigation() {
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.Outlined.Info, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
                         label = { Text(stringResource(R.string.about_app), fontSize = 16.sp) },
                         selected = currentRoute == Screen.About.route,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -454,7 +454,7 @@ fun AppNavigation() {
                     )
                     
                     NavigationDrawerItem(
-                        icon = { Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null, tint = androidx.compose.ui.graphics.Color.Unspecified) },
+                        icon = { Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null) },
                         label = { Text(stringResource(R.string.help_support), fontSize = 16.sp) },
                         selected = false,
                         colors = NavigationDrawerItemDefaults.colors(
@@ -599,8 +599,8 @@ fun AppNavigation() {
                                     Screen.Downloads.route -> R.string.downloads
                                     Screen.About.route -> R.string.about
                                     Screen.Extensions.route -> R.string.extensions
-                                    Screen.Share.route -> R.string.share
-                                    Screen.Social.route -> R.string.social
+                                    Screen.Share.route -> R.string.offline_share
+                                    Screen.Social.route -> R.string.community
                                     else -> R.string.app_name
                                 }
                                 Text(
