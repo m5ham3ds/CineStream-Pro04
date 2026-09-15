@@ -1,16 +1,22 @@
 package com.example.ui.screens.splash
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.ui.res.stringResource
+import com.example.R
+import androidx.compose.material.icons.filled.Tv
+import androidx.compose.material.icons.filled.Face
 
 import androidx.compose.animation.core.*
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.ui.res.stringResource
-import com.example.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +56,7 @@ fun SplashScreen(
     
     LaunchedEffect(Unit) {
         startAnimation = true
-        delay(2000) // 2 seconds splash
+        delay(2500)
         
         val hasSeenOnboarding = userPrefs.onboardingCompleted.first()
         val isGuest = userPrefs.isGuest.first()
@@ -70,25 +77,56 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+            .background(Color(0xFF09090C))
     ) {
-        AsyncImage(
-            model = "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?q=80&w=1000&auto=format&fit=crop",
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().alpha(0.2f)
-        )
-        
+        // Red glows at top corners
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .align(Alignment.TopStart)
+                .size(200.dp)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), Color.Transparent)
+                    )
+                )
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(200.dp)
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), Color.Transparent)
+                    )
+                )
+        )
+        
+        // Theater seats background
+        AsyncImage(
+            model = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1000&auto=format&fit=crop",
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .align(Alignment.BottomCenter)
+                .alpha(0.4f)
+        )
+        
+        // Gradient fade to black over the image
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.6f)
+                .align(Alignment.BottomCenter)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            Color.Transparent,
-                            Color.Transparent
+                            Color(0xFF09090C),
+                            Color(0xFF09090C).copy(alpha = 0.5f),
+                            Color(0xFF09090C).copy(alpha = 0.2f),
+                            Color(0xFF09090C).copy(alpha = 0.5f),
+                            Color(0xFF09090C)
                         )
                     )
                 )
@@ -96,25 +134,29 @@ fun SplashScreen(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.alpha(alphaAnim.value)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 180.dp)
+                .alpha(alphaAnim.value)
         ) {
+            // Play Button
             Box(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
+                    .background(Color(0xFF09090C))
+                    .border(4.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    // Inner red glow
                     .background(
                         Brush.radialGradient(
-                            colors = listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.primary)
+                            colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), Color.Transparent)
                         )
-                    )
-                    .padding(8.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface),
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Logo",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(50.dp)
                 )
@@ -122,24 +164,89 @@ fun SplashScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
+            // CineStream Text
             Text(
                 text = buildAnnotatedString {
                     withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
                         append("Cine")
                     }
-                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onBackground)) {
+                    withStyle(style = SpanStyle(color = Color.White)) {
                         append("Stream")
                     }
                 },
-                fontSize = 40.sp,
+                fontSize = 44.sp,
                 fontWeight = FontWeight.Bold
             )
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            Text(text = stringResource(R.string.slogan1),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp
+            // Tagline
+            Text(
+                text = stringResource(R.string.slogan1),
+                color = Color.Gray,
+                fontSize = 16.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                lineHeight = 24.sp
+            )
+            
+            Spacer(modifier = Modifier.height(48.dp))
+            
+            // Three Cards
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SplashCard(icon = Icons.Default.Movie, text = stringResource(R.string.movies))
+                SplashCard(icon = Icons.Default.Tv, text = stringResource(R.string.category_series))
+                SplashCard(icon = Icons.Default.Face, text = stringResource(R.string.category_anime))
+            }
+        }
+        
+        // Bottom Text
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 48.dp)
+                .alpha(alphaAnim.value),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(modifier = Modifier.width(32.dp).height(1.dp).background(Color.DarkGray))
+            Text(
+                text = stringResource(R.string.good_stories_never_end),
+                color = Color.Gray,
+                fontSize = 10.sp,
+                letterSpacing = 2.sp
+            )
+            Box(modifier = Modifier.width(32.dp).height(1.dp).background(Color.DarkGray))
+        }
+    }
+}
+
+@Composable
+fun SplashCard(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+    Box(
+        modifier = Modifier
+            .size(80.dp, 90.dp)
+            .border(1.dp, Color.DarkGray, RoundedCornerShape(16.dp))
+            .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = text,
+                color = Color.LightGray,
+                fontSize = 12.sp
             )
         }
     }

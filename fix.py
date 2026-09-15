@@ -1,17 +1,10 @@
-import re
+with open("app/src/main/java/com/example/ui/screens/splash/SplashScreen.kt", "r") as f:
+    lines = f.read().split('\n')
 
-for filename in ["app/src/main/java/com/example/ui/screens/series/SeriesScreen.kt", "app/src/main/java/com/example/ui/screens/anime/AnimeScreen.kt", "app/src/main/java/com/example/ui/screens/movies/MoviesScreen.kt"]:
-    with open(filename, "r") as f:
-        content = f.read()
+lines = [line for line in lines if "import com.example.R" not in line and "import androidx.compose.ui.res.stringResource" not in line]
 
-    # Find the end of the `if (selectedCategory == "...")` block to make sure it's properly closed before `else {`
-    if "} else {" in content:
-        parts = content.split("} else {", 1)
-        if not parts[0].strip().endswith("}"):
-            content = parts[0] + "}\n} else {" + parts[1]
-    
-    # Try closing up open braces. Let's just append '}' at the end if there are unmatched ones.
-    # Alternatively we can just do a very simple fix based on the errors.
-    
-    with open(filename, "w") as f:
-        f.write(content)
+lines.insert(2, "import com.example.R")
+lines.insert(2, "import androidx.compose.ui.res.stringResource")
+
+with open("app/src/main/java/com/example/ui/screens/splash/SplashScreen.kt", "w") as f:
+    f.write('\n'.join(lines))

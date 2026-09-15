@@ -1,18 +1,15 @@
-def fix_strings(filepath):
-    with open(filepath, "r") as f:
-        lines = f.readlines()
-    
-    seen = set()
-    new_lines = []
-    for line in lines:
-        if "<string name=\"cancel\">" in line:
-            if "cancel" in seen:
-                continue
-            seen.add("cancel")
-        new_lines.append(line)
-        
-    with open(filepath, "w") as f:
-        f.writelines(new_lines)
+import re
+with open("app/src/main/res/values/strings.xml", "r", encoding="utf-8") as f:
+    content = f.read()
 
-fix_strings("app/src/main/res/values/strings.xml")
-fix_strings("app/src/main/res/values-ar/strings.xml")
+new_strings = """
+    <string name="download_and_watch">Download &amp; Watch </string>
+    <string name="offline_highlight">Offline</string>
+    <string name="personalized_prefix">Personalized </string>
+    <string name="for_you_highlight">for You</string>
+"""
+
+content = content.replace("</resources>", new_strings + "</resources>")
+
+with open("app/src/main/res/values/strings.xml", "w", encoding="utf-8") as f:
+    f.write(content)

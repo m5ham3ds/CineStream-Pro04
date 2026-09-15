@@ -1,15 +1,36 @@
-import re
+with open("app/src/main/java/com/example/ui/screens/splash/SplashScreen.kt", "r") as f:
+    content = f.read()
 
-for filename in ["app/src/main/java/com/example/ui/screens/movies/MoviesViewModel.kt", "app/src/main/java/com/example/ui/screens/series/SeriesViewModel.kt"]:
-    with open(filename, "r") as f:
-        content = f.read()
-    
-    # Remove the invalid import at the very top
-    content = content.replace("import kotlinx.coroutines.flow.map\npackage", "package")
-    
-    # Insert it after the package declaration
-    content = re.sub(r"(package .+?\n)", r"\1import kotlinx.coroutines.flow.map\n", content)
-    
-    with open(filename, "w") as f:
-        f.write(content)
+# move imports after package
+lines = content.split('\n')
+pkg_line = -1
+for i, line in enumerate(lines):
+    if line.startswith("package "):
+        pkg_line = i
+        break
 
+if pkg_line > 0:
+    pkg = lines[pkg_line]
+    lines.pop(pkg_line)
+    lines.insert(0, pkg)
+    
+with open("app/src/main/java/com/example/ui/screens/splash/SplashScreen.kt", "w") as f:
+    f.write('\n'.join(lines))
+
+with open("app/src/main/java/com/example/ui/screens/onboarding/OnboardingScreen.kt", "r") as f:
+    content = f.read()
+
+lines = content.split('\n')
+pkg_line = -1
+for i, line in enumerate(lines):
+    if line.startswith("package "):
+        pkg_line = i
+        break
+
+if pkg_line > 0:
+    pkg = lines[pkg_line]
+    lines.pop(pkg_line)
+    lines.insert(0, pkg)
+
+with open("app/src/main/java/com/example/ui/screens/onboarding/OnboardingScreen.kt", "w") as f:
+    f.write('\n'.join(lines))
