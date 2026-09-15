@@ -324,4 +324,15 @@
     <string name="delete_download_desc">هل أنت متأكد أنك تريد حذف هذا التنزيل نهائياً؟ لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="delete_confirm">حذف</string>
 
+
+    <string name="download_settings">إعدادات التنزيل</string>
+    <string name="max_concurrent_downloads">أقصى عدد للتنزيلات المتزامنة</string>
+    <string name="max_segments_per_download">أقصى عدد للأجزاء</string>
+    <string name="download_network">شبكة التنزيل</string>
+    <string name="network_all">الكل (واي فاي وبيانات الهاتف)</string>
+    <string name="network_wifi">واي فاي فقط</string>
+    <string name="network_cellular">بيانات الهاتف فقط</string>
+    <string name="configure_downloads">تكوين التنزيل المتعدد والشبكة</string>
+
+    <string name="done">تم</string>
 </resources>

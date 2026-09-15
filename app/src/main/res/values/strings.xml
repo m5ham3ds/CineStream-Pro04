@@ -380,4 +380,15 @@ to your taste.</string>
     <string name="season_nine">Season Nine</string>
     <string name="season_ten">Season Ten</string>
     <string name="season_x">Season %1$d</string>
+
+    <string name="download_settings">Download Settings</string>
+    <string name="max_concurrent_downloads">Max Concurrent Downloads</string>
+    <string name="max_segments_per_download">Max Segments</string>
+    <string name="download_network">Download Network</string>
+    <string name="network_all">All (WiFi &amp; Cellular)</string>
+    <string name="network_wifi">Wi-Fi Only</string>
+    <string name="network_cellular">Cellular Only</string>
+    <string name="configure_downloads">Configure multi-threading and network</string>
+
+    <string name="done">Done</string>
 </resources>

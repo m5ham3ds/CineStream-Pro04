@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity() {
           primaryColor = primaryColor
       ) {
         val downloadRepo = remember { com.example.data.repository.DownloadRepository(this@MainActivity) }
+        com.example.data.repository.DownloadManagerService.init(this@MainActivity.applicationContext)
         // Real downloads are handled in DownloadRepository now
         
         Surface(modifier = Modifier.fillMaxSize()) {

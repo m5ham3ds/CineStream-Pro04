@@ -1,3 +1,8 @@
+with open("app/src/main/java/com/example/data/repository/DownloadRepository.kt", "r") as f:
+    content = f.read()
+
+# Replace startRealDownload with just Notification
+new_repo = """
 package com.example.data.repository
 
 import android.content.Context
@@ -48,3 +53,7 @@ class DownloadRepository(private val context: Context) {
         }
     }
 }
+"""
+
+with open("app/src/main/java/com/example/data/repository/DownloadRepository.kt", "w") as f:
+    f.write(new_repo.strip())

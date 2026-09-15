@@ -24,6 +24,11 @@ class UserPreferencesRepository(private val context: Context) {
     private val APP_LANGUAGE = stringPreferencesKey("app_language") // "system", "en", "ar"
     private val START_SCREEN = stringPreferencesKey("start_screen") // "home", "search", "downloads", "settings"
 
+    
+    private val MAX_CONCURRENT_DOWNLOADS = intPreferencesKey("max_concurrent_downloads")
+    private val MAX_SEGMENTS = intPreferencesKey("max_segments")
+    private val DOWNLOAD_NETWORK = intPreferencesKey("download_network") // 0=All, 1=WiFi
+
     val onboardingCompleted: Flow<Boolean> = context.dataStore.data.map { it[ONBOARDING_COMPLETED] ?: false }
     val isGuest: Flow<Boolean> = context.dataStore.data.map { it[IS_GUEST] ?: false }
     val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { it[IS_LOGGED_IN] ?: false }
@@ -32,6 +37,11 @@ class UserPreferencesRepository(private val context: Context) {
     val primaryColor: Flow<Int> = context.dataStore.data.map { it[PRIMARY_COLOR] ?: 0 }
     val appLanguage: Flow<String> = context.dataStore.data.map { it[APP_LANGUAGE] ?: "system" }
     val startScreen: Flow<String> = context.dataStore.data.map { it[START_SCREEN] ?: "home" }
+
+    val maxConcurrentDownloads: Flow<Int> = context.dataStore.data.map { it[MAX_CONCURRENT_DOWNLOADS] ?: 3 }
+    val maxSegments: Flow<Int> = context.dataStore.data.map { it[MAX_SEGMENTS] ?: 8 }
+    val downloadNetwork: Flow<Int> = context.dataStore.data.map { it[DOWNLOAD_NETWORK] ?: 0 }
+
 
     suspend fun saveOnboardingCompleted(completed: Boolean) {
         context.dataStore.edit { it[ONBOARDING_COMPLETED] = completed }
@@ -54,4 +64,15 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun saveStartScreen(screen: String) {
         context.dataStore.edit { it[START_SCREEN] = screen }
     }
+
+    suspend fun saveMaxConcurrentDownloads(count: Int) {
+        context.dataStore.edit { it[MAX_CONCURRENT_DOWNLOADS] = count }
+    }
+    suspend fun saveMaxSegments(count: Int) {
+        context.dataStore.edit { it[MAX_SEGMENTS] = count }
+    }
+    suspend fun saveDownloadNetwork(network: Int) {
+        context.dataStore.edit { it[DOWNLOAD_NETWORK] = network }
+    }
+
 }

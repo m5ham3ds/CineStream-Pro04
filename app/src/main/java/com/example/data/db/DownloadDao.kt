@@ -14,6 +14,9 @@ interface DownloadDao {
     @Query("SELECT * FROM download_items")
     fun getAllItems(): Flow<List<DownloadItem>>
 
+    @Query("SELECT * FROM download_items")
+    suspend fun getAllItemsSync(): List<DownloadItem>
+
     @Query("SELECT * FROM download_items WHERE id = :itemId LIMIT 1")
     suspend fun getItemById(itemId: String): DownloadItem?
 
