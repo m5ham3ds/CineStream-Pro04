@@ -342,6 +342,7 @@ fun MovieDetailsScreen(
                     year = movie.year.toString(),
                     isMovie = true,
                     isAnime = movie.genres.any { it.contains("Animation", ignoreCase = true) || it.contains("Anime", ignoreCase = true) },
+                    isDownloadMode = isDownloadMode,
                     onDismiss = { showSourceSheet = false },
                     onNavigateToExtensions = onNavigateToExtensions,
                     onPlay = { url, serverName, website ->
@@ -711,6 +712,7 @@ fun SeriesDetailsScreen(
                     season = uiState.selectedSeason?.seasonNumber ?: 1,
                     episode = selectedEpisodeForSource?.episodeNumber ?: 1,
                     isAnime = series.genres.any { it.contains("Animation", ignoreCase = true) || it.contains("Anime", ignoreCase = true) },
+                    isDownloadMode = isDownloadMode,
                     onDismiss = { selectedEpisodeForSource = null },
                     onNavigateToExtensions = onNavigateToExtensions,
                     onPlay = { url, serverName, website ->

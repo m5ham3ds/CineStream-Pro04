@@ -83,6 +83,7 @@ fun ServerSelectionDialog(
     season: Int = 1,
     episode: Int = 1,
     isAnime: Boolean = false,
+    isDownloadMode: Boolean = false,
     onDismiss: () -> Unit,
     onPlay: (url: String, serverName: String, website: String) -> Unit,
     onNavigateToExtensions: () -> Unit = {}
@@ -772,8 +773,25 @@ Dialog(
                                                 } else {
                                                     finalUrl
                                                 }
-                                                com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList() // clear so we fetch fresh
-                                                onPlay(watchUrl, server, currentSiteName)
+                                                if (isDownloadMode) {
+                                                    if (watchUrl.contains(".mp4")) {
+                                                        com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList()
+                                                        onPlay(watchUrl, server, currentSiteName)
+                                                    } else {
+                                                        selectedServerForQuality = server
+                                                        isExtractingQuality = true
+                                                        qualityExtractionMessage = "جاري استخراج الجودات لـ $server..."
+                                                        coroutineScope.launch {
+                                                            val q = com.example.utils.M3U8Parser.getQualities(watchUrl)
+                                                            extractedQualities = q
+                                                            com.example.ui.screens.player.ServerStateStore.extractedQualities = q
+                                                            isExtractingQuality = false
+                                                        }
+                                                    }
+                                                } else {
+                                                    com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList() // clear so we fetch fresh
+                                                    onPlay(watchUrl, server, currentSiteName)
+                                                }
                                             }
                                             .padding(12.dp),
                                         verticalAlignment = Alignment.CenterVertically
