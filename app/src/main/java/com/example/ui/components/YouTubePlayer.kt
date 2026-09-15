@@ -30,7 +30,7 @@ fun InlineYouTubePlayer(
         </head>
         <body>
             <iframe 
-                src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&fs=1&rel=0&enablejsapi=1&playsinline=1" 
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1&fs=1&rel=0&enablejsapi=1&playsinline=1&origin=https://www.youtube.com" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowfullscreen>
             </iframe>

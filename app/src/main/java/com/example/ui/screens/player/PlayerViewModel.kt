@@ -163,40 +163,15 @@ class PlayerViewModel : ViewModel() {
     }
 
     fun selectQuality(qualityName: String) {
-        val selectedQuality = _uiState.value.extractedQualitiesInfo.find { it.name == qualityName }
-        if (selectedQuality != null) {
-            _uiState.value = _uiState.value.copy(
-                currentQuality = qualityName,
-                currentVideoUrl = selectedQuality.url
-            )
-        } else {
-            _uiState.value = _uiState.value.copy(
-                currentQuality = qualityName
-            )
-        }
+        _uiState.value = _uiState.value.copy(
+            currentQuality = qualityName
+        )
     }
 
     fun selectServer(server: String) {
         val link = _uiState.value.availableServerLinks[server]
         val id = _uiState.value.availableServerIds[server]
         
-        val cachedQualities = com.example.ui.screens.player.ServerStateStore.serverQualities[server]
-        if (cachedQualities != null && cachedQualities.isNotEmpty()) {
-            val autoQuality = cachedQualities.firstOrNull()?.name ?: "Auto"
-            val targetQuality = cachedQualities.find { it.name == _uiState.value.currentQuality } ?: cachedQualities.first()
-            _uiState.value = _uiState.value.copy(
-                currentServer = server,
-                isLoading = false,
-                currentVideoUrl = targetQuality.url,
-                extractionUrl = null,
-                serverIdToChange = id,
-                extractedQualitiesInfo = cachedQualities,
-                availableQualities = cachedQualities.map { it.name },
-                currentQuality = targetQuality.name
-            )
-            return
-        }
-
         var nextExtractionUrl = _uiState.value.extractionUrl
         if (link != null && link.isNotEmpty()) {
             nextExtractionUrl = link
@@ -248,13 +223,27 @@ fun setFinalVideoUrl(url: String) {
                 
                 if (qualities.isNotEmpty()) {
                     val prevQualityName = _uiState.value.currentQuality
-                    val targetQuality = qualities.find { it.name == prevQualityName } ?: qualities.first()
+                    val targetQuality = if (qualities.find { it.name == prevQualityName } != null) {
+                        qualities.find { it.name == prevQualityName }!!
+                    } else if (prevQualityName == "Auto") {
+                        val ctx = com.example.di.AppContainer.application
+                        if (ctx != null) {
+                            val bandwidth = com.example.utils.NetworkUtils.getEstimatedBandwidthKbps(ctx)
+                            com.example.utils.NetworkUtils.selectBestQuality(qualities, bandwidth)
+                        } else {
+                            qualities.first()
+                        }
+                    } else {
+                        qualities.first()
+                    }
+                    
+                    val qualitiesWithAuto = listOf("Auto") + qualities.map { it.name }
                     
                     _uiState.value = _uiState.value.copy(
                         extractedQualitiesInfo = qualities,
-                        availableQualities = qualities.map { it.name },
-                        currentQuality = targetQuality.name,
-                        currentVideoUrl = targetQuality.url,
+                        availableQualities = qualitiesWithAuto,
+                        currentQuality = if (prevQualityName == "Auto") "Auto" else targetQuality.name,
+                        currentVideoUrl = url,
                         isLoading = false
                     )
                 } else {

@@ -763,41 +763,17 @@ Dialog(
                                             .background(Color(0xFF16161A))
                                             .border(1.dp, Color(0xFF222225), RoundedCornerShape(16.dp))
                                             .clickable {
-                                                if (selectedServerForQuality == server) {
-                                                    // Already selected
+                                                val finalUrl = extractedServerLinks[server] ?: ""
+                                                val dLink = extractedDownloadLinks[server] ?: ""
+                                                val watchUrl = if (finalUrl.contains("akamaized.net") || finalUrl.endsWith(".m3u8") || finalUrl.endsWith(".mp4")) {
+                                                    finalUrl
+                                                } else if (dLink.isNotEmpty()) {
+                                                    dLink
                                                 } else {
-                                                    selectedServerForQuality = server
-                                                    isExtractingQuality = true
-                                                    qualityExtractionMessage = "جاري الاتصال وقياس سرعة الإنترنت..."
-                                                    
-                                                    val finalUrl = extractedServerLinks[server] ?: ""
-                                                    
-                                                    kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
-                                                        val qualities = com.example.utils.M3U8Parser.getQualities(finalUrl)
-                                                        if (selectedServerForQuality == server) {
-                                                            com.example.ui.screens.player.ServerStateStore.serverQualities[server] = qualities
-                                                            val bandwidth = com.example.utils.NetworkUtils.getEstimatedBandwidthKbps(context)
-                                                            val bestQuality = com.example.utils.NetworkUtils.selectBestQuality(qualities, bandwidth)
-                                                            
-                                                            val watchUrl = if (qualities.isEmpty() || qualities.size == 1 && qualities[0].name == "Auto") {
-                                                                val dLink = extractedDownloadLinks[server] ?: ""
-                                                                if (finalUrl.contains("akamaized.net") || finalUrl.endsWith(".m3u8") || finalUrl.endsWith(".mp4")) {
-                                                                    finalUrl
-                                                                } else if (dLink.isNotEmpty()) {
-                                                                    dLink
-                                                                } else {
-                                                                    finalUrl
-                                                                }
-                                                            } else {
-                                                                bestQuality.url
-                                                            }
-                                                            
-                                                            com.example.ui.screens.player.ServerStateStore.extractedQualities = qualities
-                                                            isExtractingQuality = false
-                                                            onPlay(watchUrl, server, currentSiteName)
-                                                        }
-                                                    }
+                                                    finalUrl
                                                 }
+                                                com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList() // clear so we fetch fresh
+                                                onPlay(watchUrl, server, currentSiteName)
                                             }
                                             .padding(12.dp),
                                         verticalAlignment = Alignment.CenterVertically
