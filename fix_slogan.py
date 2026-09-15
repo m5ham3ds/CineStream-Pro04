@@ -2,12 +2,7 @@ import re
 with open("app/src/main/res/values/strings.xml", "r", encoding="utf-8") as f:
     content = f.read()
 
-# add new slogan
-new_strings = """
-    <string name="slogan_new">Movies. Series. Anime\nEndless entertainment.</string>
-"""
-
-content = content.replace("</resources>", new_strings + "</resources>")
+content = content.replace("Movies. Series. Anime\nEndless entertainment.", r"Movies. Series. Anime\nEndless entertainment.")
 
 with open("app/src/main/res/values/strings.xml", "w", encoding="utf-8") as f:
     f.write(content)

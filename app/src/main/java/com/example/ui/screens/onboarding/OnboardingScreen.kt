@@ -1,6 +1,4 @@
 package com.example.ui.screens.onboarding
-import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.ui.draw.alpha
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,21 +15,23 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Hd
 import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material.icons.outlined.Monitor
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.StarOutline
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.example.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import com.example.R
 import com.example.data.repository.UserPreferencesRepository
 import kotlinx.coroutines.launch
 
@@ -53,41 +53,69 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF09090C))
+            .background(Color.Black)
     ) {
-        // Red glows at top corners
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .size(200.dp)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), Color.Transparent)
-                    )
+        // Pager for Backgrounds and specific content
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Background Image
+                val bgRes = when (page) {
+                    0 -> R.drawable.onboarding_bg_1
+                    1 -> R.drawable.onboarding_bg_2
+                    else -> R.drawable.onboarding_bg_3
+                }
+                Image(
+                    painter = painterResource(id = bgRes),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 )
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(200.dp)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), Color.Transparent)
-                    )
+                
+                // Gradients for readability
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                0.0f to Color.Black.copy(alpha = 0.9f),
+                                0.25f to Color.Black.copy(alpha = 0.3f),
+                                0.6f to Color.Transparent,
+                                0.8f to Color.Black.copy(alpha = 0.7f),
+                                1.0f to Color.Black
+                            )
+                        )
                 )
-        )
 
+                // Page Specific Content
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 340.dp, bottom = 180.dp),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    when (page) {
+                        0 -> PageOneContent()
+                        1 -> PageTwoContent()
+                        2 -> PageThreeContent()
+                    }
+                }
+            }
+        }
+
+        // Top Fixed Content
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 48.dp, bottom = 24.dp),
+                .fillMaxWidth()
+                .padding(top = 64.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Section (Consistent)
             Text(
                 text = stringResource(R.string.welcome_to),
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Normal
             )
             Text(
@@ -95,49 +123,45 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) { append("Cine") }
                     withStyle(style = SpanStyle(color = Color.White)) { append("Stream") }
                 },
-                fontSize = 36.sp,
+                fontSize = 42.sp,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            Box(modifier = Modifier.width(40.dp).height(2.dp).background(MaterialTheme.colorScheme.primary))
             Spacer(modifier = Modifier.height(16.dp))
+            Box(modifier = Modifier.width(32.dp).height(2.dp).background(MaterialTheme.colorScheme.primary))
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = stringResource(R.string.slogan2),
-                color = Color.Gray,
-                fontSize = 14.sp,
+                text = stringResource(R.string.slogan_new),
+                color = Color.LightGray,
+                fontSize = 15.sp,
                 textAlign = TextAlign.Center,
-                lineHeight = 20.sp,
+                lineHeight = 22.sp,
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
+        }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Pager Section
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.weight(1f)
-            ) { page ->
-                when (page) {
-                    0 -> PageOneContent()
-                    1 -> PageTwoContent()
-                    2 -> PageThreeContent()
-                }
-            }
-
-            // Bottom Section
+        // Bottom Fixed Content
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Pager Dots
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 repeat(3) { index ->
-                    val color = if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else Color.DarkGray
+                    val isSelected = pagerState.currentPage == index
+                    val color = if (isSelected) MaterialTheme.colorScheme.primary else Color.DarkGray
                     Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // Next / Get Started Button
+            // Button
             Button(
                 onClick = {
                     if (pagerState.currentPage < 2) {
@@ -154,21 +178,36 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .height(56.dp)
-                    // Inner red glow effect for the button
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.5f), RoundedCornerShape(28.dp)),
+                    .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(28.dp)
+                shape = RoundedCornerShape(28.dp),
+                contentPadding = PaddingValues(0.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = if (pagerState.currentPage < 2) stringResource(R.string.onboarding_next) else stringResource(R.string.onboarding_get_started),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null, tint = Color.White)
+                // Button gradient effect
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = if (pagerState.currentPage < 2) stringResource(R.string.onboarding_next) else stringResource(R.string.onboarding_get_started),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null, tint = Color.White)
+                    }
                 }
             }
 
@@ -197,90 +236,61 @@ fun OnboardingScreen(onComplete: () -> Unit) {
 
 @Composable
 fun PageOneContent() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Floating side texts
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 24.dp)
+                .align(Alignment.Center), // middle of the specific content area
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            AsyncImage(
-                model = "https://images.unsplash.com/photo-1595769816263-9b910be24d5f?q=80&w=1000&auto=format&fit=crop",
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .alpha(0.6f)
-            )
-            
-            // Side texts overlaid on image
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(stringResource(R.string.good_stories_never_end).replace(" ", "\n"), color = Color.Gray, fontSize = 10.sp, letterSpacing = 2.sp, lineHeight = 16.sp)
-                    Box(modifier = Modifier.width(20.dp).height(1.dp).background(MaterialTheme.colorScheme.primary).padding(top=4.dp))
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text((stringResource(R.string.movies) + "\n" + stringResource(R.string.category_series) + "\n" + stringResource(R.string.category_anime)).uppercase(), color = Color.Gray, fontSize = 10.sp, letterSpacing = 2.sp, lineHeight = 16.sp, textAlign = TextAlign.End)
-                    Box(modifier = Modifier.width(20.dp).height(1.dp).background(MaterialTheme.colorScheme.primary).padding(top=4.dp))
-                }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(stringResource(R.string.good_stories_never_end).replace(" ", "\n"), color = Color.Gray, fontSize = 10.sp, letterSpacing = 2.sp, lineHeight = 16.sp, textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(modifier = Modifier.width(20.dp).height(1.dp).background(MaterialTheme.colorScheme.primary))
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text((stringResource(R.string.movies) + "\n" + stringResource(R.string.category_series) + "\n" + stringResource(R.string.category_anime)).uppercase(), color = Color.Gray, fontSize = 10.sp, letterSpacing = 2.sp, lineHeight = 16.sp, textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(modifier = Modifier.width(20.dp).height(1.dp).background(MaterialTheme.colorScheme.primary))
             }
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // 3 Cards Box
+        // 3 Cards Box at bottom
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
-                .border(1.dp, Color.DarkGray.copy(alpha=0.5f), RoundedCornerShape(24.dp))
-                .background(Color(0xFF101014), RoundedCornerShape(24.dp))
-                .padding(vertical = 24.dp)
+                .align(Alignment.BottomCenter)
+                .border(1.dp, Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                .background(Color(0xFF0D0D0D).copy(alpha = 0.8f), RoundedCornerShape(20.dp))
+                .padding(vertical = 20.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                FeatureItem(icon = Icons.Outlined.Hd, text = stringResource(R.string.hd_quality), iconTint = MaterialTheme.colorScheme.primary)
-                Box(modifier = Modifier.width(1.dp).height(40.dp).background(Color.DarkGray))
+                FeatureItem(icon = Icons.Outlined.Hd, text = stringResource(R.string.hd_quality), iconTint = MaterialTheme.colorScheme.primary, isBoxed = true)
+                Box(modifier = Modifier.width(1.dp).height(40.dp).background(Color.DarkGray.copy(alpha=0.5f)))
                 FeatureItem(icon = Icons.Outlined.Movie, text = stringResource(R.string.movies_and_series), iconTint = Color.LightGray)
-                Box(modifier = Modifier.width(1.dp).height(40.dp).background(Color.DarkGray))
-                FeatureItem(icon = Icons.Outlined.PhoneAndroid, text = stringResource(R.string.anytime_anywhere), iconTint = Color.LightGray)
+                Box(modifier = Modifier.width(1.dp).height(40.dp).background(Color.DarkGray.copy(alpha=0.5f)))
+                FeatureItem(icon = Icons.Outlined.Monitor, text = stringResource(R.string.anytime_anywhere), iconTint = Color.LightGray) // Changed icon for anytime anywhere to monitor
             }
         }
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 @Composable
 fun PageTwoContent() {
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 24.dp), // Align near bottom
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
     ) {
-        AsyncImage(
-            model = "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1000&auto=format&fit=crop",
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .height(220.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .alpha(0.8f)
-        )
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
         // Download Icon
         Box(
             modifier = Modifier
@@ -293,10 +303,10 @@ fun PageTwoContent() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = androidx.compose.material.icons.Icons.Outlined.FileDownload, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
+            Icon(imageVector = Icons.Outlined.FileDownload, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
         Text(
             text = buildAnnotatedString {
@@ -305,19 +315,19 @@ fun PageTwoContent() {
                     append(stringResource(R.string.offline_highlight))
                 }
             },
-            fontSize = 22.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         Text(
             text = stringResource(R.string.download_any_movie_offline),
-            color = Color.Gray,
-            fontSize = 14.sp,
+            color = Color.LightGray,
+            fontSize = 15.sp,
             textAlign = TextAlign.Center,
-            lineHeight = 20.sp
+            lineHeight = 22.sp
         )
     }
 }
@@ -325,33 +335,22 @@ fun PageTwoContent() {
 @Composable
 fun PageThreeContent() {
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom
     ) {
-        AsyncImage(
-            model = "https://image.tmdb.org/t/p/w500/8Y43POKjjKDGI9MH89NW0NAzzp8.jpg",
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 48.dp)
-                .height(200.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .border(2.dp, Color.DarkGray, RoundedCornerShape(24.dp))
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             SmallCard(icon = Icons.Outlined.StarOutline, text = stringResource(R.string.personalized_recommendations))
             SmallCard(icon = Icons.Outlined.FavoriteBorder, text = stringResource(R.string.your_favorite_genres))
             SmallCard(icon = Icons.Outlined.BookmarkBorder, text = stringResource(R.string.build_your_watchlist))
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
         
         Text(
             text = buildAnnotatedString {
@@ -360,46 +359,56 @@ fun PageThreeContent() {
                     append(stringResource(R.string.for_you_highlight))
                 }
             },
-            fontSize = 22.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         
         Text(
             text = stringResource(R.string.get_recommendations_tailored),
-            color = Color.Gray,
-            fontSize = 14.sp,
+            color = Color.LightGray,
+            fontSize = 15.sp,
             textAlign = TextAlign.Center
         )
     }
 }
 
 @Composable
-fun FeatureItem(icon: ImageVector, text: String, iconTint: Color) {
+fun FeatureItem(icon: ImageVector, text: String, iconTint: Color, isBoxed: Boolean = false) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(100.dp)
     ) {
-        Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(32.dp))
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = text, color = Color.LightGray, fontSize = 12.sp, textAlign = TextAlign.Center, lineHeight = 16.sp)
+        if (isBoxed) {
+             Box(
+                modifier = Modifier.size(32.dp).border(1.5.dp, iconTint, RoundedCornerShape(4.dp)),
+                contentAlignment = Alignment.Center
+             ) {
+                 Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
+             }
+        } else {
+             Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(32.dp))
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(text = text, color = Color.White, fontSize = 12.sp, textAlign = TextAlign.Center, lineHeight = 16.sp)
     }
 }
 
 @Composable
-fun SmallCard(icon: ImageVector, text: String) {
+fun RowScope.SmallCard(icon: ImageVector, text: String) {
     Box(
         modifier = Modifier
-            .width(110.dp)
+            .weight(1f)
             .height(110.dp)
-            .border(1.dp, Color.DarkGray.copy(alpha=0.5f), RoundedCornerShape(16.dp))
-            .background(Color(0xFF101014), RoundedCornerShape(16.dp))
-            .padding(12.dp),
+            .padding(horizontal = 4.dp)
+            .border(1.dp, Color.DarkGray.copy(alpha=0.4f), RoundedCornerShape(16.dp))
+            .background(Color(0xFF0D0D0D).copy(alpha=0.8f), RoundedCornerShape(16.dp))
+            .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Icon(imageVector = icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.height(12.dp))
             Text(text = text, color = Color.LightGray, fontSize = 10.sp, textAlign = TextAlign.Center, lineHeight = 14.sp)
