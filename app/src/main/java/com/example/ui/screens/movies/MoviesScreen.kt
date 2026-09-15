@@ -187,11 +187,11 @@ fun MoviesScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(uiState.trendingMovies) { movie ->
+                    itemsIndexed(uiState.trendingMovies) { index, movie ->
                         MediaCard(
                             title = movie.title,
                             posterUrl = movie.posterUrl,
-                            rating = movie.rating,
+                                                        rating = movie.rating,
                             year = movie.releaseDate?.take(4) ?: "2024",
                             mediaId = movie.id,
                             onClick = { onMovieClick(movie.id) },
@@ -214,11 +214,11 @@ fun MoviesScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(uiState.newReleasesMovies) { movie ->
+                    itemsIndexed(uiState.newReleasesMovies) { index, movie ->
                         MediaCard(
                             title = movie.title,
                             posterUrl = movie.posterUrl,
-                            rank = null,
+                            rank = index + 1,
                             rating = movie.rating,
                             year = movie.releaseDate?.take(4) ?: "2024",
                             mediaId = movie.id,
@@ -268,10 +268,11 @@ fun MoviesScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(uiState.upcomingMovies) { movie ->
+                    itemsIndexed(uiState.upcomingMovies) { index, movie ->
                         MediaCard(
                             title = movie.title,
                             posterUrl = movie.posterUrl,
+                            rank = index + 1,
                             rating = movie.rating,
                             year = movie.releaseDate?.take(4) ?: "2024",
                             mediaId = movie.id,
@@ -303,8 +304,7 @@ fun MoviesScreen(
                 MediaCard(
                     title = movie.title,
                     posterUrl = movie.posterUrl,
-                    rank = null,
-                    rating = movie.rating,
+                                        rating = movie.rating,
                     year = movie.year.toString(),
                     isMovie = true,
                     mediaId = movie.id,

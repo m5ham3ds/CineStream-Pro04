@@ -185,12 +185,12 @@ fun AnimeScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(uiState.trendingAnime) { series ->
+                    itemsIndexed(uiState.trendingAnime) { index, series ->
                         MediaCard(
                             title = series.title,
                             posterUrl = series.posterUrl,
-                            rating = series.rating,
-                            year = series.firstAirDate?.take(4) ?: "2024",
+                                                        rating = series.rating,
+                            year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
                             isMovie = false,
                             mediaId = series.id,
                             onClick = { onAnimeClick(series.id) },
@@ -213,13 +213,13 @@ fun AnimeScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(uiState.newEpisodes) { series ->
+                    itemsIndexed(uiState.newEpisodes) { index, series ->
                         MediaCard(
                             title = series.title,
                             posterUrl = series.posterUrl,
-                            rank = null,
+                            rank = index + 1,
                             rating = series.rating,
-                            year = series.firstAirDate?.take(4) ?: "2024",
+                            year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
                             isMovie = false,
                             mediaId = series.id,
                             onClick = { onAnimeClick(series.id) },
@@ -269,12 +269,13 @@ fun AnimeScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(uiState.upcomingAnime) { series ->
+                    itemsIndexed(uiState.upcomingAnime) { index, series ->
                         MediaCard(
                             title = series.title,
                             posterUrl = series.posterUrl,
+                            rank = index + 1,
                             rating = series.rating,
-                            year = series.firstAirDate?.take(4) ?: "2024",
+                            year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
                             isMovie = false,
                             mediaId = series.id,
                             onClick = { onAnimeClick(series.id) },
@@ -306,9 +307,8 @@ fun AnimeScreen(
                 MediaCard(
                     title = series.title,
                     posterUrl = series.posterUrl,
-                    rank = null,
-                    rating = series.rating,
-                    year = series.firstAirDate?.take(4) ?: "2024",
+                                        rating = series.rating,
+                    year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
                     isMovie = false,
                     mediaId = series.id,
                     onClick = { onAnimeClick(series.id) },

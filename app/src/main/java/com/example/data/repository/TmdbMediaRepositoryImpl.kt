@@ -17,6 +17,9 @@ import com.example.domain.models.Episode
 import com.example.domain.models.PersonDetails
 import java.time.LocalDate
 
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+
 class TmdbMediaRepositoryImpl : MediaRepository {
     
     // Fallback to empty string if missing
@@ -138,7 +141,19 @@ class TmdbMediaRepositoryImpl : MediaRepository {
         emit(emptyList())
     }
 
-override suspend fun getMovieById(id: String): Movie? = withContext(Dispatchers.IO) {
+private val tmdbSemaphore = kotlinx.coroutines.sync.Semaphore(5)
+    
+    private suspend fun getRealSeasonCount(seriesId: Int): Int {
+        return try {
+            tmdbSemaphore.withPermit {
+                RetrofitClient.tmdbApi.getSeriesDetails(seriesId, BuildConfig.TMDB_API_KEY, appendToResponse = "").seasons?.size ?: 1
+            }
+        } catch (e: Exception) {
+            1
+        }
+    }
+
+    override suspend fun getMovieById(id: String): Movie? = withContext(Dispatchers.IO) {
         if (id.startsWith("provider|")) {
             val parts = id.split("|")
             val title = parts.getOrNull(2) ?: "Unknown"
@@ -221,9 +236,11 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
                     ))
                 } else if (item.mediaType == "tv") {
                     val yearInt = item.firstAirDate?.take(4)?.toIntOrNull() ?: 2024
+                    val count = getRealSeasonCount(item.id)
                     series.add(Series(
                         id = item.id.toString(),
                         title = item.name ?: "Unknown",
+                        originalTitle = item.originalName ?: item.name,
                         overview = "",
                         posterUrl = item.fullPosterUrl,
                         backdropUrl = item.fullBackdropUrl,
@@ -231,7 +248,7 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
                         firstAirDate = item.firstAirDate,
                         rating = item.voteAverage ?: 0.0,
                         genres = emptyList(),
-                        seasons = emptyList()
+                        seasons = List(count) { com.example.domain.models.Season(id="0",seriesId="",seasonNumber=0,title="",posterUrl="",episodeCount=0) }
                     ))
                 }
             }
@@ -298,9 +315,11 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
                     ))
                 } else if (item.mediaType == "tv") {
                     val yearInt = item.firstAirDate?.take(4)?.toIntOrNull() ?: 2024
+                    val count = getRealSeasonCount(item.id)
                     series.add(Series(
                         id = item.id.toString(),
                         title = item.name ?: "Unknown",
+                        originalTitle = item.originalName ?: item.name,
                         overview = "",
                         posterUrl = item.fullPosterUrl,
                         backdropUrl = item.fullBackdropUrl,
@@ -308,7 +327,7 @@ override suspend fun getSeriesById(id: String): Series? = withContext(Dispatcher
                         firstAirDate = item.firstAirDate,
                         rating = item.voteAverage ?: 0.0,
                         genres = emptyList(),
-                        seasons = emptyList()
+                        seasons = List(count) { com.example.domain.models.Season(id="0",seriesId="",seasonNumber=0,title="",posterUrl="",episodeCount=0) }
                     ))
                 }
             }

@@ -369,4 +369,15 @@ to your taste.</string>
     <string name="for_you_highlight">for You</string>
 
     <string name="slogan_new">Movies. Series. Anime\nEndless entertainment.</string>
+<string name="season_one">Season One</string>
+    <string name="season_two">Season Two</string>
+    <string name="season_three">Season Three</string>
+    <string name="season_four">Season Four</string>
+    <string name="season_five">Season Five</string>
+    <string name="season_six">Season Six</string>
+    <string name="season_seven">Season Seven</string>
+    <string name="season_eight">Season Eight</string>
+    <string name="season_nine">Season Nine</string>
+    <string name="season_ten">Season Ten</string>
+    <string name="season_x">Season %1$d</string>
 </resources>

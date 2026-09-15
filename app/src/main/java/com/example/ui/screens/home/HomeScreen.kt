@@ -212,7 +212,7 @@ fun HomeScreen(
                     MediaCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
-                        rank = 0,
+                        rank = index + 1,
                         rating = item.rating,
                         year = item.year.toString(),
                         onClick = { onMovieClick(item.id) },
@@ -240,7 +240,7 @@ fun HomeScreen(
                     MediaCard(
                         title = movie.title,
                         posterUrl = movie.posterUrl,
-                        rank = 0,
+                        rank = index + 1,
                         rating = movie.rating,
                         year = movie.year.toString(),
                         mediaId = movie.id,
@@ -269,9 +269,9 @@ fun HomeScreen(
                     MediaCard(
                         title = series.title,
                         posterUrl = series.posterUrl,
-                        rank = 0,
+                        rank = index + 1,
                         rating = series.rating,
-                        year = "${series.seasons.size} Seasons",
+                        year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
                         isMovie = false,
                         mediaId = series.id,
                         onClick = { onSeriesClick(series.id) },
@@ -299,9 +299,9 @@ fun HomeScreen(
                     MediaCard(
                         title = series.title,
                         posterUrl = series.posterUrl,
-                        rank = 0,
+                        rank = index + 1,
                         rating = series.rating,
-                        year = series.year.toString(),
+                        year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
                         isMovie = false,
                         mediaId = series.id,
                         onClick = { onSeriesClick(series.id) },
@@ -330,7 +330,7 @@ fun HomeScreen(
                     MediaCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
-                        rank = 0,
+                        rank = index + 1,
                         rating = item.rating,
                         year = item.year.toString(),
                         onClick = { onMovieClick(item.id) },
@@ -367,8 +367,7 @@ fun HomeScreen(
                     MediaCard(
                         title = item.title,
                         posterUrl = item.posterUrl,
-                        rank = null,
-                        rating = item.rating,
+                                                rating = item.rating,
                         year = item.year.toString(),
                         isMovie = true,
                         mediaId = item.id,

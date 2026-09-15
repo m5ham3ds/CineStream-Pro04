@@ -138,7 +138,7 @@ fun MediaCard(
                         .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
-                    Text(text = rank.toString(), color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(text = rank.toString(), color = androidx.compose.ui.graphics.Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             } else {
                 Spacer(modifier = Modifier.width(4.dp))
@@ -147,7 +147,7 @@ fun MediaCard(
             Icon(
                 imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder, 
                 contentDescription = "Bookmark", 
-                tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                tint = if (isBookmarked) MaterialTheme.colorScheme.primary else androidx.compose.ui.graphics.Color.White,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -162,7 +162,7 @@ fun MediaCard(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = androidx.compose.ui.graphics.Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

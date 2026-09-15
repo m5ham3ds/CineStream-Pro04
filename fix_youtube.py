@@ -1,8 +1,0 @@
-import re
-with open("app/src/main/java/com/example/ui/components/YouTubePlayer.kt", "r") as f:
-    content = f.read()
-
-content = content.replace("youtube-nocookie.com", "youtube.com")
-
-with open("app/src/main/java/com/example/ui/components/YouTubePlayer.kt", "w") as f:
-    f.write(content)
