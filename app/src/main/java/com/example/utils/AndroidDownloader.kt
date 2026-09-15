@@ -30,6 +30,8 @@ object AndroidDownloader {
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, "CineStream/$fileName")
                 .setAllowedOverMetered(true)
                 .setAllowedOverRoaming(true)
+                .addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
+                .addRequestHeader("Referer", url)
 
             val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             downloadManager.enqueue(request)

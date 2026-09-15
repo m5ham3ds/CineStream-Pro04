@@ -1,46 +1,22 @@
-import xml.etree.ElementTree as ET
+def add_strings(filepath, strings):
+    with open(filepath, "r") as f:
+        c = f.read()
+    c = c.replace("</resources>", strings + "\n</resources>")
+    with open(filepath, "w") as f:
+        f.write(c)
 
-def add_strings(file_path, strings_dict):
-    tree = ET.parse(file_path)
-    root = tree.getroot()
-    
-    existing = {child.attrib['name'] for child in root if 'name' in child.attrib}
-    
-    for key, val in strings_dict.items():
-        if key not in existing:
-            elem = ET.SubElement(root, 'string', {'name': key})
-            elem.text = val
-            
-    tree.write(file_path, encoding='utf-8', xml_declaration=True)
+en_strings = """
+    <string name="delete_download_title">Delete %1$s</string>
+    <string name="delete_download_desc">Are you sure you want to permanently delete this download? This action cannot be undone.</string>
+    <string name="delete_confirm">Delete</string>
+    <string name="cancel">Cancel</string>
+"""
+add_strings("app/src/main/res/values/strings.xml", en_strings)
 
-en_strings = {
-    'connecting_to': 'Connecting to %1$s...',
-    'loading_site': 'Loading %1$s...',
-    'current_site': 'Current Site: %1$s',
-    'used_space': '%1$s / %2$s used',
-    'used_percentage': '%1$d%% used',
-    'free_space': '%1$s free',
-    'episodes_count': '%1$d Episodes',
-    'connected_to': 'Connected to %1$s',
-    'sent': 'Sent',
-    'received': 'Received',
-    'completed': 'Completed'
-}
-
-ar_strings = {
-    'connecting_to': 'جاري الاتصال بـ %1$s...',
-    'loading_site': 'جاري تحميل %1$s...',
-    'current_site': 'الموقع الحالي: %1$s',
-    'used_space': 'مُستخدم %1$s / %2$s',
-    'used_percentage': 'مُستخدم %1$d%%',
-    'free_space': '%1$s مساحة حرة',
-    'episodes_count': '%1$d حلقات',
-    'connected_to': 'متصل بـ %1$s',
-    'sent': 'تم الإرسال',
-    'received': 'تم الاستلام',
-    'completed': 'مكتمل'
-}
-
-add_strings('app/src/main/res/values/strings.xml', en_strings)
-add_strings('app/src/main/res/values-ar/strings.xml', ar_strings)
-
+ar_strings = """
+    <string name="delete_download_title">حذف %1$s</string>
+    <string name="delete_download_desc">هل أنت متأكد أنك تريد حذف هذا التنزيل نهائياً؟ لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="delete_confirm">حذف</string>
+    <string name="cancel">إلغاء</string>
+"""
+add_strings("app/src/main/res/values-ar/strings.xml", ar_strings)

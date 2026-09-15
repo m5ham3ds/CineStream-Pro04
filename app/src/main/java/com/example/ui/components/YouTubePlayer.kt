@@ -30,7 +30,7 @@ fun InlineYouTubePlayer(
         </head>
         <body>
             <iframe 
-                src="https://www.youtube.com/embed/${videoId}?autoplay=1&fs=1&rel=0&enablejsapi=1&playsinline=1" 
+                src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&fs=1&rel=0&enablejsapi=1&playsinline=1" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowfullscreen>
             </iframe>
@@ -50,21 +50,20 @@ fun InlineYouTubePlayer(
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     settings.mediaPlaybackRequiresUserGesture = false
-                    webChromeClient = WebChromeClient()
+                                        webChromeClient = WebChromeClient()
                     webViewClient = object : WebViewClient() {
                         override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                            return false // Allow WebView to load the URL
+                            return false
                         }
                     }
                     tag = videoId
-                    // Using youtube.com as base URL bypasses domain embedding restrictions (Error 150/153)
-                    loadDataWithBaseURL("https://www.youtube.com", htmlData, "text/html", "utf-8", null)
+                    loadDataWithBaseURL("https://www.youtube.com/", htmlData, "text/html", "utf-8", null)
                 }
             },
             update = { webView ->
                 if (webView.tag != videoId) {
                     webView.tag = videoId
-                    webView.loadDataWithBaseURL("https://www.youtube.com", htmlData, "text/html", "utf-8", null)
+                    webView.loadDataWithBaseURL("https://www.youtube.com/", htmlData, "text/html", "utf-8", null)
                 }
             }
         )

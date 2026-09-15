@@ -77,6 +77,7 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.Forward10
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.media3.ui.PlayerView
 import com.example.ui.components.DownloadQualitySheet
 
@@ -91,9 +92,12 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     }
 
     val context = LocalContext.current
+    val downloadRepository = remember { com.example.data.repository.DownloadRepository(context) }
+    val scope = rememberCoroutineScope()
     var showDownloadSheet by remember { mutableStateOf(false) }
     var showControls by remember { mutableStateOf(true) }
     var isPlaying by remember { mutableStateOf(false) }
+    var isBuffering by remember { mutableStateOf(true) }
     var currentTime by remember { mutableStateOf(0L) }
     var totalDuration by remember { mutableStateOf(0L) }
     var brightness by remember { mutableStateOf(0.5f) }
@@ -151,6 +155,11 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                 override fun onPlaybackStateChanged(state: Int) {
                     if (state == Player.STATE_READY) {
                         totalDuration = duration.coerceAtLeast(0L)
+                        isBuffering = false
+                    } else if (state == Player.STATE_BUFFERING) {
+                        isBuffering = true
+                    } else {
+                        isBuffering = false
                     }
                 }
             })
@@ -325,7 +334,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(16.dp))
                     val serverText = if (uiState.currentServer.isNotEmpty()) " / ${uiState.currentServer}" else ""
-                    Text(stringResource(R.string.connecting_to, "${uiState.currentWebsite}$serverText"), color = MaterialTheme.colorScheme.onBackground)
+                    Text(stringResource(R.string.connecting_to), color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
@@ -437,17 +446,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                     }
 
                     // Center Playback Controls
-                    if (uiState.currentVideoUrl == null) {
-                        Column(
-                            modifier = Modifier.align(Alignment.Center),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            val serverText = if (uiState.currentServer.isNotEmpty()) " / ${uiState.currentServer}" else ""
-                            Text(stringResource(R.string.loading_site, "${uiState.currentWebsite}$serverText"), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-                        }
-                    } else {
+                    if (uiState.currentVideoUrl != null) {
                         Row(
                             modifier = Modifier.align(Alignment.Center),
                             verticalAlignment = Alignment.CenterVertically,
@@ -458,7 +457,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 modifier = Modifier
                                     .size(56.dp)
                                     .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), CircleShape)
-                                    .clickable { exoPlayer.seekTo((exoPlayer.currentPosition - 10000).coerceAtLeast(0)) }
+                                    .clickable { exoPlayer.seekTo(exoPlayer.currentPosition - 10000) }
                             ) {
                                 Icon(Icons.Default.Replay10, contentDescription = "Rewind", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
                             }
@@ -470,12 +469,16 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                     .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                                     .clickable { if (isPlaying) exoPlayer.pause() else exoPlayer.play() }
                             ) {
-                                Icon(
-                                    if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                    contentDescription = "Play/Pause",
-                                    tint = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.size(36.dp)
-                                )
+                                if (isBuffering) {
+                                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+                                } else {
+                                    Icon(
+                                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                        contentDescription = "Play/Pause",
+                                        tint = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier.size(36.dp)
+                                    )
+                                }
                             }
                             
                             Box(
@@ -483,7 +486,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 modifier = Modifier
                                     .size(56.dp)
                                     .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), CircleShape)
-                                    .clickable { exoPlayer.seekTo((exoPlayer.currentPosition + 10000).coerceAtMost(exoPlayer.duration)) }
+                                    .clickable { exoPlayer.seekTo(exoPlayer.currentPosition + 10000) }
                             ) {
                                 Icon(Icons.Default.Forward10, contentDescription = "Forward", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
                             }
@@ -682,6 +685,19 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                 
                 videoUrl?.let { url ->
                     com.example.utils.AndroidDownloader.downloadVideo(context, url, "${uiState.title} - $quality")
+                    scope.launch {
+                        downloadRepository.addToDownloads(
+                            com.example.data.model.DownloadItem(
+                                id = "${uiState.title}_${System.currentTimeMillis()}",
+                                title = uiState.title,
+                                posterUrl = "",
+                                isMovie = uiState.isMovie,
+                                quality = quality,
+                                progress = 0.05f,
+                                isCompleted = false
+                            )
+                        )
+                    }
                 } ?: run {
                     android.widget.Toast.makeText(context, "Please wait for the stream to load first.", android.widget.Toast.LENGTH_SHORT).show()
                 }

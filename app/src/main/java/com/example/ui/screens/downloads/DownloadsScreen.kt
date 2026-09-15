@@ -52,6 +52,24 @@ fun DownloadsScreen(
     val scope = rememberCoroutineScope()
 
     var selectedTab by remember { mutableStateOf("All") }
+    var itemToDelete by remember { mutableStateOf<DownloadItem?>(null) }
+
+
+    // Simulate download progress
+    LaunchedEffect(downloads) {
+        val inProgress = downloads.filter { !it.isCompleted && !it.isPaused }
+        if (inProgress.isNotEmpty()) {
+            kotlinx.coroutines.delay(2000)
+            inProgress.forEach { item ->
+                val newProgress = item.progress + 0.03f
+                if (newProgress >= 1f) {
+                    downloadRepository.updateDownload(item.copy(progress = 1f, isCompleted = true))
+                } else {
+                    downloadRepository.updateDownload(item.copy(progress = newProgress))
+                }
+            }
+        }
+    }
 
     val filteredDownloads = when (selectedTab) {
         "Movies" -> downloads.filter { it.isMovie }
@@ -75,6 +93,33 @@ fun DownloadsScreen(
     val totalStr = Formatter.formatFileSize(context, totalBytes)
     val usedStr = Formatter.formatFileSize(context, usedBytes)
     val availableStr = Formatter.formatFileSize(context, availableBytes)
+
+
+    itemToDelete?.let { item ->
+        AlertDialog(
+            onDismissRequest = { itemToDelete = null },
+            title = { Text(stringResource(R.string.delete_download_title, item.title)) },
+            text = { Text(stringResource(R.string.delete_download_desc)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch {
+                        downloadRepository.removeFromDownloads(item)
+                    }
+                    itemToDelete = null
+                }) {
+                    Text(stringResource(R.string.delete_confirm), color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { itemToDelete = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onBackground,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -181,9 +226,7 @@ fun DownloadsScreen(
                         }
                     },
                     onDelete = {
-                        scope.launch {
-                            downloadRepository.removeFromDownloads(item)
-                        }
+                        itemToDelete = item
                     }
                 )
                 Spacer(modifier = Modifier.height(12.dp))

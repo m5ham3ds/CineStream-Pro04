@@ -548,12 +548,12 @@ Dialog(
                         .padding(20.dp)
                         .animateContentSize()
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                                        Box(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Box(
                             modifier = Modifier
+                                .align(Alignment.CenterStart)
                                 .size(48.dp)
                                 .background(iconTint.copy(alpha = 0.15f), CircleShape)
                                 .border(1.dp, iconTint.copy(alpha = 0.3f), CircleShape),
@@ -562,35 +562,36 @@ Dialog(
                             Icon(displayIcon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
                         }
                         
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(displayTitle, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Column(
+                            modifier = Modifier.align(Alignment.Center).padding(horizontal = 56.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(displayTitle, color = Color.White, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(displaySubtitle, color = iconTint.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
-                        }
-                        
-                        if (isHorizontal) {
-                            Spacer(modifier = Modifier.width(16.dp))
-                            val progress = (currentSiteIndex.toFloat() / safeSites.size.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
-                            val animatedProgress by androidx.compose.animation.core.animateFloatAsState(targetValue = if (progress == 0f) 0.1f else progress)
-                            Box(modifier = Modifier.weight(1.5f).height(6.dp).clip(CircleShape).background(Color(0xFF222222))) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth(animatedProgress)
-                                        .fillMaxHeight()
-                                        .background(iconTint)
-                                )
+                            Text(displaySubtitle, color = iconTint.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            
+                            if (isHorizontal) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                val progress = (currentSiteIndex.toFloat() / safeSites.size.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
+                                val animatedProgress by androidx.compose.animation.core.animateFloatAsState(targetValue = if (progress == 0f) 0.1f else progress)
+                                Box(modifier = Modifier.fillMaxWidth(0.6f).height(4.dp).clip(CircleShape).background(Color(0xFF222222))) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(animatedProgress)
+                                            .fillMaxHeight()
+                                            .background(iconTint)
+                                    )
+                                }
                             }
                         }
                         
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
                         Box(
                             modifier = Modifier
+                                .align(Alignment.CenterEnd)
                                 .size(36.dp)
                                 .background(Color(0xFF222225), CircleShape)
                                 .border(1.dp, Color(0xFF333333), CircleShape)
+                                .clip(CircleShape)
                                 .clickable {
                                     if (isLoading || isExtractingQuality) {
                                         showCancelConfirmDialog = true
