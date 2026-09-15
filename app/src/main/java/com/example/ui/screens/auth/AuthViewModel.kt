@@ -30,9 +30,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 if (currentAuth != null) {
                     if (repository.currentUserFlow.value == null || repository.currentUserFlow.value?.uid != currentAuth.uid) {
                         repository.getCurrentUser()
+            if (repository.auth.currentUser != null) {
+                com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(repository.auth.currentUser!!.uid)
+            }
                     }
                 } else {
                     repository.getCurrentUser()
+            if (repository.auth.currentUser != null) {
+                com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(repository.auth.currentUser!!.uid)
+            }
                 }
             }
         }
@@ -42,6 +48,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _isLoading.value = true
             repository.getCurrentUser()
+            if (repository.auth.currentUser != null) {
+                com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(repository.auth.currentUser!!.uid)
+            }
             _isLoading.value = false
         }
     }
@@ -63,6 +72,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         val snapshot = kotlinx.coroutines.withTimeout(15000) { com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(firebaseUser.uid).get().await() }
                         if (snapshot.exists()) {
                             repository.currentUserFlow.value = snapshot.toObject(User::class.java)
+                            com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(firebaseUser.uid)
                         } else {
                             val generatedUsername = try { repository.generateUniqueUsername(email?.substringBefore("@") ?: "user") } catch(e:Exception) { "user_" + firebaseUser.uid.take(5) }
                             val newUser = User(
@@ -75,6 +85,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                             )
                             kotlinx.coroutines.withTimeoutOrNull(15000) { repository.saveUser(newUser) }
                             repository.currentUserFlow.value = newUser
+                            com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(firebaseUser.uid)
                         }
                     } catch (e: Exception) {
                         repository.auth.signOut()
@@ -102,6 +113,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         val snapshot = kotlinx.coroutines.withTimeout(15000) { com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("users").document(firebaseUser.uid).get().await() }
                         if (snapshot.exists()) {
                             repository.currentUserFlow.value = snapshot.toObject(User::class.java)
+                            com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(firebaseUser.uid)
                         } else {
                             // User document missing? Rare, but create it.
                             val generatedUsername = try { repository.generateUniqueUsername(email.substringBefore("@")) } catch(e:Exception) { "user_" + firebaseUser.uid.take(5) }
@@ -150,6 +162,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         kotlinx.coroutines.withTimeout(15000) { repository.saveUser(newUser) }
                     } catch (e: Exception) {}
                     repository.currentUserFlow.value = newUser
+                            com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(firebaseUser.uid)
                 }
             } catch (e: Exception) {
                 _authError.value = e.message ?: "Signup failed"
@@ -228,7 +241,10 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         repository.auth.signOut()
         viewModelScope.launch { 
             com.example.data.sync.CloudSyncManager(getApplication()).clearLocalData()
-            repository.getCurrentUser() 
+            repository.getCurrentUser()
+            if (repository.auth.currentUser != null) {
+                com.example.data.sync.CloudSyncManager(getApplication()).syncFromCloud(repository.auth.currentUser!!.uid)
+            } 
         }
     }
 }

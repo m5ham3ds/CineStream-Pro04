@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -71,8 +72,10 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     painter = painterResource(id = bgRes),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().blur(radius = 16.dp)
                 )
+                // Additional tint layer
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)))
                 
                 // Gradients for readability
                 Box(
@@ -115,7 +118,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             Text(
                 text = stringResource(R.string.welcome_to),
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
             )
             Text(
@@ -123,7 +126,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) { append("Cine") }
                     withStyle(style = SpanStyle(color = Color.White)) { append("Stream") }
                 },
-                fontSize = 42.sp,
+                fontSize = 36.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -132,9 +135,9 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             Text(
                 text = stringResource(R.string.slogan_new),
                 color = Color.LightGray,
-                fontSize = 15.sp,
+                fontSize = 13.sp,
                 textAlign = TextAlign.Center,
-                lineHeight = 22.sp,
+                lineHeight = 20.sp,
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
         }
@@ -178,7 +181,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .height(56.dp),
+                    .height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(28.dp),
                 contentPadding = PaddingValues(0.dp)
@@ -201,7 +204,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = if (pagerState.currentPage < 2) stringResource(R.string.onboarding_next) else stringResource(R.string.onboarding_get_started),
-                            fontSize = 18.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
@@ -246,12 +249,12 @@ fun PageOneContent() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(stringResource(R.string.good_stories_never_end).replace(" ", "\n"), color = Color.Gray, fontSize = 10.sp, letterSpacing = 2.sp, lineHeight = 16.sp, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.good_stories_never_end).replace(" ", "\n"), color = Color.Gray, fontSize = 9.sp, letterSpacing = 2.sp, lineHeight = 14.sp, textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(modifier = Modifier.width(20.dp).height(1.dp).background(MaterialTheme.colorScheme.primary))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text((stringResource(R.string.movies) + "\n" + stringResource(R.string.category_series) + "\n" + stringResource(R.string.category_anime)).uppercase(), color = Color.Gray, fontSize = 10.sp, letterSpacing = 2.sp, lineHeight = 16.sp, textAlign = TextAlign.Center)
+                Text((stringResource(R.string.movies) + "\n" + stringResource(R.string.category_series) + "\n" + stringResource(R.string.category_anime)).uppercase(), color = Color.Gray, fontSize = 9.sp, letterSpacing = 2.sp, lineHeight = 14.sp, textAlign = TextAlign.Center)
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(modifier = Modifier.width(20.dp).height(1.dp).background(MaterialTheme.colorScheme.primary))
             }
@@ -265,7 +268,7 @@ fun PageOneContent() {
                 .align(Alignment.BottomCenter)
                 .border(1.dp, Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
                 .background(Color(0xFF0D0D0D).copy(alpha = 0.8f), RoundedCornerShape(20.dp))
-                .padding(vertical = 20.dp)
+                .padding(vertical = 16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -294,7 +297,7 @@ fun PageTwoContent() {
         // Download Icon
         Box(
             modifier = Modifier
-                .size(64.dp)
+                .size(56.dp)
                 .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -303,7 +306,7 @@ fun PageTwoContent() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(imageVector = Icons.Outlined.FileDownload, contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
+            Icon(imageVector = Icons.Outlined.FileDownload, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
         }
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -315,7 +318,7 @@ fun PageTwoContent() {
                     append(stringResource(R.string.offline_highlight))
                 }
             },
-            fontSize = 24.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
@@ -325,7 +328,7 @@ fun PageTwoContent() {
         Text(
             text = stringResource(R.string.download_any_movie_offline),
             color = Color.LightGray,
-            fontSize = 15.sp,
+            fontSize = 13.sp,
             textAlign = TextAlign.Center,
             lineHeight = 22.sp
         )
@@ -359,7 +362,7 @@ fun PageThreeContent() {
                     append(stringResource(R.string.for_you_highlight))
                 }
             },
-            fontSize = 24.sp,
+            fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
@@ -369,7 +372,7 @@ fun PageThreeContent() {
         Text(
             text = stringResource(R.string.get_recommendations_tailored),
             color = Color.LightGray,
-            fontSize = 15.sp,
+            fontSize = 13.sp,
             textAlign = TextAlign.Center
         )
     }
@@ -383,16 +386,16 @@ fun FeatureItem(icon: ImageVector, text: String, iconTint: Color, isBoxed: Boole
     ) {
         if (isBoxed) {
              Box(
-                modifier = Modifier.size(32.dp).border(1.5.dp, iconTint, RoundedCornerShape(4.dp)),
+                modifier = Modifier.size(24.dp).border(1.5.dp, iconTint, RoundedCornerShape(4.dp)),
                 contentAlignment = Alignment.Center
              ) {
                  Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
              }
         } else {
-             Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(32.dp))
+             Icon(imageVector = icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
         }
         Spacer(modifier = Modifier.height(12.dp))
-        Text(text = text, color = Color.White, fontSize = 12.sp, textAlign = TextAlign.Center, lineHeight = 16.sp)
+        Text(text = text, color = Color.White, fontSize = 11.sp, textAlign = TextAlign.Center, lineHeight = 14.sp)
     }
 }
 
@@ -401,7 +404,7 @@ fun RowScope.SmallCard(icon: ImageVector, text: String) {
     Box(
         modifier = Modifier
             .weight(1f)
-            .height(110.dp)
+            .height(90.dp)
             .padding(horizontal = 4.dp)
             .border(1.dp, Color.DarkGray.copy(alpha=0.4f), RoundedCornerShape(16.dp))
             .background(Color(0xFF0D0D0D).copy(alpha=0.8f), RoundedCornerShape(16.dp))
@@ -409,9 +412,9 @@ fun RowScope.SmallCard(icon: ImageVector, text: String) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Icon(imageVector = icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+            Icon(imageVector = icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.height(12.dp))
-            Text(text = text, color = Color.LightGray, fontSize = 10.sp, textAlign = TextAlign.Center, lineHeight = 14.sp)
+            Text(text = text, color = Color.LightGray, fontSize = 9.sp, textAlign = TextAlign.Center, lineHeight = 14.sp)
         }
     }
 }
