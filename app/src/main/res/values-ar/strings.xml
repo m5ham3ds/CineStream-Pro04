@@ -153,7 +153,7 @@
     <string name="change_password">تغيير كلمة المرور</string>
     <string name="choose_content_type">اختر نوع المحتوى</string>
     <string name="choose_plan">اختر باقتك</string>
-    <string name="community">مجتمع CineStream</string>
+    <string name="community">المجتمع</string>
     <string name="app_desc_long">سينما ستريم هو تجربتك السينمائية المميزة. شاهد أفلامك ومسلسلاتك المفضلة بجودة عالية في أي وقت ومكان.</string>
     <string name="completed">مكتمل</string>
     <string name="connect">اتصال</string>
@@ -250,7 +250,7 @@
     <string name="welcome_to">مرحباً بك في</string>
     <string name="delete_msg_prompt">لمن تريد حذف هذه الرسالة؟</string>
     <string name="slogan1">عالمك السينمائي، في أي وقت وأي مكان.</string>
-    <string name="slogan2">وجهتك المثالية\nللأفلام والمسلسلات. استمتع بترفيه لا نهاية له، في أي وقت وأي مكان.</string>
+    <string name="slogan2">أفلام. مسلسلات. أنمي ترفيه لا ينتهي.</string>
     <string name="iphone_13">iPhone 13 Pro</string>
     <string name="message">رسالة</string>
     <string name="username_small">اسم المستخدم</string>

@@ -72,10 +72,10 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     painter = painterResource(id = bgRes),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize().blur(radius = 16.dp)
+                    modifier = Modifier.fillMaxSize().blur(radius = 24.dp)
                 )
                 // Additional tint layer
-                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)))
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.7f)))
                 
                 // Gradients for readability
                 Box(
@@ -96,7 +96,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 340.dp, bottom = 180.dp),
+                        .padding(top = 280.dp, bottom = 160.dp),
                     contentAlignment = Alignment.BottomCenter
                 ) {
                     when (page) {
@@ -126,7 +126,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) { append("Cine") }
                     withStyle(style = SpanStyle(color = Color.White)) { append("Stream") }
                 },
-                fontSize = 36.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -318,7 +318,7 @@ fun PageTwoContent() {
                     append(stringResource(R.string.offline_highlight))
                 }
             },
-            fontSize = 22.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
@@ -353,7 +353,7 @@ fun PageThreeContent() {
             SmallCard(icon = Icons.Outlined.BookmarkBorder, text = stringResource(R.string.build_your_watchlist))
         }
         
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
         Text(
             text = buildAnnotatedString {
@@ -362,7 +362,7 @@ fun PageThreeContent() {
                     append(stringResource(R.string.for_you_highlight))
                 }
             },
-            fontSize = 22.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )

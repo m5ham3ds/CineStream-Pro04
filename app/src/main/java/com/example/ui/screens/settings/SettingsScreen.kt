@@ -220,7 +220,7 @@ fun SettingsScreen() {
         SettingsSectionHeader(icon = Icons.Outlined.Settings, title = stringResource(R.string.advanced_prefs))
         Column(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
             SettingsListItem(Icons.Outlined.PlayCircleOutline, stringResource(R.string.playback_settings), stringResource(R.string.playback_desc), false) {}
-            SettingsListItem(Icons.Outlined.Download, stringResource(R.string.downloads_settings), stringResource(R.string.downloads_desc), false) {}
+            SettingsListItem(Icons.Outlined.Download, stringResource(R.string.downloads_settings), stringResource(R.string.downloads_desc), false) { showDownloadSettingsDialog = true }
             SettingsListItem(Icons.Outlined.Settings, stringResource(R.string.notifications_settings), stringResource(R.string.notifications_desc), true) {}
         }
         
@@ -343,7 +343,11 @@ fun SettingsScreen() {
                         value = maxConcurrentDownloads.toFloat(),
                         onValueChange = { coroutineScope.launch { userPrefs.saveMaxConcurrentDownloads(it.toInt()) } },
                         valueRange = 1f..5f,
-                        steps = 3
+                        steps = 3,
+                        colors = androidx.compose.material3.SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(stringResource(R.string.max_segments_per_download) + ": $maxSegments", fontSize = 14.sp)
@@ -351,7 +355,11 @@ fun SettingsScreen() {
                         value = maxSegments.toFloat(),
                         onValueChange = { coroutineScope.launch { userPrefs.saveMaxSegments(it.toInt()) } },
                         valueRange = 1f..32f,
-                        steps = 30
+                        steps = 30,
+                        colors = androidx.compose.material3.SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(stringResource(R.string.download_network), fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
@@ -363,7 +371,10 @@ fun SettingsScreen() {
                         }) {
                             androidx.compose.material3.RadioButton(
                                 selected = downloadNetwork == index,
-                                onClick = { coroutineScope.launch { userPrefs.saveDownloadNetwork(index) } }
+                                onClick = { coroutineScope.launch { userPrefs.saveDownloadNetwork(index) } },
+                                colors = androidx.compose.material3.RadioButtonDefaults.colors(
+                                    selectedColor = MaterialTheme.colorScheme.primary
+                                )
                             )
                             Text(stringResource(titleRes), fontSize = 14.sp)
                         }
@@ -371,8 +382,13 @@ fun SettingsScreen() {
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showDownloadSettingsDialog = false }) { Text(stringResource(R.string.done)) }
-            }
+                TextButton(onClick = { showDownloadSettingsDialog = false }) { 
+                    Text(stringResource(R.string.done), color = MaterialTheme.colorScheme.primary) 
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 
