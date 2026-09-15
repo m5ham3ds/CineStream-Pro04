@@ -57,6 +57,7 @@ object NotificationHelper {
             .setContentText(context.getString(R.string.download_complete, title))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .setTimeoutAfter(3000)
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(title.hashCode(), builder.build())

@@ -1,4 +1,13 @@
 package com.example.ui.screens.details
+
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.unit.dp
+
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -631,11 +640,12 @@ fun SeriesDetailsScreen(
                 } else {
                     items(uiState.episodes.take(uiState.visibleEpisodesCount)) { episode ->
                         val isWatched = watchedEpisodeIds.contains(episode.id)
-                        val isDownloaded = downloadedEpisodeIds.contains("${series.id}_${episode.id}")
+                        val downloadItem = downloads.find { it.id == "${series.id}_${episode.id}" }
+                        val isDownloaded = downloadItem?.isCompleted == true
                         EpisodeCard(
                             episode = episode,
                             isWatched = isWatched,
-                            isDownloaded = isDownloaded,
+                            downloadItem = downloadItem,
                             onClick = {
                                 if (isDownloaded) {
                                     scope.launch {
@@ -659,8 +669,17 @@ fun SeriesDetailsScreen(
                                 }
                             },
                             onDownloadClick = {
-                                selectedEpisodeForSource = episode
-                                isDownloadMode = true
+                                if (downloadItem?.isCompleted == true) {
+                                    scope.launch { downloadRepository.removeFromDownloads(downloadItem) }
+                                } else if (downloadItem != null) {
+                                    scope.launch { downloadRepository.updateDownload(downloadItem.copy(isPaused = !downloadItem.isPaused)) }
+                                } else {
+                                    selectedEpisodeForSource = episode
+                                    isDownloadMode = true
+                                    if (com.example.extensions.ExtensionManager.installedExtensions.value.isEmpty()) {
+                                        // No extensions logic - would be handled by parent, but let's just trigger sheet which handles it
+                                    }
+                                }
                             }
                         )
                     }
@@ -791,7 +810,7 @@ fun CastMemberCard(cast: CastMember, onClick: () -> Unit) {
 fun EpisodeCard(
     episode: Episode,
     isWatched: Boolean,
-    isDownloaded: Boolean = false,
+    downloadItem: com.example.data.model.DownloadItem? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onDownloadClick: () -> Unit
@@ -839,11 +858,38 @@ fun EpisodeCard(
             Text(episode.overview, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         IconButton(onClick = onDownloadClick) {
-            if (isDownloaded) {
-                Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = Color.Green)
+            if (downloadItem?.isCompleted == true) {
+                Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = MaterialTheme.colorScheme.primary)
+            } else if (downloadItem != null) {
+                AnimatedDownloadIcon(isPaused = downloadItem.isPaused)
             } else {
                 Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
             }
         }
+    }
+}
+@Composable
+fun AnimatedDownloadIcon(isPaused: Boolean) {
+    val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition()
+    val offset by infiniteTransition.animateFloat(
+        initialValue = -5f,
+        targetValue = 5f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(800, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Restart
+        )
+    )
+    
+    androidx.compose.foundation.layout.Box(
+        modifier = androidx.compose.ui.Modifier.size(24.dp).clipToBounds(), 
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        val tint = if (isPaused) androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.5f) else androidx.compose.material3.MaterialTheme.colorScheme.primary
+        androidx.compose.material3.Icon(
+            androidx.compose.material.icons.Icons.Default.ArrowDownward, 
+            contentDescription = "Downloading", 
+            tint = tint, 
+            modifier = if (isPaused) androidx.compose.ui.Modifier else androidx.compose.ui.Modifier.offset(y = offset.dp)
+        )
     }
 }

@@ -60,7 +60,11 @@ fun InlineYouTubePlayer(
                     loadDataWithBaseURL("https://www.youtube.com/", htmlData, "text/html", "utf-8", null)
                 }
             },
-            update = { webView ->
+            onRelease = { webView ->
+            webView.stopLoading()
+            webView.destroy()
+        },
+        update = { webView ->
                 if (webView.tag != videoId) {
                     webView.tag = videoId
                     webView.loadDataWithBaseURL("https://www.youtube.com/", htmlData, "text/html", "utf-8", null)

@@ -172,7 +172,11 @@ fun BackgroundWebView(
                     }
                 }
             },
-            update = { webView ->
+            onRelease = { webView ->
+            webView.stopLoading()
+            webView.destroy()
+        },
+        update = { webView ->
                 if (webView.url != currentUrl) {
                     onProgress(currentUrl)
                     val extraHeaders = mutableMapOf<String, String>()

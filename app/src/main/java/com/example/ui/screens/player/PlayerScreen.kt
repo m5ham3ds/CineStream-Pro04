@@ -293,6 +293,16 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                             loadUrl(videoUrl)
                         }
                     },
+                    update = { webView ->
+                        val lastUrl = webView.getTag(com.example.R.id.tag_url) as? String
+                        if (lastUrl != videoUrl) {
+                            webView.setTag(com.example.R.id.tag_url, videoUrl)
+                            webView.loadUrl(videoUrl)
+                        }
+                    },
+                    onRelease = { webView ->
+                        webView.destroy()
+                    },
                     modifier = Modifier.fillMaxSize()
                 )
             }

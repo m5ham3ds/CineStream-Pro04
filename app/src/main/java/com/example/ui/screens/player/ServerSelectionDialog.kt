@@ -485,7 +485,7 @@ Dialog(
                                             }
                                             loadUrl(targetUrl)
                                         }
-                                    }
+                                    }, onRelease = { it.stopLoading(); it.destroy() }
                                 )
                             }
                 }

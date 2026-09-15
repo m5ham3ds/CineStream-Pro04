@@ -292,6 +292,10 @@ fun HiddenVideoExtractor(
                 }
             }
         },
+        onRelease = { webView ->
+            webView.stopLoading()
+            webView.destroy()
+        },
         update = { webView ->
             // Use getTag to store the original loaded url to avoid reloading when webView.url changes due to internal navigation
             val lastUrl = webView.getTag(com.example.R.id.tag_url) as? String
