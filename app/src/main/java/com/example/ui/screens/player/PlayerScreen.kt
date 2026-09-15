@@ -413,7 +413,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                         
                         // Center section
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1.2f)) {
-                            Text(if(uiState.isMovie) "Movie" else "Series", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(if(uiState.isMovie) "Movie" else "Series", color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(uiState.title, color = Color.LightGray, fontSize = 14.sp)
                         }
@@ -569,9 +569,10 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
             onDismissRequest = { showQualitySheet = false },
             containerColor = MaterialTheme.colorScheme.surface
         ) {
-            LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 item {
-                    Text(stringResource(R.string.select_quality), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(modifier = Modifier.padding(horizontal = 16.dp),
+                        text = stringResource(R.string.select_quality), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 items(uiState.availableQualities) { q ->
@@ -580,7 +581,8 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                             viewModel.selectQuality(q)
                             showQualitySheet = false
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Text(q, color = if (q == uiState.currentQuality) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)
                     }
@@ -595,9 +597,10 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
             onDismissRequest = { showEpisodesSheet = false },
             containerColor = MaterialTheme.colorScheme.surface
         ) {
-            LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 item {
-                    Text(stringResource(R.string.episodes), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(modifier = Modifier.padding(horizontal = 16.dp),
+                        text = stringResource(R.string.episodes), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 
@@ -607,7 +610,8 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                             viewModel.selectEpisode(ep)
                             showEpisodesSheet = false 
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Text(
                             "Episode ${ep.episodeNumber}: ${ep.title}", 
@@ -637,9 +641,10 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
             onDismissRequest = { showServerSheet = false },
             containerColor = MaterialTheme.colorScheme.surface
         ) {
-            LazyColumn(modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 item {
-                    Text(stringResource(R.string.select_server), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(modifier = Modifier.padding(horizontal = 16.dp),
+                        text = stringResource(R.string.select_server), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
                 items(uiState.availableServers) { s ->
@@ -649,7 +654,8 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                             showServerSheet = false
                             android.widget.Toast.makeText(context, "Switched to $s", android.widget.Toast.LENGTH_SHORT).show()
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Text(s, color = if (s == uiState.currentServer) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)
                     }
@@ -664,22 +670,25 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
             onDismissRequest = { showWebsiteSheet = false },
             containerColor = MaterialTheme.colorScheme.surface
         ) {
-            Column(modifier = Modifier.padding(16.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
-                Text(stringResource(R.string.select_source), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
-                uiState.availableWebsites.forEach { w ->
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                item {
+                    Text(stringResource(R.string.select_source), modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                items(uiState.availableWebsites) { w ->
                     TextButton(
                         onClick = { 
                             viewModel.selectWebsite(w)
                             showWebsiteSheet = false
                             android.widget.Toast.makeText(context, "Switched source to $w", android.widget.Toast.LENGTH_SHORT).show()
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        contentPadding = PaddingValues(vertical = 16.dp)
                     ) {
                         Text(w, color = if (w == uiState.currentWebsite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground)
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         }
     }
@@ -695,7 +704,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                 
                 videoUrl?.let { url ->
                     val fileId = "${uiState.mediaId}_${System.currentTimeMillis()}"
-                    com.example.utils.AndroidDownloader.downloadVideo(context, url, "${uiState.title} - $quality", fileId)
+                    // com.example.utils.AndroidDownloader.downloadVideo(context, url, "${uiState.title} - $quality", fileId)
                     scope.launch {
                         downloadRepository.addToDownloads(
                             com.example.data.model.DownloadItem(
@@ -704,7 +713,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                                 title = uiState.title,
                                 posterUrl = posterUrl,
                                 isMovie = uiState.isMovie,
-                                quality = quality,
+                                quality = "$quality||$url",
                                 progress = 0.05f,
                                 isCompleted = false
                             )
@@ -736,7 +745,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(stringResource(R.string.current_site, uiState.currentWebsite), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
                     } else {
-                        Text(stringResource(R.string.ready_to_play), color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ready_to_play), color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         Text(stringResource(R.string.source_label), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)

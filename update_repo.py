@@ -1,58 +1,24 @@
-package com.example.data.repository
+import re
+with open("app/src/main/java/com/example/data/repository/DownloadRepository.kt", "r") as f:
+    content = f.read()
 
-import android.content.Context
-import androidx.room.Room
-import com.example.data.db.AppDatabase
-import com.example.data.model.DownloadItem
-import com.example.utils.NotificationHelper
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-
-class DownloadRepository(private val context: Context) {
-    private val db = AppDatabase.getDatabase(context)
-    private val downloadDao = db.downloadDao()
-    private val scope = CoroutineScope(Dispatchers.IO)
-    private val client = OkHttpClient()
-
-    fun getDownloadItems(): Flow<List<DownloadItem>> {
-        return downloadDao.getAllItems()
-    }
-
-        suspend fun addCompletedDownload(item: DownloadItem) {
-        downloadDao.insertItem(item)
-    }
-
-    suspend fun addToDownloads(item: DownloadItem) {
-        downloadDao.insertItem(item)
-        NotificationHelper.showDownloadStarted(context, item.title)
-        
-        // Start real download
-        startRealDownload(item.id)
-    }
-
-    suspend fun updateDownload(item: DownloadItem) {
-        downloadDao.updateItem(item)
-    }
-
-    suspend fun removeFromDownloads(item: DownloadItem) {
-        downloadDao.deleteItem(item)
-        // Also remove the file
-        val file = File(context.filesDir, "downloads/${item.id}.mp4")
-        if (file.exists()) {
-            file.delete()
-        }
-    }
-
-    private fun startRealDownload(id: String) {
+# Let's replace the whole startRealDownload method
+start_idx = content.find("private fun startRealDownload(id: String) {")
+if start_idx != -1:
+    # Find the end of the method by matching braces
+    brace_count = 0
+    end_idx = -1
+    for i in range(start_idx, len(content)):
+        if content[i] == '{':
+            brace_count += 1
+        elif content[i] == '}':
+            brace_count -= 1
+            if brace_count == 0:
+                end_idx = i + 1
+                break
+    
+    if end_idx != -1:
+        new_method = """private fun startRealDownload(id: String) {
         scope.launch {
             while (true) {
                 var currentItem = downloadDao.getItemById(id) ?: return@launch
@@ -152,5 +118,13 @@ class DownloadRepository(private val context: Context) {
                 kotlinx.coroutines.delay(2000)
             }
         }
-    }
-}
+    }"""
+        
+        content = content[:start_idx] + new_method + content[end_idx:]
+        with open("app/src/main/java/com/example/data/repository/DownloadRepository.kt", "w") as f:
+            f.write(content)
+        print("Replaced startRealDownload")
+    else:
+        print("End of method not found")
+else:
+    print("Method not found")

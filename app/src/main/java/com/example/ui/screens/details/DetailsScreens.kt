@@ -248,27 +248,27 @@ fun MovieDetailsScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(if (downloadItem?.isCompleted == true) "Resume Offline" else "Resume", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
-                    IconButton(
+                                        IconButton(
                         onClick = { 
                             if (downloadItem?.isCompleted == true) {
                                 showDeleteConfirm = true
-                            } else if (downloadItem == null) {
+                            } else if (downloadItem != null) {
+                                scope.launch { downloadRepository.updateDownload(downloadItem.copy(isPaused = !downloadItem.isPaused)) }
+                            } else {
                                 isDownloadMode = true
-                                
-                                        if (ExtensionManager.installedExtensions.value.isEmpty()) {
-                                            showNoExtensionsDialog = true
-                                        } else {
-                                            showSourceSheet = true
-                                        }
-
+                                if (ExtensionManager.installedExtensions.value.isEmpty()) {
+                                    showNoExtensionsDialog = true
+                                } else {
+                                    showSourceSheet = true
+                                }
                             }
                         },
                         modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
                         if (downloadItem?.isCompleted == true) {
-                            Icon(Icons.Default.DownloadDone, contentDescription = "Downloaded", tint = Color.Green)
+                            Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = MaterialTheme.colorScheme.primary)
                         } else if (downloadItem != null) {
-                            CircularProgressIndicator(progress = { downloadItem.progress }, color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                            AnimatedDownloadIcon(isPaused = downloadItem.isPaused)
                         } else {
                             Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
                         }
@@ -349,9 +349,9 @@ fun MovieDetailsScreen(
                         if (isDownloadMode) {
                             scope.launch {
                                 downloadRepository.addToDownloads(com.example.data.model.DownloadItem(
-                                    id = movie.id, mediaId = movie.id, title = movie.originalTitle ?: movie.title, posterUrl = movie.posterUrl, isMovie = true, quality = serverName
+                                    id = movie.id, mediaId = movie.id, title = movie.originalTitle ?: movie.title, posterUrl = movie.posterUrl, isMovie = true, quality = "$serverName||$url"
                                 ))
-                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.title} - $serverName", movie.id)
+                                // com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.title} - $serverName", movie.id)
                             }
                         } else {
                             scope.launch {
@@ -721,9 +721,9 @@ fun SeriesDetailsScreen(
                                 val fullTitle = "${series.title} - S${uiState.selectedSeason?.seasonNumber}E${ep.episodeNumber}"
                                 val epIdStr = "${series.id}_${ep.id}"
                                 downloadRepository.addToDownloads(com.example.data.model.DownloadItem(
-                                    id = epIdStr, mediaId = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false, quality = serverName
+                                    id = epIdStr, mediaId = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false, quality = "$serverName||$url"
                                 ))
-                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName", epIdStr)
+                                // com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName", epIdStr)
                             }
                         } else {
                             scope.launch {
