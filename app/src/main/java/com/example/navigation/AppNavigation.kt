@@ -1002,7 +1002,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                         onBack = { navController.popBackStack() },
                         onPersonClick = { personId -> navController.navigate("person/$personId") },
                         onNavigateToExtensions = { navController.navigate(Screen.Extensions.route) },
-                        onPlay = { title, url, server, website -> 
+                        onPlay = { title, url, server, website, posterUrl -> 
                             if (url.startsWith("trailer:")) {
                                 val trailerId = url.removePrefix("trailer:")
                                 navController.navigate("trailer/$trailerId")
@@ -1011,7 +1011,8 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                                 val encodedTitle = URLEncoder.encode(title, "UTF-8")
                                 val encodedServer = URLEncoder.encode(server ?: "", "UTF-8")
                                 val encodedWebsite = URLEncoder.encode(website ?: "", "UTF-8")
-                                navController.navigate("player?mediaId=$movieId&isMovie=true&title=$encodedTitle&url=$encodedUrl&server=$encodedServer&website=$encodedWebsite")
+                                val encodedPoster = java.net.URLEncoder.encode(posterUrl, "UTF-8")
+                                navController.navigate("player?mediaId=$movieId&isMovie=true&title=$encodedTitle&url=$encodedUrl&server=$encodedServer&website=$encodedWebsite&poster=$encodedPoster")
                             }
                         }
                     )
@@ -1023,7 +1024,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                         onBack = { navController.popBackStack() },
                         onPersonClick = { personId -> navController.navigate("person/$personId") },
                         onNavigateToExtensions = { navController.navigate(Screen.Extensions.route) },
-                        onPlay = { title, url, server, website -> 
+                        onPlay = { title, url, server, website, posterUrl -> 
                             if (url.startsWith("trailer:")) {
                                 val trailerId = url.removePrefix("trailer:")
                                 navController.navigate("trailer/$trailerId")
@@ -1032,14 +1033,15 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                                 val encodedTitle = URLEncoder.encode(title, "UTF-8")
                                 val encodedServer = URLEncoder.encode(server ?: "", "UTF-8")
                                 val encodedWebsite = URLEncoder.encode(website ?: "", "UTF-8")
-                                navController.navigate("player?mediaId=$seriesId&isMovie=false&title=$encodedTitle&url=$encodedUrl&server=$encodedServer&website=$encodedWebsite")
+                                val encodedPoster = java.net.URLEncoder.encode(posterUrl, "UTF-8")
+                                navController.navigate("player?mediaId=$seriesId&isMovie=false&title=$encodedTitle&url=$encodedUrl&server=$encodedServer&website=$encodedWebsite&poster=$encodedPoster")
                             }
                         }
                     )
                 }
                 
 
-                composable("player?mediaId={mediaId}&isMovie={isMovie}&title={title}&url={url}&server={server}&website={website}") { backStackEntry ->
+                composable("player?mediaId={mediaId}&isMovie={isMovie}&title={title}&url={url}&server={server}&website={website}&poster={poster}") { backStackEntry ->
                     val mediaId = backStackEntry.arguments?.getString("mediaId") ?: ""
                     val isMovieStr = backStackEntry.arguments?.getString("isMovie") ?: "true"
                     val isMovie = isMovieStr.toBoolean()
@@ -1047,16 +1049,19 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                     val url = backStackEntry.arguments?.getString("url") ?: ""
                     val server = backStackEntry.arguments?.getString("server") ?: ""
                     val website = backStackEntry.arguments?.getString("website") ?: ""
+                    val poster = backStackEntry.arguments?.getString("poster") ?: ""
                     
                     val decodedTitle = URLDecoder.decode(title, "UTF-8")
                     val decodedUrl = if (url.isNotEmpty()) URLDecoder.decode(url, "UTF-8") else ""
                     val decodedServer = if (server.isNotEmpty()) URLDecoder.decode(server, "UTF-8") else ""
                     val decodedWebsite = if (website.isNotEmpty()) URLDecoder.decode(website, "UTF-8") else ""
+                    val decodedPoster = if (poster.isNotEmpty()) URLDecoder.decode(poster, "UTF-8") else ""
                     
                     com.example.ui.screens.player.PlayerScreen(
                         mediaId = mediaId,
                         isMovie = isMovie,
                         title = decodedTitle,
+                        posterUrl = decodedPoster,
                         url = decodedUrl,
                         targetServer = decodedServer,
                         website = decodedWebsite,

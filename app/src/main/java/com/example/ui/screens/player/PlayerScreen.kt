@@ -84,7 +84,7 @@ import com.example.ui.components.DownloadQualitySheet
 @OptIn(androidx.media3.common.util.UnstableApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 @Suppress("OPT_IN_USAGE")
-fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? = null, targetServer: String? = null, website: String? = null, onBack: () -> Unit, viewModel: PlayerViewModel = viewModel()) {
+fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: String = "", url: String? = null, targetServer: String? = null, website: String? = null, onBack: () -> Unit, viewModel: PlayerViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     
     LaunchedEffect(mediaId) {
@@ -692,7 +692,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                                 id = fileId,
                                 mediaId = uiState.mediaId,
                                 title = uiState.title,
-                                posterUrl = "",
+                                posterUrl = posterUrl,
                                 isMovie = uiState.isMovie,
                                 quality = quality,
                                 progress = 0.05f,

@@ -9,7 +9,7 @@ import com.example.data.model.DownloadItem
 import com.example.data.model.HistoryItem
 import com.example.data.model.WatchedEpisode
 
-@Database(entities = [LibraryItem::class, DownloadItem::class, HistoryItem::class, WatchedEpisode::class], version = 3, exportSchema = false)
+@Database(entities = [LibraryItem::class, DownloadItem::class, HistoryItem::class, WatchedEpisode::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun libraryDao(): LibraryDao
     abstract fun downloadDao(): DownloadDao

@@ -66,7 +66,7 @@ fun MovieDetailsScreen(
     onPersonClick: (String) -> Unit = {},
     movieId: String, 
     onBack: () -> Unit,
-    onPlay: (String, String, String?, String?) -> Unit,
+    onPlay: (String, String, String?, String?, String) -> Unit,
     onNavigateToExtensions: () -> Unit = {},
     viewModel: MovieDetailsViewModel = viewModel(factory = ViewModelFactory())
 ) {
@@ -217,7 +217,7 @@ fun MovieDetailsScreen(
                     Button(
                         onClick = { 
                             if (downloadItem?.isCompleted == true) {
-                                onPlay(movie.title, "local_offline_file://${downloadItem.id}", null, null)
+                                onPlay(movie.title, "local_offline_file://${downloadItem.id}", null, null, movie.posterUrl)
                             } else {
                                 val isReleased = (movie.releaseDate ?: "") <= java.time.LocalDate.now().toString()
                                 if (!isReleased) {
@@ -354,7 +354,7 @@ fun MovieDetailsScreen(
                                         isMovie = true
                                     )
                                 )
-                                onPlay(movie.title, url, serverName, website)
+                                onPlay(movie.title, url, serverName, website, movie.posterUrl)
                             }
                         }
                     }
@@ -380,7 +380,7 @@ fun SeriesDetailsScreen(
     onPersonClick: (String) -> Unit = {},
     seriesId: String,
     onBack: () -> Unit,
-    onPlay: (String, String, String?, String?) -> Unit,
+    onPlay: (String, String, String?, String?, String) -> Unit,
     onNavigateToExtensions: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -645,7 +645,7 @@ fun SeriesDetailsScreen(
                                                 id = series.id.toString(), title = fullTitle, posterUrl = episode.thumbnailUrl, isMovie = false
                                             )
                                         )
-                                        onPlay(fullTitle, "local_offline_file://${series.id}_${episode.id}", null, null)
+                                        onPlay(fullTitle, "local_offline_file://${series.id}_${episode.id}", null, null, episode.thumbnailUrl)
                                     }
                                 } else {
                                     selectedEpisodeForSource = episode
@@ -714,7 +714,7 @@ fun SeriesDetailsScreen(
                                         id = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false
                                     )
                                 )
-                                onPlay(fullTitle, url, serverName, website)
+                                onPlay(fullTitle, url, serverName, website, ep.thumbnailUrl)
                             }
                         }
                     }
