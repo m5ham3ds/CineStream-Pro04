@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "download_items")
 data class DownloadItem(
     @PrimaryKey val id: String,
+    val mediaId: String,
     val title: String,
     val posterUrl: String,
     val isMovie: Boolean,

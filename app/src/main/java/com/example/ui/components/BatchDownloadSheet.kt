@@ -63,7 +63,8 @@ fun BatchDownloadSheet(
                                                 val preferredSource = sources.find { it.quality == targetQuality } ?: sources.first()
                                                 downloadRepository.addToDownloads(
                                                     DownloadItem(
-                                                        id = ep.id,
+                                                        id = "${series.id}_${ep.id}",
+                                                        mediaId = series.id.toString(),
                                                         title = "${series.title} - S${currentSeason?.seasonNumber}E${ep.episodeNumber}",
                                                         posterUrl = ep.thumbnailUrl,
                                                         isMovie = false,

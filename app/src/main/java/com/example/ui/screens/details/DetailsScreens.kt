@@ -340,9 +340,9 @@ fun MovieDetailsScreen(
                         if (isDownloadMode) {
                             scope.launch {
                                 downloadRepository.addToDownloads(com.example.data.model.DownloadItem(
-                                    id = movie.id, title = movie.originalTitle ?: movie.title, posterUrl = movie.posterUrl, isMovie = true, quality = serverName
+                                    id = movie.id, mediaId = movie.id, title = movie.originalTitle ?: movie.title, posterUrl = movie.posterUrl, isMovie = true, quality = serverName
                                 ))
-                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.title} - $serverName")
+                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.title} - $serverName", movie.id)
                             }
                         } else {
                             scope.launch {
@@ -390,6 +390,8 @@ fun SeriesDetailsScreen(
     val libraryRepository = remember { LibraryRepository(context) }
     val isFavorite by libraryRepository.isItemInLibrary(seriesId).collectAsState(initial = false)
     val downloadRepository = remember { DownloadRepository(context) }
+    val downloads by downloadRepository.getDownloadItems().collectAsState(initial = emptyList())
+    val downloadedEpisodeIds = downloads.map { it.id }.toSet()
     val historyRepository = remember { com.example.data.repository.HistoryRepository(context) }
     val watchedRepo = remember { com.example.data.repository.WatchedEpisodeRepository(context) }
     val watchedEpisodes by watchedRepo.getAllWatched().collectAsState(initial = emptyList())
@@ -629,12 +631,26 @@ fun SeriesDetailsScreen(
                 } else {
                     items(uiState.episodes.take(uiState.visibleEpisodesCount)) { episode ->
                         val isWatched = watchedEpisodeIds.contains(episode.id)
+                        val isDownloaded = downloadedEpisodeIds.contains("${series.id}_${episode.id}")
                         EpisodeCard(
                             episode = episode,
                             isWatched = isWatched,
+                            isDownloaded = isDownloaded,
                             onClick = {
-                                selectedEpisodeForSource = episode
-                                isDownloadMode = false
+                                if (isDownloaded) {
+                                    scope.launch {
+                                        val fullTitle = "${series.title} - S${uiState.selectedSeason?.seasonNumber}E${episode.episodeNumber}"
+                                        historyRepository.addToHistory(
+                                            com.example.data.model.HistoryItem(
+                                                id = series.id.toString(), title = fullTitle, posterUrl = episode.thumbnailUrl, isMovie = false
+                                            )
+                                        )
+                                        onPlay(fullTitle, "local_offline_file://${series.id}_${episode.id}", null, null)
+                                    }
+                                } else {
+                                    selectedEpisodeForSource = episode
+                                    isDownloadMode = false
+                                }
                             },
                             onLongClick = {
                                 scope.launch {
@@ -684,10 +700,11 @@ fun SeriesDetailsScreen(
                         if (isDownloadMode) {
                             scope.launch {
                                 val fullTitle = "${series.title} - S${uiState.selectedSeason?.seasonNumber}E${ep.episodeNumber}"
+                                val epIdStr = "${series.id}_${ep.id}"
                                 downloadRepository.addToDownloads(com.example.data.model.DownloadItem(
-                                    id = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false, quality = serverName
+                                    id = epIdStr, mediaId = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false, quality = serverName
                                 ))
-                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName")
+                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName", epIdStr)
                             }
                         } else {
                             scope.launch {
@@ -774,6 +791,7 @@ fun CastMemberCard(cast: CastMember, onClick: () -> Unit) {
 fun EpisodeCard(
     episode: Episode,
     isWatched: Boolean,
+    isDownloaded: Boolean = false,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onDownloadClick: () -> Unit
@@ -821,7 +839,11 @@ fun EpisodeCard(
             Text(episode.overview, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         IconButton(onClick = onDownloadClick) {
-            Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
+            if (isDownloaded) {
+                Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = Color.Green)
+            } else {
+                Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
+            }
         }
     }
 }

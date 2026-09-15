@@ -1,6 +1,19 @@
 import re
-with open("app/src/main/java/com/example/utils/AndroidDownloader.kt", "r") as f:
+with open("app/src/main/java/com/example/data/model/DownloadItem.kt", "r") as f:
     content = f.read()
+
+old_fields = """    @PrimaryKey val id: String,
+    val title: String,"""
+new_fields = """    @PrimaryKey val id: String,
+    val mediaId: String,
+    val title: String,"""
+content = content.replace(old_fields, new_fields)
+
+with open("app/src/main/java/com/example/data/model/DownloadItem.kt", "w") as f:
+    f.write(content)
+
+with open("app/src/main/java/com/example/utils/AndroidDownloader.kt", "r") as f:
+    content2 = f.read()
 
 old_downloader = """    fun downloadVideo(context: Context, url: String, title: String) {
         try {
@@ -14,8 +27,10 @@ old_downloader = """    fun downloadVideo(context: Context, url: String, title: 
             if (url.contains(".m3u8")) {
                 Toast.makeText(context, "Downloading stream playlist (M3U8). Offline playback requires MP4.", Toast.LENGTH_LONG).show()
             }
+            
             val extension = if (url.contains(".mp4")) ".mp4" else if (url.contains(".m3u8")) ".m3u8" else ".mp4"
             val fileName = "${safeTitle}_${System.currentTimeMillis()}$extension"
+            
             val request = DownloadManager.Request(Uri.parse(url))"""
 
 new_downloader = """    fun downloadVideo(context: Context, url: String, title: String, id: String) {
@@ -32,19 +47,15 @@ new_downloader = """    fun downloadVideo(context: Context, url: String, title: 
             
             val request = DownloadManager.Request(Uri.parse(url))"""
 
-# Replace manually to avoid regex issues
-lines = content.split('\\n')
-new_lines = []
-skip = False
-for line in lines:
-    if "fun downloadVideo(context: Context, url: String, title: String) {" in line:
-        skip = True
-        new_lines.append(new_downloader)
-    elif skip and "val request = DownloadManager.Request(Uri.parse(url))" in line:
-        skip = False
-        continue
-    elif not skip:
-        new_lines.append(line)
+content2 = content2.replace(old_downloader, new_downloader)
 
 with open("app/src/main/java/com/example/utils/AndroidDownloader.kt", "w") as f:
-    f.write('\\n'.join(new_lines))
+    f.write(content2)
+
+with open("app/src/main/java/com/example/ui/screens/downloads/DownloadsScreen.kt", "r") as f:
+    content3 = f.read()
+
+content3 = content3.replace("onClick = { onItemClick(item.id, item.isMovie) }", "onClick = { onItemClick(item.mediaId, item.isMovie) }")
+
+with open("app/src/main/java/com/example/ui/screens/downloads/DownloadsScreen.kt", "w") as f:
+    f.write(content3)

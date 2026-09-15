@@ -219,7 +219,7 @@ fun DownloadsScreen(
             items(filteredDownloads) { item ->
                 DownloadItemRow(
                     item = item,
-                    onClick = { onItemClick(item.id, item.isMovie) },
+                    onClick = { onItemClick(item.mediaId, item.isMovie) },
                     onPauseResume = {
                         scope.launch {
                             downloadRepository.updateDownload(item.copy(isPaused = !item.isPaused))

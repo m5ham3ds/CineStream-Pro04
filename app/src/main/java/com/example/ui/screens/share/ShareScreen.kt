@@ -75,7 +75,7 @@ fun ShareScreen(
             scope.launch {
                 downloadRepository.addCompletedDownload(
                     DownloadItem(
-                        id = id,
+                        id = id, mediaId = id,
                         title = title,
                         posterUrl = posterUrl,
                         isMovie = isMovie,

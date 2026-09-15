@@ -411,6 +411,7 @@ if (showBottomSheet) {
                     scope.launch {
                         downloadRepository.addToDownloads(DownloadItem(
                             id = selectedMediaId,
+                            mediaId = selectedMediaId,
                             title = selectedMediaTitle,
                             posterUrl = selectedMediaPoster,
                             isMovie = bottomSheetIsMovie,

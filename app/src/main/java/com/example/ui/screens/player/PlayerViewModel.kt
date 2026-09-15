@@ -106,8 +106,14 @@ class PlayerViewModel : ViewModel() {
         )
 
         if (!directUrl.isNullOrEmpty() && (directUrl.contains(".mp4") || directUrl.contains(".m3u8") || directUrl.startsWith("local_offline_file"))) {
+            var finalDirectUrl = directUrl
+            if (directUrl.startsWith("local_offline_file://")) {
+                val fileId = directUrl.removePrefix("local_offline_file://")
+                val file = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_MOVIES), "CineStream/${fileId}.mp4")
+                finalDirectUrl = android.net.Uri.fromFile(file).toString()
+            }
             _uiState.value = _uiState.value.copy(
-                currentVideoUrl = directUrl, 
+                currentVideoUrl = finalDirectUrl, 
                 isLoading = false
             )
         } else if (!directUrl.isNullOrEmpty()) {

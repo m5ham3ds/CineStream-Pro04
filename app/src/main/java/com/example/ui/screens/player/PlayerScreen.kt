@@ -258,7 +258,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
     ) {
         if (uiState.currentVideoUrl != null) {
             val videoUrl = uiState.currentVideoUrl!!
-            val isDirectVideo = videoUrl.contains(".mp4") || videoUrl.contains(".m3u8") || videoUrl.contains(".mkv")
+            val isDirectVideo = videoUrl.contains(".mp4") || videoUrl.contains(".m3u8") || videoUrl.contains(".mkv") || videoUrl.startsWith("file://")
             
             if (isDirectVideo && uiState.currentVideoUrl?.contains("embed") != true && uiState.currentVideoUrl?.contains("iframe") != true) {
                 AndroidView(
@@ -684,11 +684,13 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, url: String? 
                 val videoUrl = selectedQualityInfo?.url ?: uiState.currentVideoUrl
                 
                 videoUrl?.let { url ->
-                    com.example.utils.AndroidDownloader.downloadVideo(context, url, "${uiState.title} - $quality")
+                    val fileId = "${uiState.mediaId}_${System.currentTimeMillis()}"
+                    com.example.utils.AndroidDownloader.downloadVideo(context, url, "${uiState.title} - $quality", fileId)
                     scope.launch {
                         downloadRepository.addToDownloads(
                             com.example.data.model.DownloadItem(
-                                id = "${uiState.title}_${System.currentTimeMillis()}",
+                                id = fileId,
+                                mediaId = uiState.mediaId,
                                 title = uiState.title,
                                 posterUrl = "",
                                 isMovie = uiState.isMovie,
