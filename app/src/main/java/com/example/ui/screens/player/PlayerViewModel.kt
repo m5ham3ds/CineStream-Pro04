@@ -351,7 +351,15 @@ fun setFinalVideoUrl(url: String) {
             )
             
             if (watchUrl != null) {
-                _uiState.value = _uiState.value.copy(extractionUrl = watchUrl, isLoading = true)
+                var finalUrl = watchUrl
+                val currentServer = _uiState.value.currentServer
+                if (currentServer.isNotEmpty()) {
+                    val link = _uiState.value.availableServerLinks[currentServer]
+                    if (link != null && link.isNotEmpty()) {
+                        finalUrl = link
+                    }
+                }
+                _uiState.value = _uiState.value.copy(extractionUrl = finalUrl, isLoading = true)
                 startExtractionTimeout()
             } else {
                 tryNextFallback()
