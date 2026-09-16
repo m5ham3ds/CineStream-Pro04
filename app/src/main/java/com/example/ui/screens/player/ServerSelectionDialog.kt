@@ -743,26 +743,37 @@ Dialog(
                                 )
                             }
                             if (showNoMoreExtensionsDialog) {
-                                AlertDialog(
+                                androidx.compose.material3.AlertDialog(
                                     onDismissRequest = { showNoMoreExtensionsDialog = false },
                                     title = { Text("لا يوجد مواقع أخرى", color = MaterialTheme.colorScheme.onBackground) },
                                     text = { Text("عذراً، فشل البحث في جميع المواقع المتاحة.", color = Color.LightGray) },
                                     containerColor = Color(0xFF222225),
                                     confirmButton = {
-                                        TextButton(
+                                        androidx.compose.material3.TextButton(
+                                            onClick = {
+                                                showNoMoreExtensionsDialog = false
+                                                onDismiss()
+                                                onNavigateToExtensions()
+                                            }
+                                        ) {
+                                            Text("الإضافات", color = MaterialTheme.colorScheme.primary)
+                                        }
+                                    },
+                                    dismissButton = {
+                                        androidx.compose.material3.TextButton(
                                             onClick = {
                                                 showNoMoreExtensionsDialog = false
                                                 onDismiss()
                                             }
                                         ) {
-                                            Text("إغلاق", color = MaterialTheme.colorScheme.primary)
+                                            Text("إغلاق", color = Color.LightGray)
                                         }
                                     }
                                 )
                             }
                         } else if (selectedServerForQuality == null) {
                             LazyColumn(
-                                modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
+                                modifier = Modifier.fillMaxWidth().heightIn(max = 350.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(extractedServers) { server ->
@@ -821,18 +832,16 @@ Dialog(
                                         Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
                                     }
                                 }
-                                item {
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = "تجربة موقع آخر",
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.fillMaxWidth().clickable { showSkipSiteConfirmDialog = true }.padding(8.dp)
-                                    )
-                                }
                             }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "تجربة موقع آخر",
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth().clickable { showSkipSiteConfirmDialog = true }.padding(8.dp)
+                            )
                         } else {
                             if (isExtractingQuality) {
                                 Box(modifier = Modifier.fillMaxWidth().height(150.dp), contentAlignment = Alignment.Center) {
@@ -840,7 +849,7 @@ Dialog(
                                 }
                             } else {
                                 LazyColumn(
-                                    modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp),
+                                    modifier = Modifier.fillMaxWidth().heightIn(max = 350.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     items(extractedQualities) { quality ->
@@ -883,23 +892,21 @@ Dialog(
                                             }
                                         }
                                     }
-                                    item {
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                        Text(
-                                            text = "تبديل السيرفر",
-                                            color = MaterialTheme.colorScheme.primary,
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier.fillMaxWidth().clickable {
-                                                isExtractingQuality = false
-                                                extractedQualities = emptyList()
-                                                com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList()
-                                                selectedServerForQuality = null
-                                            }.padding(8.dp)
-                                        )
-                                    }
                                 }
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "تبديل السيرفر",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth().clickable {
+                                        isExtractingQuality = false
+                                        extractedQualities = emptyList()
+                                        com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList()
+                                        selectedServerForQuality = null
+                                    }.padding(8.dp)
+                                )
                             }
                         }
                     }
@@ -908,6 +915,31 @@ Dialog(
         }
     }
 }
+        
+
+        if (showCancelConfirmDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showCancelConfirmDialog = false },
+                title = { Text("إلغاء العملية", color = MaterialTheme.colorScheme.onBackground) },
+                text = { Text("هل أنت متأكد أنك تود إلغاء العملية؟", color = Color.LightGray) },
+                containerColor = Color(0xFF222225),
+                confirmButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            showCancelConfirmDialog = false
+                            onDismiss()
+                        }
+                    ) {
+                        Text("نعم", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { showCancelConfirmDialog = false }) {
+                        Text("لا", color = MaterialTheme.colorScheme.onBackground)
+                    }
+                }
+            )
+        }
         
 extractingEmbedUrl?.let { url ->
             Box(modifier = Modifier.size(1.dp).alpha(0f)) {
