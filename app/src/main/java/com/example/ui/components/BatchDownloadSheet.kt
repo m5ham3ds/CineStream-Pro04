@@ -34,6 +34,7 @@ fun BatchDownloadSheet(
     var selectedEpisodes by remember { mutableStateOf(setOf<String>()) }
     var showQualitySelector by remember { mutableStateOf(false) }
     var targetQuality by remember { mutableStateOf("") }
+    var isProcessing by remember { mutableStateOf(false) }
     
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -52,30 +53,8 @@ fun BatchDownloadSheet(
                                 .clickable {
                                     targetQuality = quality
                                     showQualitySelector = false
-                                    Toast.makeText(context, "Batch download started in background...", Toast.LENGTH_SHORT).show()
-                                    
-                                    // Start batch download process
-                                    scope.launch {
-                                        val episodesToDownload = episodes.filter { selectedEpisodes.contains(it.id) }
-                                        for (ep in episodesToDownload) {
-                                            val sources = ProviderManager.extractVideoLinks(series.id, false, ep.id)
-                                            if (sources.isNotEmpty()) {
-                                                val preferredSource = sources.find { it.quality == targetQuality } ?: sources.first()
-                                                downloadRepository.addToDownloads(
-                                                    DownloadItem(
-                                                        id = "${series.id}_${ep.id}",
-                                                        mediaId = series.id.toString(),
-                                                        title = "${series.title} - S${currentSeason?.seasonNumber}E${ep.episodeNumber}",
-                                                        posterUrl = ep.thumbnailUrl,
-                                                        isMovie = false,
-                                                        quality = preferredSource.quality
-                                                    )
-                                                )
-                                            }
-                                        }
-                                        Toast.makeText(context, "Batch download process finished", Toast.LENGTH_SHORT).show()
-                                    }
-                                    onDismiss()
+                                    isProcessing = true
+                                    showQualitySelector = false
                                 }
                                 .padding(16.dp)
                         ) {
@@ -85,6 +64,25 @@ fun BatchDownloadSheet(
                 }
             },
             confirmButton = {}
+        )
+        return
+    }
+
+    if (isProcessing) {
+        val episodesToDownload = episodes.filter { selectedEpisodes.contains(it.id) }
+        BatchDownloadProcessor(
+            series = series,
+            seasonNumber = currentSeason?.seasonNumber ?: 1,
+            episodes = episodesToDownload,
+            targetQuality = targetQuality,
+            onComplete = {
+                isProcessing = false
+                Toast.makeText(context, "تمت إضافة الحلقات لقائمة التنزيلات", Toast.LENGTH_SHORT).show()
+                onDismiss()
+            },
+            onCancel = {
+                isProcessing = false
+            }
         )
         return
     }
