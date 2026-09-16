@@ -2,29 +2,41 @@ import re
 with open("app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt", "r") as f:
     content = f.read()
 
-# Update signature
-content = content.replace("isAnime: Boolean = false,\n    onDismiss: () -> Unit,", "isAnime: Boolean = false,\n    isDownloadMode: Boolean = false,\n    onDismiss: () -> Unit,")
+old_launched_effect = """    LaunchedEffect(currentSiteIndex) {
+        if (currentSiteIndex >= safeSites.size) {
+            isLoading = false
+            isFailed = true
+            return@LaunchedEffect
+        }
+        
+        currentExtension = safeSites[currentSiteIndex]
+        bypassStatus = "CHECKING_CLOUDFLARE"
+        forceBypassComplete = false
+        loadingMessage = "جاري الفحص في موقع $currentSiteName..."
+        extractedServers = emptyList()
+        finalWatchUrl = null"""
 
-# Update click handler for server
-old_click = """                                                com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList() // clear so we fetch fresh
-                                                onPlay(watchUrl, server, currentSiteName)"""
+new_launched_effect = """    LaunchedEffect(currentSiteIndex, retryTrigger) {
+        if (!isLoading && extractedServers.isNotEmpty()) {
+            return@LaunchedEffect
+        }
+        if (currentSiteIndex >= safeSites.size) {
+            isLoading = false
+            isFailed = true
+            return@LaunchedEffect
+        }
+        
+        currentExtension = safeSites[currentSiteIndex]
+        bypassStatus = "CHECKING_CLOUDFLARE"
+        forceBypassComplete = false
+        loadingMessage = "جاري الفحص في موقع $currentSiteName..."
+        extractedServers = emptyList()
+        finalWatchUrl = null"""
 
-new_click = """                                                if (isDownloadMode) {
-                                                    selectedServerForQuality = server
-                                                    isExtractingQuality = true
-                                                    qualityExtractionMessage = "جاري استخراج الجودات لـ $server..."
-                                                    coroutineScope.launch {
-                                                        val q = com.example.utils.M3U8Parser.getQualities(watchUrl)
-                                                        extractedQualities = q
-                                                        com.example.ui.screens.player.ServerStateStore.extractedQualities = q
-                                                        isExtractingQuality = false
-                                                    }
-                                                } else {
-                                                    com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList() // clear so we fetch fresh
-                                                    onPlay(watchUrl, server, currentSiteName)
-                                                }"""
-
-content = content.replace(old_click, new_click)
-
-with open("app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt", "w") as f:
-    f.write(content)
+if old_launched_effect in content:
+    content = content.replace(old_launched_effect, new_launched_effect)
+    with open("app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt", "w") as f:
+        f.write(content)
+    print("Updated LaunchedEffect")
+else:
+    print("Could not find LaunchedEffect")

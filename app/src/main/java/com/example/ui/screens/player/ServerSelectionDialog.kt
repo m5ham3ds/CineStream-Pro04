@@ -132,12 +132,16 @@ fun ServerSelectionDialog(
     // --- Quality Extraction States ---
     var selectedServerForQuality by remember { mutableStateOf<String?>(null) }
     var isExtractingQuality by remember { mutableStateOf(false) }
+    var extractingEmbedUrl by remember { mutableStateOf<String?>(null) }
     var qualityExtractionMessage by remember { mutableStateOf("جاري استخراج الجودات المتاحة...") }
     var extractedQualities by remember { mutableStateOf<List<com.example.utils.M3U8Parser.QualityInfo>>(
         if (ServerStateStore.currentMediaKey == mediaKey) ServerStateStore.extractedQualities else emptyList()
     ) }
 
-    LaunchedEffect(currentSiteIndex) {
+    LaunchedEffect(currentSiteIndex, retryTrigger) {
+        if (!isLoading && extractedServers.isNotEmpty()) {
+            return@LaunchedEffect
+        }
         if (currentSiteIndex >= safeSites.size) {
             isLoading = false
             isFailed = true
@@ -781,11 +785,15 @@ Dialog(
                                                         selectedServerForQuality = server
                                                         isExtractingQuality = true
                                                         qualityExtractionMessage = "جاري استخراج الجودات لـ $server..."
-                                                        coroutineScope.launch {
-                                                            val q = com.example.utils.M3U8Parser.getQualities(watchUrl)
-                                                            extractedQualities = q
-                                                            com.example.ui.screens.player.ServerStateStore.extractedQualities = q
-                                                            isExtractingQuality = false
+                                                        if (watchUrl.contains(".m3u8") || watchUrl.contains("akamaized.net")) {
+                                                            coroutineScope.launch {
+                                                                val q = com.example.utils.M3U8Parser.getQualities(watchUrl)
+                                                                extractedQualities = q
+                                                                com.example.ui.screens.player.ServerStateStore.extractedQualities = q
+                                                                isExtractingQuality = false
+                                                            }
+                                                        } else {
+                                                            extractingEmbedUrl = watchUrl
                                                         }
                                                     }
                                                 } else {

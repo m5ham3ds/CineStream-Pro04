@@ -8,6 +8,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.filled.SignalCellular4Bar
+import androidx.compose.material.icons.outlined.FileDownload
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
@@ -333,64 +342,18 @@ fun SettingsScreen() {
     // Start Screen Selection Sheet
 
     if (showDownloadSettingsDialog) {
-        AlertDialog(
-            onDismissRequest = { showDownloadSettingsDialog = false },
-            title = { Text(stringResource(R.string.download_settings)) },
-            text = {
-                Column {
-                    Text(stringResource(R.string.max_concurrent_downloads) + ": $maxConcurrentDownloads", fontSize = 14.sp)
-                    androidx.compose.material3.Slider(
-                        value = maxConcurrentDownloads.toFloat(),
-                        onValueChange = { coroutineScope.launch { userPrefs.saveMaxConcurrentDownloads(it.toInt()) } },
-                        valueRange = 1f..5f,
-                        steps = 3,
-                        colors = androidx.compose.material3.SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                            activeTrackColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(stringResource(R.string.max_segments_per_download) + ": $maxSegments", fontSize = 14.sp)
-                    androidx.compose.material3.Slider(
-                        value = maxSegments.toFloat(),
-                        onValueChange = { coroutineScope.launch { userPrefs.saveMaxSegments(it.toInt()) } },
-                        valueRange = 1f..32f,
-                        steps = 30,
-                        colors = androidx.compose.material3.SliderDefaults.colors(
-                            thumbColor = MaterialTheme.colorScheme.primary,
-                            activeTrackColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(stringResource(R.string.download_network), fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
-                    
-                    val networkOptions = listOf(R.string.network_all, R.string.network_wifi, R.string.network_cellular)
-                    networkOptions.forEachIndexed { index, titleRes ->
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
-                            coroutineScope.launch { userPrefs.saveDownloadNetwork(index) }
-                        }) {
-                            androidx.compose.material3.RadioButton(
-                                selected = downloadNetwork == index,
-                                onClick = { coroutineScope.launch { userPrefs.saveDownloadNetwork(index) } },
-                                colors = androidx.compose.material3.RadioButtonDefaults.colors(
-                                    selectedColor = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                            Text(stringResource(titleRes), fontSize = 14.sp)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showDownloadSettingsDialog = false }) { 
-                    Text(stringResource(R.string.done), color = MaterialTheme.colorScheme.primary) 
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            titleContentColor = MaterialTheme.colorScheme.onSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        DownloadSettingsDialog(
+            maxConcurrentDownloads = maxConcurrentDownloads,
+            maxSegments = maxSegments,
+            downloadNetwork = downloadNetwork,
+            onMaxConcurrentChanged = { coroutineScope.launch { userPrefs.saveMaxConcurrentDownloads(it) } },
+            onMaxSegmentsChanged = { coroutineScope.launch { userPrefs.saveMaxSegments(it) } },
+            onNetworkChanged = { coroutineScope.launch { userPrefs.saveDownloadNetwork(it) } },
+            onDismiss = { showDownloadSettingsDialog = false }
         )
     }
+
+
 
     if (showStartScreenSheet) {
         ModalBottomSheet(onDismissRequest = { showStartScreenSheet = false }) {
@@ -499,4 +462,244 @@ fun SettingsListItem(
     if (!isLast) {
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
     }
+}
+@Composable
+fun DownloadSettingsDialog(
+    maxConcurrentDownloads: Int,
+    maxSegments: Int,
+    downloadNetwork: Int,
+    onMaxConcurrentChanged: (Int) -> Unit,
+    onMaxSegmentsChanged: (Int) -> Unit,
+    onNetworkChanged: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        val darkBg = Color(0xFF141416)
+        val cardBg = Color(0xFF1C1C1E)
+        val redPrimary = Color(0xFFE50914)
+        val borderColor = redPrimary.copy(alpha = 0.5f)
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .clip(RoundedCornerShape(24.dp))
+                .background(darkBg)
+                .border(2.dp, borderColor, RoundedCornerShape(24.dp))
+                .padding(20.dp)
+        ) {
+            Column {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(darkBg)
+                                .border(1.dp, redPrimary.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Outlined.FileDownload, contentDescription = null, tint = redPrimary, modifier = Modifier.size(24.dp))
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("Download Settings", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF2C2C2E))
+                            .clickable { onDismiss() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Max Concurrent
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(cardBg)
+                        .padding(16.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Layers, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(stringResource(R.string.max_concurrent_downloads), color = Color.LightGray, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                        Text(maxConcurrentDownloads.toString(), color = redPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    androidx.compose.material3.Slider(
+                        value = maxConcurrentDownloads.toFloat(),
+                        onValueChange = { onMaxConcurrentChanged(it.toInt()) },
+                        valueRange = 1f..5f,
+                        steps = 3,
+                        colors = androidx.compose.material3.SliderDefaults.colors(
+                            thumbColor = redPrimary,
+                            activeTrackColor = redPrimary,
+                            inactiveTrackColor = Color(0xFF2C2C2E)
+                        )
+                    )
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        for (i in 1..5) {
+                            Text(i.toString(), color = Color.Gray, fontSize = 12.sp)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Max Segments
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(cardBg)
+                        .padding(16.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Movie, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(stringResource(R.string.max_segments_per_download), color = Color.LightGray, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                        Text(maxSegments.toString(), color = redPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    val segmentOptions = listOf(5, 10, 20, 50)
+                    val closestIndex = segmentOptions.indexOfMinByOrNull { kotlin.math.abs(it - maxSegments) } ?: 0
+                    
+                    androidx.compose.material3.Slider(
+                        value = closestIndex.toFloat(),
+                        onValueChange = { onMaxSegmentsChanged(segmentOptions[it.toInt()]) },
+                        valueRange = 0f..(segmentOptions.size - 1).toFloat(),
+                        steps = segmentOptions.size - 2,
+                        colors = androidx.compose.material3.SliderDefaults.colors(
+                            thumbColor = redPrimary,
+                            activeTrackColor = redPrimary,
+                            inactiveTrackColor = Color(0xFF2C2C2E)
+                        )
+                    )
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        segmentOptions.forEach {
+                            Text(it.toString(), color = Color.Gray, fontSize = 12.sp)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Network
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(cardBg)
+                        .padding(16.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 16.dp)) {
+                        Icon(Icons.Default.Wifi, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text("Download Network", color = Color.LightGray, fontSize = 14.sp)
+                    }
+                    
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NetworkOption(
+                            modifier = Modifier.weight(1f),
+                            title = "All",
+                            subtitle = "WiFi & Cellular",
+                            icon = Icons.Default.RadioButtonChecked,
+                            isSelected = downloadNetwork == 0,
+                            onClick = { onNetworkChanged(0) }
+                        )
+                        NetworkOption(
+                            modifier = Modifier.weight(1f),
+                            title = "Wi-Fi Only",
+                            subtitle = "",
+                            icon = Icons.Default.Wifi,
+                            isSelected = downloadNetwork == 1,
+                            onClick = { onNetworkChanged(1) }
+                        )
+                        NetworkOption(
+                            modifier = Modifier.weight(1f),
+                            title = "Cellular Only",
+                            subtitle = "",
+                            icon = Icons.Default.SignalCellular4Bar,
+                            isSelected = downloadNetwork == 2,
+                            onClick = { onNetworkChanged(2) }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = redPrimary),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(stringResource(R.string.done), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun NetworkOption(modifier: Modifier = Modifier, title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, isSelected: Boolean, onClick: () -> Unit) {
+    val bgColor = if (isSelected) Color(0xFF251013) else Color(0xFF141416)
+    val borderColor = if (isSelected) Color(0xFFE50914) else Color(0xFF2C2C2E)
+    val iconColor = if (isSelected) Color(0xFFE50914) else Color.Gray
+
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(bgColor)
+            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .clickable { onClick() }
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(title, color = if (isSelected) Color.White else Color.LightGray, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        }
+        if (subtitle.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(subtitle, color = Color.Gray, fontSize = 10.sp)
+        }
+    }
+}
+
+inline fun <T, R : Comparable<R>> Iterable<T>.indexOfMinByOrNull(selector: (T) -> R): Int? {
+    val iterator = iterator()
+    if (!iterator.hasNext()) return null
+    var minElem = iterator.next()
+    var minValue = selector(minElem)
+    var minIndex = 0
+    var index = 1
+    while (iterator.hasNext()) {
+        val e = iterator.next()
+        val v = selector(e)
+        if (minValue > v) {
+            minElem = e
+            minValue = v
+            minIndex = index
+        }
+        index++
+    }
+    return minIndex
 }
