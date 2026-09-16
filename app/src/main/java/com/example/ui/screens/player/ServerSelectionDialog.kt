@@ -821,6 +821,17 @@ Dialog(
                                         Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
                                     }
                                 }
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = "تجربة موقع آخر",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth().clickable { showSkipSiteConfirmDialog = true }.padding(8.dp)
+                                    )
+                                }
                             }
                         } else {
                             if (isExtractingQuality) {
@@ -854,7 +865,7 @@ Dialog(
                                             Spacer(modifier = Modifier.width(16.dp))
                                             Text(quality.name, color = Color.White, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                                             Spacer(modifier = Modifier.weight(1f))
-                                            
+                                                
                                             val badgeColor = when {
                                                 quality.name.contains("1080") || quality.name.contains("FHD") -> Color(0xFFE91E63)
                                                 quality.name.contains("720") || quality.name.contains("HD") -> Color(0xFF9C27B0)
@@ -872,26 +883,33 @@ Dialog(
                                             }
                                         }
                                     }
+                                    item {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Text(
+                                            text = "تبديل السيرفر",
+                                            color = MaterialTheme.colorScheme.primary,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.fillMaxWidth().clickable {
+                                                isExtractingQuality = false
+                                                extractedQualities = emptyList()
+                                                com.example.ui.screens.player.ServerStateStore.extractedQualities = emptyList()
+                                                selectedServerForQuality = null
+                                            }.padding(8.dp)
+                                        )
+                                    }
                                 }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "يمكنك التبديل إلى سيرفر آخر لاحقاً",
-                                    color = Color.Gray,
-                                    fontSize = 12.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
                             }
                         }
                     }
                 }
             }
         }
-
+    }
 }
-}
-
-        extractingEmbedUrl?.let { url ->
+        
+extractingEmbedUrl?.let { url ->
             Box(modifier = Modifier.size(1.dp).alpha(0f)) {
                 com.example.ui.screens.player.HiddenVideoExtractor(
                     url = url,

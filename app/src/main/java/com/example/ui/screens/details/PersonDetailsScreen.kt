@@ -33,6 +33,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.ui.components.shimmerEffect
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -91,7 +92,55 @@ fun PersonDetailsScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header profile skeleton
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .clip(CircleShape)
+                        .shimmerEffect()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Name skeleton
+                Box(modifier = Modifier.width(180.dp).height(28.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect())
+                Spacer(modifier = Modifier.height(8.dp))
+                // Known for skeleton
+                Box(modifier = Modifier.width(120.dp).height(16.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect())
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Info row skeleton
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Box(modifier = Modifier.width(80.dp).height(60.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+                    Box(modifier = Modifier.width(80.dp).height(60.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                // Biography skeleton
+                Box(modifier = Modifier.fillMaxWidth().height(16.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(modifier = Modifier.fillMaxWidth().height(16.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(modifier = Modifier.fillMaxWidth(0.7f).height(16.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                // Known for list skeleton
+                Box(modifier = Modifier.width(120.dp).height(24.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect().align(Alignment.Start))
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(modifier = Modifier.width(110.dp).height(160.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+                    Box(modifier = Modifier.width(110.dp).height(160.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+                    Box(modifier = Modifier.width(110.dp).height(160.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+                }
+            }
         } else if (uiState.person != null) {
             val person = uiState.person!!
             Column(
