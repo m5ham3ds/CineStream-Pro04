@@ -477,18 +477,17 @@ fun DownloadSettingsDialog(
         onDismissRequest = onDismiss,
         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        val darkBg = Color(0xFF141416)
-        val cardBg = Color(0xFF1C1C1E)
+        val darkBg = Color(0xFF0F0F11)
+        val cardBg = Color(0xFF19191B)
         val redPrimary = Color(0xFFE50914)
-        val borderColor = redPrimary.copy(alpha = 0.5f)
-
+        
         Box(
             modifier = Modifier
-                .fillMaxWidth(0.95f)
+                .fillMaxWidth(0.9f)
                 .clip(RoundedCornerShape(24.dp))
                 .background(darkBg)
-                .border(2.dp, borderColor, RoundedCornerShape(24.dp))
-                .padding(20.dp)
+                .border(1.dp, redPrimary.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
+                .padding(24.dp)
         ) {
             Column {
                 // Header
@@ -502,14 +501,14 @@ fun DownloadSettingsDialog(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(darkBg)
-                                .border(1.dp, redPrimary.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                                .background(Color(0xFF1C1C1E))
+                                .border(1.dp, redPrimary, RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(Icons.Outlined.FileDownload, contentDescription = null, tint = redPrimary, modifier = Modifier.size(24.dp))
                         }
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text("Download Settings", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.downloads_settings), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     }
                     Box(
                         modifier = Modifier
@@ -546,9 +545,11 @@ fun DownloadSettingsDialog(
                         valueRange = 1f..5f,
                         steps = 3,
                         colors = androidx.compose.material3.SliderDefaults.colors(
-                            thumbColor = redPrimary,
+                            thumbColor = Color.White,
                             activeTrackColor = redPrimary,
-                            inactiveTrackColor = Color(0xFF2C2C2E)
+                            inactiveTrackColor = Color(0xFF2C2C2E),
+                            
+                            
                         )
                     )
                     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -585,9 +586,11 @@ fun DownloadSettingsDialog(
                         valueRange = 0f..(segmentOptions.size - 1).toFloat(),
                         steps = segmentOptions.size - 2,
                         colors = androidx.compose.material3.SliderDefaults.colors(
-                            thumbColor = redPrimary,
+                            thumbColor = Color.White,
                             activeTrackColor = redPrimary,
-                            inactiveTrackColor = Color(0xFF2C2C2E)
+                            inactiveTrackColor = Color(0xFF2C2C2E),
+                            
+                            
                         )
                     )
                     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -615,26 +618,23 @@ fun DownloadSettingsDialog(
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         NetworkOption(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1.2f),
                             title = "All",
                             subtitle = "WiFi & Cellular",
-                            icon = Icons.Default.RadioButtonChecked,
                             isSelected = downloadNetwork == 0,
                             onClick = { onNetworkChanged(0) }
                         )
                         NetworkOption(
                             modifier = Modifier.weight(1f),
                             title = "Wi-Fi Only",
-                            subtitle = "",
-                            icon = Icons.Default.Wifi,
+                            subtitle = null,
                             isSelected = downloadNetwork == 1,
                             onClick = { onNetworkChanged(1) }
                         )
                         NetworkOption(
                             modifier = Modifier.weight(1f),
                             title = "Cellular Only",
-                            subtitle = "",
-                            icon = Icons.Default.SignalCellular4Bar,
+                            subtitle = null,
                             isSelected = downloadNetwork == 2,
                             onClick = { onNetworkChanged(2) }
                         )
@@ -647,9 +647,9 @@ fun DownloadSettingsDialog(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = redPrimary),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(percent = 50)
                 ) {
-                    Text(stringResource(R.string.done), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.done), color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -657,29 +657,33 @@ fun DownloadSettingsDialog(
 }
 
 @Composable
-fun NetworkOption(modifier: Modifier = Modifier, title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, isSelected: Boolean, onClick: () -> Unit) {
-    val bgColor = if (isSelected) Color(0xFF251013) else Color(0xFF141416)
+fun NetworkOption(modifier: Modifier = Modifier, title: String, subtitle: String?, isSelected: Boolean, onClick: () -> Unit) {
+    val bgColor = if (isSelected) Color(0xFF2B1114) else Color(0xFF141416)
     val borderColor = if (isSelected) Color(0xFFE50914) else Color(0xFF2C2C2E)
-    val iconColor = if (isSelected) Color(0xFFE50914) else Color.Gray
+    val iconColor = if (isSelected) Color(0xFFE50914) else Color(0xFF555555)
 
-    Column(
+    Row(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(bgColor)
             .border(1.dp, borderColor, RoundedCornerShape(12.dp))
             .clickable { onClick() }
-            .padding(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(vertical = 12.dp, horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(title, color = if (isSelected) Color.White else Color.LightGray, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-        }
-        if (subtitle.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(subtitle, color = Color.Gray, fontSize = 10.sp)
+        Icon(
+            if (isSelected) Icons.Default.Check else Icons.Default.Close,
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Column(verticalArrangement = Arrangement.Center) {
+            Text(title, color = if (isSelected) Color.White else Color.LightGray, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            if (subtitle != null) {
+                Text(subtitle, color = Color.Gray, fontSize = 10.sp, maxLines = 1)
+            }
         }
     }
 }
