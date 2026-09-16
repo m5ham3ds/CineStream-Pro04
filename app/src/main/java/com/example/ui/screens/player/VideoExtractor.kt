@@ -275,7 +275,8 @@ fun HiddenVideoExtractor(
                                 )
                                 view.evaluateJavascript(siteScript, null)
                             } else {
-                                val autoPlayScript = com.example.ui.screens.player.SiteScripts.getScriptForVideoExtractor(url, targetServerId)
+                                val currentTargetServerId = view.getTag(com.example.R.id.tag_server_id) as? String ?: targetServerId
+                                val autoPlayScript = com.example.ui.screens.player.SiteScripts.getScriptForVideoExtractor(url, currentTargetServerId)
                                 view.evaluateJavascript(autoPlayScript, null)
                             }
                         }
@@ -304,6 +305,7 @@ fun HiddenVideoExtractor(
             if (lastUrl != url) {
                 webView.setTag(com.example.R.id.tag_url, url)
                 webView.setTag(com.example.R.id.tag_server, targetServer)
+                webView.setTag(com.example.R.id.tag_server_id, targetServerId)
                 val extraHeaders = mutableMapOf<String, String>()
                 extraHeaders["Accept-Language"] = "ar,en-US;q=0.9,en;q=0.8"
                 extraHeaders["DNT"] = "1"
@@ -315,6 +317,7 @@ fun HiddenVideoExtractor(
                 webView.loadUrl(url, extraHeaders)
             } else if (lastServer != targetServer) {
                 webView.setTag(com.example.R.id.tag_server, targetServer)
+                webView.setTag(com.example.R.id.tag_server_id, targetServerId)
                 webView.reload() // Server changed, reload the page
             }
         }

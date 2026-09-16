@@ -352,7 +352,7 @@ fun MovieDetailsScreen(
                                 downloadRepository.addToDownloads(com.example.data.model.DownloadItem(
                                     id = movie.id, mediaId = movie.id, title = movie.originalTitle ?: movie.title, posterUrl = movie.posterUrl, isMovie = true, quality = "$serverName||$url"
                                 ))
-                                // com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.title} - $serverName", movie.id)
+                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.title} - $serverName", movie.id)
                             }
                         } else {
                             scope.launch {
@@ -725,7 +725,7 @@ fun SeriesDetailsScreen(
                                 downloadRepository.addToDownloads(com.example.data.model.DownloadItem(
                                     id = epIdStr, mediaId = series.id.toString(), title = fullTitle, posterUrl = ep.thumbnailUrl, isMovie = false, quality = "$serverName||$url"
                                 ))
-                                // com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName", epIdStr)
+                                com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName", epIdStr)
                             }
                         } else {
                             scope.launch {

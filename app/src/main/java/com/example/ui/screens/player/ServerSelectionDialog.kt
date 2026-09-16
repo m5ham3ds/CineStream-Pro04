@@ -362,10 +362,12 @@ Dialog(
                                                                 extractedServers = serversNames
                                                                 extractedServerLinks = serversMap
                                                                 extractedDownloadLinks = downloadsMap
+                                                                extractedServerIds = serversIds
                                                                 ServerStateStore.currentMediaKey = mediaKey
                                                                 ServerStateStore.extractedServers = serversNames
                                                                 ServerStateStore.extractedServerLinks = serversMap
                                                                 ServerStateStore.extractedDownloadLinks = downloadsMap
+                                                                extractedServerIds = serversIds
                                                                 ServerStateStore.extractedServerIds = serversIds
                                                                 isLoading = false
                                                             }
