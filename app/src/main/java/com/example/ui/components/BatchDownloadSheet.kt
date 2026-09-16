@@ -20,7 +20,6 @@ import com.example.data.repository.DownloadRepository
 import com.example.domain.models.Episode
 import com.example.domain.models.Season
 import com.example.domain.models.Series
-import com.example.domain.providers.ProviderManager
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
