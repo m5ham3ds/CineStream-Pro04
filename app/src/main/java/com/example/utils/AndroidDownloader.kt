@@ -6,10 +6,8 @@ import android.widget.Toast
 
 object AndroidDownloader {
 
-    fun downloadVideo(context: Context, url: String, fileName: String, mediaId: String): Long {
+    fun downloadVideo(context: Context, url: String, id: String, title: String): Long {
         return try {
-            val id = fileName.replace(".mp4", "").replace("CineStream/", "")
-            val title = fileName.replace(".mp4", "")
             
             val intent = android.content.Intent(context, StreamDownloaderService::class.java).apply {
                 putExtra("url", url)

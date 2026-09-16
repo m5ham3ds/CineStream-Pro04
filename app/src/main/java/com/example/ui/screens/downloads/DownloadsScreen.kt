@@ -55,22 +55,7 @@ fun DownloadsScreen(
     var itemToDelete by remember { mutableStateOf<DownloadItem?>(null) }
 
 
-    // Simulate download progress
-    LaunchedEffect(downloads) {
-        val inProgress = downloads.filter { !it.isCompleted && !it.isPaused }
-        if (inProgress.isNotEmpty()) {
-            kotlinx.coroutines.delay(2000)
-            inProgress.forEach { item ->
-                val newProgress = item.progress + 0.03f
-                if (newProgress >= 1f) {
-                    downloadRepository.updateDownload(item.copy(progress = 1f, isCompleted = true))
-                } else {
-                    downloadRepository.updateDownload(item.copy(progress = newProgress))
-                }
-            }
-        }
-    }
-
+    
     val filteredDownloads = when (selectedTab) {
         "Movies" -> downloads.filter { it.isMovie }
         "Series" -> downloads.filter { !it.isMovie }
@@ -102,6 +87,11 @@ fun DownloadsScreen(
             text = { Text(stringResource(R.string.delete_download_desc)) },
             confirmButton = {
                 TextButton(onClick = {
+                    val intent = android.content.Intent(context, com.example.utils.StreamDownloaderService::class.java).apply {
+                        action = "CANCEL"
+                        putExtra("id", item.id)
+                    }
+                    context.startService(intent)
                     scope.launch {
                         downloadRepository.removeFromDownloads(item)
                     }
@@ -221,8 +211,13 @@ fun DownloadsScreen(
                     item = item,
                     onClick = { onItemClick(item.mediaId, item.isMovie) },
                     onPauseResume = {
+                        val intent = android.content.Intent(context, com.example.utils.StreamDownloaderService::class.java).apply {
+                            action = "CANCEL"
+                            putExtra("id", item.id)
+                        }
+                        context.startService(intent)
                         scope.launch {
-                            downloadRepository.updateDownload(item.copy(isPaused = !item.isPaused))
+                            downloadRepository.updateDownload(item.copy(isPaused = true))
                         }
                     },
                     onDelete = {
