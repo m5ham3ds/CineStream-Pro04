@@ -19,6 +19,10 @@ class DownloadRepository(private val context: Context) {
         return downloadDao.getAllItemsSync()
     }
     
+    fun getDownloadItemById(id: String): Flow<DownloadItem?> {
+        return downloadDao.getItemByIdFlow(id)
+    }
+
     suspend fun getItemByIdSync(id: String): DownloadItem? {
         return downloadDao.getItemById(id)
     }

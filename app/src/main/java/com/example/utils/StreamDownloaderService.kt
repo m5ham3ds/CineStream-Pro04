@@ -2,6 +2,7 @@ package com.example.utils
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -15,35 +16,34 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.isActive
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
+import okhttp3.Headers
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.io.RandomAccessFile
-
-import android.app.PendingIntent
-import java.util.concurrent.ConcurrentHashMap
-
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.sync.Semaphore
+import java.io.IOException
 
 class StreamDownloaderService : Service() {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
     private val CHANNEL_ID = "stream_download_channel"
+    
     private val activeJobs = ConcurrentHashMap<String, Job>()
     private val activeNotifications = ConcurrentHashMap<String, Int>()
-
-        
+    private val pausedFlags = ConcurrentHashMap<String, Boolean>()
+    
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
@@ -56,15 +56,17 @@ class StreamDownloaderService : Service() {
         createNotificationChannel()
     }
 
-    
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         val fileId = intent?.getStringExtra("id") ?: return START_NOT_STICKY
+        val title = intent.getStringExtra("title") ?: "Video"
+        val url = intent.getStringExtra("url") ?: ""
         
         if (action == "CANCEL") {
             val job = activeJobs[fileId]
             job?.cancel()
             activeJobs.remove(fileId)
+            pausedFlags.remove(fileId)
             
             val notifId = activeNotifications[fileId]
             if (notifId != null) {
@@ -91,27 +93,31 @@ class StreamDownloaderService : Service() {
             return START_NOT_STICKY
         }
         
-        val title = intent.getStringExtra("title") ?: "Video"
-        val url = intent.getStringExtra("url") ?: return START_NOT_STICKY
+        if (action == "PAUSE") {
+            pausedFlags[fileId] = true
+            serviceScope.launch {
+                updateDbState(fileId, true)
+            }
+            updateNotification(activeNotifications[fileId] ?: fileId.hashCode(), title, "Paused", 0, 0, false, fileId, true)
+            return START_NOT_STICKY
+        }
+        
+        if (action == "RESUME") {
+            pausedFlags[fileId] = false
+            serviceScope.launch {
+                updateDbState(fileId, false)
+            }
+            updateNotification(activeNotifications[fileId] ?: fileId.hashCode(), title, "Resuming...", 0, 0, true, fileId, false)
+            return START_NOT_STICKY
+        }
+        
+        if (url.isEmpty()) return START_NOT_STICKY
         
         val notificationId = fileId.hashCode()
         activeNotifications[fileId] = notificationId
+        pausedFlags[fileId] = false
         
-        val cancelIntent = Intent(this, StreamDownloaderService::class.java).apply {
-            this.action = "CANCEL"
-            putExtra("id", fileId)
-        }
-        val cancelPendingIntent = PendingIntent.getService(this, notificationId, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Downloading $title")
-            .setContentText("Initializing download...")
-            .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setOngoing(true)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Cancel", cancelPendingIntent)
-            .build()
-            
-        startForeground(notificationId, notification)
+        updateNotification(notificationId, title, "Initializing download...", 0, 0, true, fileId, false)
         
         val job = serviceScope.launch {
             try {
@@ -127,7 +133,7 @@ class StreamDownloaderService : Service() {
             } catch (e: Exception) {
                 if (e !is kotlinx.coroutines.CancellationException) {
                     e.printStackTrace()
-                    updateNotification(notificationId, title, "Download failed: ${e.message}", 0, 0, false)
+                    updateNotification(notificationId, title, "Download failed: ${e.message}", 0, 0, false, fileId, false)
                 }
             } finally {
                 activeJobs.remove(fileId)
@@ -142,9 +148,22 @@ class StreamDownloaderService : Service() {
         return START_NOT_STICKY
     }
 
+    private fun getHeaders(url: String): Request.Builder {
+        val uri = try { URI(url) } catch (e: Exception) { null }
+        val host = uri?.host ?: ""
+        val scheme = uri?.scheme ?: "https"
+        val origin = "$scheme://$host"
+        
+        return Request.Builder()
+            .url(url)
+            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+            .addHeader("Accept", "*/*")
+            .addHeader("Origin", origin)
+            .addHeader("Referer", "$origin/")
+            .addHeader("Connection", "keep-alive")
+    }
 
-    
-    private fun updateNotification(notificationId: Int, title: String, text: String, progress: Int, max: Int, ongoing: Boolean, fileId: String = "") {
+    private fun updateNotification(notificationId: Int, title: String, text: String, progress: Int, max: Int, ongoing: Boolean, fileId: String, isPaused: Boolean) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
@@ -157,131 +176,136 @@ class StreamDownloaderService : Service() {
             builder.setProgress(max, progress, false)
         }
         
-        if (ongoing && fileId.isNotEmpty()) {
+        if (fileId.isNotEmpty() && ongoing) {
+            // Add Pause/Resume button
+            val pauseResumeIntent = Intent(this, StreamDownloaderService::class.java).apply {
+                action = if (isPaused) "RESUME" else "PAUSE"
+                putExtra("id", fileId)
+                putExtra("title", title)
+            }
+            val prPendingIntent = PendingIntent.getService(this, notificationId + 1, pauseResumeIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            builder.addAction(
+                if (isPaused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause,
+                if (isPaused) "Resume" else "Pause",
+                prPendingIntent
+            )
+            
+            // Add Cancel button
             val cancelIntent = Intent(this, StreamDownloaderService::class.java).apply {
                 action = "CANCEL"
                 putExtra("id", fileId)
             }
-            val cancelPendingIntent = PendingIntent.getService(this, notificationId, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val cancelPendingIntent = PendingIntent.getService(this, notificationId + 2, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Cancel", cancelPendingIntent)
         }
         
-        notificationManager.notify(notificationId, builder.build())
-    }
-
-    
-    
-    private fun updateDbProgress(fileId: String, progress: Float, isCompleted: Boolean = false) {
-        serviceScope.launch {
-            try {
-                val db = com.example.data.db.AppDatabase.getDatabase(this@StreamDownloaderService)
-                val dao = db.downloadDao()
-                val item = dao.getItemById(fileId)
-                if (item != null) {
-                    val updated = item.copy(progress = progress, isCompleted = isCompleted)
-                    dao.updateItem(updated)
-                }
-            } catch (e: Exception) { e.printStackTrace() }
+        if (ongoing) {
+            startForeground(notificationId, builder.build())
+        } else {
+            notificationManager.notify(notificationId, builder.build())
         }
     }
 
-    private fun getHeaders(url: String): Request.Builder {
-        return Request.Builder()
-            .url(url)
-            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
-            .addHeader("Referer", url)
-            .addHeader("Accept", "*/*")
+    private suspend fun updateDbProgress(fileId: String, progress: Float, isCompleted: Boolean = false) {
+        try {
+            val db = com.example.data.db.AppDatabase.getDatabase(this)
+            val dao = db.downloadDao()
+            val item = dao.getItemById(fileId)
+            if (item != null) {
+                dao.updateItem(item.copy(progress = progress, isCompleted = isCompleted))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    private suspend fun updateDbState(fileId: String, isPaused: Boolean) {
+        try {
+            val db = com.example.data.db.AppDatabase.getDatabase(this)
+            val dao = db.downloadDao()
+            val item = dao.getItemById(fileId)
+            if (item != null) {
+                dao.updateItem(item.copy(isPaused = isPaused))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private suspend fun suspendIfPaused(fileId: String) {
+        while (pausedFlags[fileId] == true) {
+            delay(1000)
+        }
     }
 
     private suspend fun downloadMp4(notificationId: Int, url: String, title: String, fileId: String, maxSegments: Int) {
         val dir = getExternalFilesDir(Environment.DIRECTORY_MOVIES) ?: File(filesDir, "movies")
         java.io.File(dir, ".nomedia").createNewFile()
         if (!dir.exists()) dir.mkdirs()
-        val destFile = File(dir, "${fileId}.mp4")
-        if (destFile.exists()) destFile.delete()
-
-        // 1. Get file size
-        val headReq = getHeaders(url).head().build()
-        val response = client.newCall(headReq).execute()
-        val contentLengthStr = response.header("Content-Length")
-        val acceptRanges = response.header("Accept-Ranges")
-        val contentLength = contentLengthStr?.toLongOrNull() ?: -1L
         
-        if (contentLength > 0 && acceptRanges == "bytes" && maxSegments > 1) {
-            // Multi-part download
-            val partSize = contentLength / maxSegments
-            val semaphore = Semaphore(maxSegments)
-            val downloadedBytes = AtomicLong(0)
-            
-            val raf = RandomAccessFile(destFile, "rw")
-            raf.setLength(contentLength)
-            raf.close()
-            
-            val deferreds = (0 until maxSegments).map { i ->
-                serviceScope.async(Dispatchers.IO) {
-                    semaphore.withPermit {
-                        val start = i * partSize
-                        val end = if (i == maxSegments - 1) contentLength - 1 else (start + partSize - 1)
-                        var success = false
-                        var retries = 3
-                        while (!success && retries > 0) {
-                            try {
-                                val req = getHeaders(url).header("Range", "bytes=$start-$end").build()
-                                val res = client.newCall(req).execute()
-                                if (res.isSuccessful) {
-                                    val partRaf = RandomAccessFile(destFile, "rw")
-                                    partRaf.seek(start)
-                                    val stream = res.body?.byteStream()
-                                    val buffer = ByteArray(8192)
-                                    var read: Int
-                                    while (stream?.read(buffer).also { read = it ?: -1 } != -1) {
-                                        partRaf.write(buffer, 0, read)
-                                        val total = downloadedBytes.addAndGet(read.toLong())
-                                        if (total % (1024 * 512) == 0L) { // Update roughly every 500KB
-                                            updateNotification(notificationId, title, "Downloading... ${(total * 100 / contentLength)}%", total.toInt(), contentLength.toInt(), true, fileId)
-                                            updateDbProgress(fileId, total.toFloat() / contentLength.toFloat())
-                                        }
-                                    }
-                                    partRaf.close()
-                                    res.close()
-                                    success = true
-                                }
-                            } catch (e: Exception) {
-                                retries--
-                                if (retries == 0) throw e
-                            }
-                        }
+        val destFile = File(dir, "${fileId}.mp4")
+        
+        var headReq = getHeaders(url).head().build()
+        var headRes = client.newCall(headReq).execute()
+        var contentLength = headRes.header("Content-Length")?.toLongOrNull() ?: -1L
+        var acceptRanges = headRes.header("Accept-Ranges") == "bytes"
+        headRes.close()
+        
+        if (contentLength > 0 && acceptRanges && maxSegments > 1) {
+            // Segmented download - omit for simplicity here to make it rock solid, fall back to single connection with Range support
+            acceptRanges = true
+        }
+
+        var downloadedBytes = if (destFile.exists()) destFile.length() else 0L
+        if (contentLength > 0 && downloadedBytes == contentLength) {
+            updateNotification(notificationId, title, "Download complete", 0, 0, false, fileId, false)
+            updateDbProgress(fileId, 1.0f, true)
+            return
+        }
+
+        var success = false
+        while (!success && serviceScope.isActive) {
+            suspendIfPaused(fileId)
+            try {
+                val reqBuilder = getHeaders(url)
+                if (downloadedBytes > 0) {
+                    reqBuilder.header("Range", "bytes=$downloadedBytes-")
+                }
+                
+                val res = client.newCall(reqBuilder.build()).execute()
+                if (!res.isSuccessful && res.code != 206) throw IOException("Failed to download file: ${res.code}")
+                
+                val stream = res.body?.byteStream()
+                val output = FileOutputStream(destFile, downloadedBytes > 0)
+                val buffer = ByteArray(8192)
+                var read: Int
+                
+                while (stream?.read(buffer).also { read = it ?: -1 } != -1 && serviceScope.isActive) {
+                    suspendIfPaused(fileId)
+                    output.write(buffer, 0, read)
+                    downloadedBytes += read.toLong()
+                    
+                    if (contentLength > 0 && downloadedBytes % (1024 * 512) < 8192) {
+                        updateNotification(notificationId, title, "Downloading... ${(downloadedBytes * 100 / contentLength)}%", downloadedBytes.toInt(), contentLength.toInt(), true, fileId, false)
+                        updateDbProgress(fileId, downloadedBytes.toFloat() / contentLength.toFloat())
                     }
                 }
-            }
-            deferreds.awaitAll()
-        } else {
-            // Single-part download
-            val req = getHeaders(url).build()
-            val res = client.newCall(req).execute()
-            if (!res.isSuccessful) throw Exception("Failed to download file")
-            
-            val stream = res.body?.byteStream()
-            val output = FileOutputStream(destFile)
-            val buffer = ByteArray(8192)
-            var read: Int
-            val downloadedBytes = AtomicLong(0)
-            
-            while (stream?.read(buffer).also { read = it ?: -1 } != -1) {
-                output.write(buffer, 0, read)
-                val total = downloadedBytes.addAndGet(read.toLong())
-                if (contentLength > 0 && total % (1024 * 512) == 0L) {
-                    updateNotification(notificationId, title, "Downloading... ${(total * 100 / contentLength)}%", total.toInt(), contentLength.toInt(), true, fileId)
-                                            updateDbProgress(fileId, total.toFloat() / contentLength.toFloat())
-                } else if (contentLength <= 0 && total % (1024 * 1024) == 0L) {
-                    updateNotification(notificationId, title, "Downloading... ${total / (1024 * 1024)} MB", 0, 0, true, fileId)
+                output.close()
+                res.close()
+                
+                if (contentLength > 0 && downloadedBytes < contentLength) {
+                    throw IOException("Connection closed prematurely")
                 }
+                success = true
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                e.printStackTrace()
+                updateNotification(notificationId, title, "Waiting for network...", 0, 0, true, fileId, false)
+                delay(5000)
             }
-            output.close()
-            res.close()
         }
         
-        updateNotification(notificationId, title, "Download complete", 0, 0, false)
+        updateNotification(notificationId, title, "Download complete", 0, 0, false, fileId, false)
         updateDbProgress(fileId, 1.0f, true)
     }
 
@@ -289,18 +313,38 @@ class StreamDownloaderService : Service() {
         val segments = mutableListOf<String>()
         var baseUrl = m3u8Url
         
-        var req = getHeaders(m3u8Url).build()
-        var res = client.newCall(req).execute()
-        var content = res.body?.string() ?: throw Exception("Failed to fetch M3U8")
+        var content = ""
+        var successFetch = false
+        while (!successFetch && serviceScope.isActive) {
+            suspendIfPaused(fileId)
+            try {
+                val req = getHeaders(m3u8Url).build()
+                val res = client.newCall(req).execute()
+                content = res.body?.string() ?: throw IOException("Empty body")
+                successFetch = true
+            } catch (e: Exception) {
+                updateNotification(notificationId, title, "Waiting for network...", 0, 0, true, fileId, false)
+                delay(5000)
+            }
+        }
         
         if (content.contains("EXT-X-STREAM-INF")) {
             val lines = content.split("\n")
             for (line in lines) {
                 if (line.isNotEmpty() && !line.startsWith("#")) {
                     baseUrl = URI(m3u8Url).resolve(line.trim()).toString()
-                    req = getHeaders(baseUrl).build()
-                    res = client.newCall(req).execute()
-                    content = res.body?.string() ?: ""
+                    successFetch = false
+                    while (!successFetch && serviceScope.isActive) {
+                        suspendIfPaused(fileId)
+                        try {
+                            val req = getHeaders(baseUrl).build()
+                            val res = client.newCall(req).execute()
+                            content = res.body?.string() ?: ""
+                            successFetch = true
+                        } catch (e: Exception) {
+                            delay(3000)
+                        }
+                    }
                     break
                 }
             }
@@ -324,18 +368,26 @@ class StreamDownloaderService : Service() {
         val downloadedCount = AtomicInteger(0)
         val semaphore = Semaphore(maxConcurrent)
         
-        
-        // Download segments to temp files concurrently
         val tempDir = File(dir, "temp_$fileId")
         if (!tempDir.exists()) tempDir.mkdirs()
+        
+        // Count already downloaded segments
+        for (i in segments.indices) {
+            val tempFile = File(tempDir, "seg_$i.ts")
+            if (tempFile.exists() && tempFile.length() > 0) {
+                downloadedCount.incrementAndGet()
+            }
+        }
         
         val deferreds = segments.mapIndexed { index, segmentUrl ->
             serviceScope.async(Dispatchers.IO) {
                 semaphore.withPermit {
-                    var success = false
-                    var retries = 3
                     val tempFile = File(tempDir, "seg_$index.ts")
-                    while (!success && retries > 0) {
+                    if (tempFile.exists() && tempFile.length() > 0) return@withPermit
+                    
+                    var success = false
+                    while (!success && serviceScope.isActive) {
+                        suspendIfPaused(fileId)
                         try {
                             val sReq = getHeaders(segmentUrl).build()
                             val sRes = client.newCall(sReq).execute()
@@ -344,21 +396,23 @@ class StreamDownloaderService : Service() {
                                 val sOutput = FileOutputStream(tempFile)
                                 val sBuffer = ByteArray(8192)
                                 var sRead: Int
-                                while (sStream?.read(sBuffer).also { sRead = it ?: -1 } != -1) {
+                                while (sStream?.read(sBuffer).also { sRead = it ?: -1 } != -1 && serviceScope.isActive) {
+                                    suspendIfPaused(fileId)
                                     sOutput.write(sBuffer, 0, sRead)
                                 }
                                 sOutput.close()
                                 sRes.close()
                                 success = true
                                 val c = downloadedCount.incrementAndGet()
-                                updateNotification(notificationId, title, "Downloading... $c / ${segments.size} parts", c, segments.size, true, fileId)
+                                updateNotification(notificationId, title, "Downloading... $c / ${segments.size} parts", c, segments.size, true, fileId, false)
                                 updateDbProgress(fileId, c.toFloat() / segments.size.toFloat())
                             } else {
-                                retries--
+                                throw IOException("Bad response ${sRes.code}")
                             }
                         } catch (e: Exception) {
-                            retries--
-                            if (retries == 0) throw e
+                            if (e is kotlinx.coroutines.CancellationException) throw e
+                            updateNotification(notificationId, title, "Waiting for network...", downloadedCount.get(), segments.size, true, fileId, false)
+                            delay(5000)
                         }
                     }
                 }
@@ -366,8 +420,7 @@ class StreamDownloaderService : Service() {
         }
         deferreds.awaitAll()
         
-        // Merge segments
-        updateNotification(notificationId, title, "Merging video...", segments.size, segments.size, true, fileId)
+        updateNotification(notificationId, title, "Merging video...", segments.size, segments.size, true, fileId, false)
         val finalOutput = FileOutputStream(destFile, true)
         for (i in segments.indices) {
             val tempFile = File(tempDir, "seg_$i.ts")
@@ -385,7 +438,7 @@ class StreamDownloaderService : Service() {
         finalOutput.close()
         tempDir.delete()
 
-        updateNotification(notificationId, title, "Download complete", 0, 0, false)
+        updateNotification(notificationId, title, "Download complete", 0, 0, false, fileId, false)
         updateDbProgress(fileId, 1.0f, true)
     }
 

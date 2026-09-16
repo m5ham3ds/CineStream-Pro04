@@ -212,12 +212,12 @@ fun DownloadsScreen(
                     onClick = { onItemClick(item.mediaId, item.isMovie) },
                     onPauseResume = {
                         val intent = android.content.Intent(context, com.example.utils.StreamDownloaderService::class.java).apply {
-                            action = "CANCEL"
+                            action = if (item.isPaused) "RESUME" else "PAUSE"
                             putExtra("id", item.id)
                         }
                         context.startService(intent)
                         scope.launch {
-                            downloadRepository.updateDownload(item.copy(isPaused = true))
+                            downloadRepository.updateDownload(item.copy(isPaused = !item.isPaused))
                         }
                     },
                     onDelete = {

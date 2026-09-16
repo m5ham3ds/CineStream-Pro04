@@ -18,6 +18,9 @@ interface DownloadDao {
     suspend fun getAllItemsSync(): List<DownloadItem>
 
     @Query("SELECT * FROM download_items WHERE id = :itemId LIMIT 1")
+    fun getItemByIdFlow(itemId: String): Flow<DownloadItem?>
+
+    @Query("SELECT * FROM download_items WHERE id = :itemId LIMIT 1")
     suspend fun getItemById(itemId: String): DownloadItem?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

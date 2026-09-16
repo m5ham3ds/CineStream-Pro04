@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
@@ -84,7 +85,7 @@ import com.example.ui.components.DownloadQualitySheet
 @OptIn(androidx.media3.common.util.UnstableApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 @Suppress("OPT_IN_USAGE")
-fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: String = "", url: String? = null, targetServer: String? = null, website: String? = null, onBack: () -> Unit, viewModel: PlayerViewModel = viewModel()) {
+fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, title: String, posterUrl: String = "", url: String? = null, targetServer: String? = null, website: String? = null, onBack: () -> Unit, viewModel: PlayerViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     
     LaunchedEffect(mediaId) {
@@ -94,6 +95,8 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
     val context = LocalContext.current
     val downloadRepository = remember { com.example.data.repository.DownloadRepository(context) }
     val scope = rememberCoroutineScope()
+    val fileId = if (isMovie) mediaId else "${mediaId}_${episodeId}"
+    val downloadItem by downloadRepository.getDownloadItemById(fileId).collectAsState(initial = null)
     var showDownloadSheet by remember { mutableStateOf(false) }
     var showControls by remember { mutableStateOf(true) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -555,7 +558,15 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                             ActionDivider()
                             QualityAction(uiState.currentQuality, onClick = { showQualitySheet = true })
                             ActionDivider()
-                            BottomAction(icon = Icons.Default.Download, text = "Download") { showDownloadSheet = true }
+                            BottomAction(icon = if (downloadItem?.isCompleted == true) Icons.Default.Check else Icons.Default.Download, text = if (downloadItem?.isCompleted == true) "Downloaded" else "Download") { 
+                                if (downloadItem?.isCompleted == true) {
+                                    android.widget.Toast.makeText(context, "Already downloaded", android.widget.Toast.LENGTH_SHORT).show()
+                                } else if (downloadItem != null) {
+                                    android.widget.Toast.makeText(context, "Already downloading", android.widget.Toast.LENGTH_SHORT).show()
+                                } else {
+                                    showDownloadSheet = true 
+                                }
+                            }
                         }
                     }
                 }
@@ -703,8 +714,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                 val videoUrl = selectedQualityInfo?.url ?: uiState.currentVideoUrl
                 
                 videoUrl?.let { url ->
-                    val fileId = "${uiState.mediaId}_${System.currentTimeMillis()}"
-                    com.example.utils.AndroidDownloader.downloadVideo(context, url, "${fileId}.mp4", uiState.title)
+                    com.example.utils.AndroidDownloader.downloadVideo(context, url, fileId, uiState.title)
                     scope.launch {
                         downloadRepository.addToDownloads(
                             com.example.data.model.DownloadItem(

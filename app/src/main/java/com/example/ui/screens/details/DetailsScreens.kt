@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package com.example.ui.screens.details
 
 import androidx.compose.animation.core.animateFloat
@@ -25,6 +26,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -248,22 +251,39 @@ fun MovieDetailsScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(if (downloadItem?.isCompleted == true) "Resume Offline" else "Resume", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
-                                        IconButton(
-                        onClick = { 
-                            if (downloadItem?.isCompleted == true) {
-                                showDeleteConfirm = true
-                            } else if (downloadItem != null) {
-                                scope.launch { downloadRepository.updateDownload(downloadItem.copy(isPaused = !downloadItem.isPaused)) }
-                            } else {
-                                isDownloadMode = true
-                                if (ExtensionManager.installedExtensions.value.isEmpty()) {
-                                    showNoExtensionsDialog = true
-                                } else {
-                                    showSourceSheet = true
+                                        Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(50.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                            .clip(CircleShape)
+                            .combinedClickable(
+                                onClick = { 
+                                    if (downloadItem?.isCompleted == true) {
+                                        Toast.makeText(context, "Already downloaded", Toast.LENGTH_SHORT).show()
+                                    } else if (downloadItem != null) {
+                                        val intent = android.content.Intent(context, com.example.utils.StreamDownloaderService::class.java).apply {
+                                            action = if (downloadItem.isPaused) "RESUME" else "PAUSE"
+                                            putExtra("id", movie.id.toString())
+                                        }
+                                        context.startService(intent)
+                                        scope.launch { downloadRepository.updateDownload(downloadItem.copy(isPaused = !downloadItem.isPaused)) }
+                                        Toast.makeText(context, if (downloadItem.isPaused) "Resumed" else "Paused", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        isDownloadMode = true
+                                        if (ExtensionManager.installedExtensions.value.isEmpty()) {
+                                            showNoExtensionsDialog = true
+                                        } else {
+                                            showSourceSheet = true
+                                        }
+                                    }
+                                },
+                                onLongClick = {
+                                    if (downloadItem != null && !downloadItem.isCompleted) {
+                                        showDeleteConfirm = true
+                                    }
                                 }
-                            }
-                        },
-                        modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                            )
                     ) {
                         if (downloadItem?.isCompleted == true) {
                             Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = MaterialTheme.colorScheme.primary)
@@ -384,7 +404,6 @@ fun MovieDetailsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun SeriesDetailsScreen(
     onPersonClick: (String) -> Unit = {},
@@ -669,11 +688,29 @@ fun SeriesDetailsScreen(
                                     else watchedRepo.markAsWatched(episode.id)
                                 }
                             },
+                            onLongDownloadClick = {
+                                if (downloadItem != null && !downloadItem.isCompleted) {
+                                    // we can reuse the same delete confirmation but we need a state for episode delete
+                                    val intent = android.content.Intent(context, com.example.utils.StreamDownloaderService::class.java).apply {
+                                        action = "CANCEL"
+                                        putExtra("id", "${series.id}_${episode.id}")
+                                    }
+                                    context.startService(intent)
+                                    scope.launch { downloadRepository.removeFromDownloads(downloadItem) }
+                                    Toast.makeText(context, "Download cancelled", Toast.LENGTH_SHORT).show()
+                                }
+                            },
                             onDownloadClick = {
                                 if (downloadItem?.isCompleted == true) {
-                                    scope.launch { downloadRepository.removeFromDownloads(downloadItem) }
+                                    Toast.makeText(context, "Already downloaded", Toast.LENGTH_SHORT).show()
                                 } else if (downloadItem != null) {
+                                    val intent = android.content.Intent(context, com.example.utils.StreamDownloaderService::class.java).apply {
+                                        action = if (downloadItem.isPaused) "RESUME" else "PAUSE"
+                                        putExtra("id", "${series.id}_${episode.id}")
+                                    }
+                                    context.startService(intent)
                                     scope.launch { downloadRepository.updateDownload(downloadItem.copy(isPaused = !downloadItem.isPaused)) }
+                                    Toast.makeText(context, if (downloadItem.isPaused) "Resumed" else "Paused", Toast.LENGTH_SHORT).show()
                                 } else {
                                     selectedEpisodeForSource = episode
                                     isDownloadMode = true
@@ -807,7 +844,6 @@ fun CastMemberCard(cast: CastMember, onClick: () -> Unit) {
     }
 }
 
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun EpisodeCard(
     episode: Episode,
@@ -815,7 +851,8 @@ fun EpisodeCard(
     downloadItem: com.example.data.model.DownloadItem? = null,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    onDownloadClick: () -> Unit
+    onDownloadClick: () -> Unit,
+    onLongDownloadClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -859,7 +896,16 @@ fun EpisodeCard(
             Spacer(modifier = Modifier.height(4.dp))
             Text(episode.overview, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        IconButton(onClick = onDownloadClick) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .combinedClickable(
+                    onClick = onDownloadClick,
+                    onLongClick = onLongDownloadClick
+                ),
+            contentAlignment = Alignment.Center
+        ) {
             if (downloadItem?.isCompleted == true) {
                 Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = MaterialTheme.colorScheme.primary)
             } else if (downloadItem != null) {

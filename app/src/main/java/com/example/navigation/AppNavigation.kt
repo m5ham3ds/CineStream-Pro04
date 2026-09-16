@@ -1045,8 +1045,9 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                 }
                 
 
-                composable("player?mediaId={mediaId}&isMovie={isMovie}&title={title}&url={url}&server={server}&website={website}&poster={poster}") { backStackEntry ->
+                composable("player?mediaId={mediaId}&episodeId={episodeId}&isMovie={isMovie}&title={title}&url={url}&server={server}&website={website}&poster={poster}") { backStackEntry ->
                     val mediaId = backStackEntry.arguments?.getString("mediaId") ?: ""
+                    val episodeId = backStackEntry.arguments?.getString("episodeId") ?: ""
                     val isMovieStr = backStackEntry.arguments?.getString("isMovie") ?: "true"
                     val isMovie = isMovieStr.toBoolean()
                     val title = backStackEntry.arguments?.getString("title") ?: "Unknown"
@@ -1063,6 +1064,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                     
                     com.example.ui.screens.player.PlayerScreen(
                         mediaId = mediaId,
+                        episodeId = episodeId,
                         isMovie = isMovie,
                         title = decodedTitle,
                         posterUrl = decodedPoster,
