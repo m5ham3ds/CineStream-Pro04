@@ -650,8 +650,9 @@ object SiteScripts {
                     
                 }
                 
-                var targetId = "${targetServerId ?: ""}";
-                if (targetId && !window._serverClicked) {
+                                var targetId = "${targetServerId ?: ""}";
+                var isMainSite = window.location.href.includes('topcinema') || window.location.href.includes('witanime') || window.location.href.includes('brstej') || window.location.href.includes('animeluxe') || window.location.href.includes('anime4up') || window.location.href.includes('animerco') || window.location.href.includes('almeshkah');
+                if (targetId && !window._serverClicked && isMainSite) {
                     var clicked = false;
                     // Site specific click logic based on ID format
                     if (targetId.includes('|')) {
@@ -660,14 +661,14 @@ object SiteScripts {
                             var el = document.querySelector('a[data-post="'+parts[0]+'"][data-nume="'+parts[1]+'"]');
                             if (el) { el.click(); clicked = true; }
                         }
-                    } else if (window.location.href.includes('topcinema')) {
-                        var el = document.querySelector('li[data-id="'+targetId+'"]');
+                    } else if (window.location.href.includes('topcinema') || window.location.href.includes('brstej')) {
+                        var el = document.querySelector('[data-embed-id="'+targetId+'"]') || document.querySelector('[data-id="'+targetId+'"]');
                         if (el) { el.click(); clicked = true; }
                     } else if (targetId.startsWith('server_')) { // z1.almeshkah.net
                         var el = document.getElementById(targetId);
                         if (el) { el.click(); clicked = true; }
-                    } else { // witanime.you
-                        var el = document.querySelector('a[data-server-id="'+targetId+'"]');
+                    } else { // witanime.you and others
+                        var el = document.querySelector('[data-server-id="'+targetId+'"]') || document.querySelector('[data-id="'+targetId+'"]') || document.querySelector('[data-embed-id="'+targetId+'"]');
                         if (el) { el.click(); clicked = true; }
                     }
                     if (clicked) {
@@ -677,7 +678,7 @@ object SiteScripts {
                 }
                 
                 // Watch for new iframes after click
-                if (window._serverClicked || !targetId) {
+                if (window._serverClicked || !targetId || !isMainSite) {
                     var iframe = document.querySelector('div.player--iframe iframe, #iframe-container iframe, #Playerholder iframe, .videoWrapper iframe, .vp-embed iframe, #dooplay_player_response iframe, .embed_server iframe, .embeding2 iframe, #video-player-container iframe');
                     if (iframe && iframe.src && iframe.src.startsWith('http') && iframe.src !== window._lastIframeSrc) {
                         window._lastIframeSrc = iframe.src;

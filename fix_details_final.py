@@ -2,12 +2,12 @@ with open("app/src/main/java/com/example/ui/screens/details/DetailsScreens.kt", 
     c = f.read()
 
 c = c.replace(
-    'com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.title} - $serverName", movie.id)',
+    'com.example.utils.AndroidDownloader(context).downloadFile(url, "${movie.id}.mp4", "${movie.title} - $serverName")',
     'com.example.utils.AndroidDownloader.downloadVideo(context, url, "${movie.id}.mp4", "${movie.title} - $serverName")'
 )
 
 c = c.replace(
-    'com.example.utils.AndroidDownloader.downloadVideo(context, url, "$fullTitle - $serverName", epIdStr)',
+    'com.example.utils.AndroidDownloader(context).downloadFile(url, "${epIdStr}.mp4", "$fullTitle - $serverName")',
     'com.example.utils.AndroidDownloader.downloadVideo(context, url, "${epIdStr}.mp4", "$fullTitle - $serverName")'
 )
 

@@ -704,7 +704,7 @@ fun PlayerScreen(mediaId: String, isMovie: Boolean, title: String, posterUrl: St
                 
                 videoUrl?.let { url ->
                     val fileId = "${uiState.mediaId}_${System.currentTimeMillis()}"
-                    com.example.utils.AndroidDownloader.downloadVideo(context, url, "${uiState.title} - $quality", fileId)
+                    com.example.utils.AndroidDownloader.downloadVideo(context, url, "${fileId}.mp4", uiState.title)
                     scope.launch {
                         downloadRepository.addToDownloads(
                             com.example.data.model.DownloadItem(

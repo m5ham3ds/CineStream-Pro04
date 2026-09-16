@@ -38,16 +38,7 @@ object DownloadManagerService {
         userPrefs = UserPreferencesRepository(appContext)
         dir = File(appContext.filesDir, "downloads").apply { if (!exists()) mkdirs() }
         
-        scope.launch {
-            while (true) {
-                try {
-                    processQueue()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                delay(3000)
-            }
-        }
+        
     }
     
     private suspend fun processQueue() {

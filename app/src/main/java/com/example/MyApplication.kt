@@ -9,9 +9,15 @@ import okhttp3.Cache
 import java.io.File
 
 class MyApplication : Application(), ImageLoaderFactory {
+    companion object {
+        lateinit var appContext: android.content.Context
+    }
+
     
     override fun onCreate() {
         super.onCreate()
+        appContext = applicationContext
+
         
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
