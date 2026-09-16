@@ -34,6 +34,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     }
     object Downloads : Screen("downloads", "Downloads", Icons.Default.Download)
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
+    object HelpSupport : Screen("help_support", "Help & Support", Icons.Default.Info)
     object Security : Screen("security", "Security", Icons.Default.Person)
     object Subscription : Screen("subscription", "Subscription", Icons.Default.Person)
     object About : Screen("about", "About Us", Icons.Default.Info)

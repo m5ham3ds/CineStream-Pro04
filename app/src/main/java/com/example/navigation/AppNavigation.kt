@@ -467,7 +467,7 @@ fun AppNavigation() {
                             unselectedIconColor = MaterialTheme.colorScheme.onSurface,
                             unselectedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
-                        onClick = { scope.launch { drawerState.close() } },
+                        onClick = { navController.navigate(Screen.HelpSupport.route); scope.launch { drawerState.close() } },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
@@ -856,6 +856,9 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                     },
                     onNavigateToSettings = {
                         navController.navigate(Screen.Settings.route)
+                    },
+                    onNavigateToHelpSupport = {
+                        navController.navigate(Screen.HelpSupport.route)
                     }
                 )
             }
@@ -921,6 +924,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
 
                 composable(Screen.Extensions.route) { com.example.ui.screens.extensions.ExtensionsScreen(onBackClick = { navController.popBackStack() }) }
                 composable(Screen.Settings.route) { SettingsScreen() }
+                composable(Screen.HelpSupport.route) { com.example.ui.screens.profile.HelpSupportScreen(onBack = { navController.popBackStack() }) }
                 composable(Screen.About.route) { AboutScreen() }
                 composable(Screen.Trending.route) {
                     TrendingScreen(
