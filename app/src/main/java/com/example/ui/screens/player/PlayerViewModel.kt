@@ -112,7 +112,8 @@ class PlayerViewModel : ViewModel() {
             var finalDirectUrl = directUrl
             if (directUrl.startsWith("local_offline_file://")) {
                 val fileId = directUrl.removePrefix("local_offline_file://")
-                val file = java.io.File(com.example.MyApplication.appContext.getExternalFilesDir(android.os.Environment.DIRECTORY_MOVIES), "${fileId}.mp4")
+                val ctx = com.example.MyApplication.appContext
+                val file = java.io.File(ctx.getExternalFilesDir(android.os.Environment.DIRECTORY_MOVIES) ?: java.io.File(ctx.filesDir, "movies"), "${fileId}.mp4")
                 finalDirectUrl = android.net.Uri.fromFile(file).toString()
             }
             _uiState.value = _uiState.value.copy(

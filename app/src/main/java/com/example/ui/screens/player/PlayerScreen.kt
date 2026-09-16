@@ -140,11 +140,12 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
     val exoPlayer = remember {
         // Build ExoPlayer with cookies from WebView
         val cookie = android.webkit.CookieManager.getInstance().getCookie(uiState.currentVideoUrl ?: "") ?: ""
-        val dataSourceFactory = DefaultHttpDataSource.Factory()
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setUserAgent("Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36")
         if (cookie.isNotEmpty()) {
-            dataSourceFactory.setDefaultRequestProperties(mapOf("Cookie" to cookie))
+            httpDataSourceFactory.setDefaultRequestProperties(mapOf("Cookie" to cookie))
         }
+        val dataSourceFactory = androidx.media3.datasource.DefaultDataSource.Factory(context, httpDataSourceFactory)
         val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
         
         ExoPlayer.Builder(context)
@@ -198,11 +199,12 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
         uiState.currentVideoUrl?.let { url ->
             // We need to recreate the media source if the url changes to ensure new cookies are fetched
             val cookie = android.webkit.CookieManager.getInstance().getCookie(url) ?: ""
-            val dataSourceFactory = DefaultHttpDataSource.Factory()
+            val httpDataSourceFactory = DefaultHttpDataSource.Factory()
                 .setUserAgent("Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36")
             if (cookie.isNotEmpty()) {
-                dataSourceFactory.setDefaultRequestProperties(mapOf("Cookie" to cookie))
+                httpDataSourceFactory.setDefaultRequestProperties(mapOf("Cookie" to cookie))
             }
+            val dataSourceFactory = androidx.media3.datasource.DefaultDataSource.Factory(context, httpDataSourceFactory)
             val mediaSource = DefaultMediaSourceFactory(dataSourceFactory).createMediaSource(MediaItem.fromUri(url))
             
             exoPlayer.setMediaSource(mediaSource)

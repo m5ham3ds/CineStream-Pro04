@@ -103,7 +103,7 @@ fun MovieDetailsScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            DetailsSkeleton()
         } else if (uiState.movie != null) {
             val movie = uiState.movie!!
             val ctx = LocalContext.current
@@ -443,6 +443,10 @@ fun SeriesDetailsScreen(
         state = pullRefreshState
     ) {
         val series = uiState.series
+        if (uiState.isLoading && series == null) {
+            DetailsSkeleton()
+            return@PullToRefreshBox
+        }
         if (series == null && !uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(uiState.error ?: "Failed to load details", color = MaterialTheme.colorScheme.error)
