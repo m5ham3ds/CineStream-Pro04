@@ -80,6 +80,8 @@ class PlayerViewModel : ViewModel() {
         val bestWebsite = website ?: fallbackList.first()
         val remainingFallbacks = if (website == null) fallbackList.drop(1) else emptyList()
 
+        val serverIds = com.example.ui.screens.player.ServerStateStore.extractedServerIds
+
         _uiState.value = _uiState.value.copy(
             mediaId = mediaId,
             isMovie = isMovie,
@@ -91,7 +93,8 @@ class PlayerViewModel : ViewModel() {
             currentServer = targetServer ?: "",
             availableServers = com.example.ui.screens.player.ServerStateStore.extractedServers,
             availableServerLinks = com.example.ui.screens.player.ServerStateStore.extractedServerLinks,
-            availableServerIds = com.example.ui.screens.player.ServerStateStore.extractedServerIds,
+            availableServerIds = serverIds,
+            serverIdToChange = if (targetServer != null) serverIds[targetServer] else null,
             extractedQualitiesInfo = com.example.ui.screens.player.ServerStateStore.extractedQualities,
             availableQualities = if (com.example.ui.screens.player.ServerStateStore.extractedQualities.isNotEmpty()) {
                 com.example.ui.screens.player.ServerStateStore.extractedQualities.map { it.name }
