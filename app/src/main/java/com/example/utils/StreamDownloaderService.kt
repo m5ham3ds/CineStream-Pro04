@@ -43,8 +43,22 @@ class StreamDownloaderService : Service() {
     private val activeJobs = ConcurrentHashMap<String, Job>()
     private val activeNotifications = ConcurrentHashMap<String, Int>()
     private val pausedFlags = ConcurrentHashMap<String, Boolean>()
+    private var runningDownloads = AtomicInteger(0)
+    private var currentForegroundId: Int? = null
+
+    private fun isWifiConnected(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI)
+    }
     
+    private val dispatcher = okhttp3.Dispatcher().apply {
+        maxRequests = 128
+        maxRequestsPerHost = 64
+    }
     private val client = OkHttpClient.Builder()
+        .dispatcher(dispatcher)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
@@ -122,11 +136,26 @@ class StreamDownloaderService : Service() {
         val job = serviceScope.launch {
             try {
                 val prefs = UserPreferencesRepository(this@StreamDownloaderService)
-                val maxConcurrent = prefs.maxConcurrentDownloads.first()
+                val maxConcurrentMovies = prefs.maxConcurrentDownloads.first()
                 val maxSegments = prefs.maxSegments.first()
+                val networkType = prefs.downloadNetwork.first()
+                
+                if (networkType == 1) {
+                    while (!isWifiConnected() && isActive) {
+                        updateNotification(notificationId, title, "Waiting for WiFi...", 0, 0, true, fileId, false)
+                        delay(5000)
+                    }
+                }
+                
+                while (runningDownloads.get() >= maxConcurrentMovies && isActive) {
+                    updateNotification(notificationId, title, "Queued...", 0, 0, true, fileId, false)
+                    delay(3000)
+                }
+                
+                runningDownloads.incrementAndGet()
                 
                 if (url.contains(".m3u8")) {
-                    downloadM3u8(notificationId, url, title, fileId, maxConcurrent)
+                    downloadM3u8(notificationId, url, title, fileId, maxSegments)
                 } else {
                     downloadMp4(notificationId, url, title, fileId, maxSegments)
                 }
@@ -136,6 +165,7 @@ class StreamDownloaderService : Service() {
                     updateNotification(notificationId, title, "Download failed: ${e.message}", 0, 0, false, fileId, false)
                 }
             } finally {
+                runningDownloads.decrementAndGet()
                 activeJobs.remove(fileId)
                 if (activeJobs.isEmpty()) {
                     stopForeground(false)
@@ -199,10 +229,24 @@ class StreamDownloaderService : Service() {
             builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Cancel", cancelPendingIntent)
         }
         
+        val notif = builder.build()
         if (ongoing) {
-            startForeground(notificationId, builder.build())
+            if (currentForegroundId == null || currentForegroundId == notificationId) {
+                currentForegroundId = notificationId
+                startForeground(notificationId, notif)
+            } else {
+                notificationManager.notify(notificationId, notif)
+            }
         } else {
-            notificationManager.notify(notificationId, builder.build())
+            notificationManager.notify(notificationId, notif)
+            if (currentForegroundId == notificationId) {
+                val another = activeNotifications.values.firstOrNull { it != notificationId }
+                if (another != null) {
+                    currentForegroundId = another
+                } else {
+                    currentForegroundId = null
+                }
+            }
         }
     }
 
@@ -404,7 +448,8 @@ class StreamDownloaderService : Service() {
                                 sRes.close()
                                 success = true
                                 val c = downloadedCount.incrementAndGet()
-                                updateNotification(notificationId, title, "Downloading... $c / ${segments.size} parts", c, segments.size, true, fileId, false)
+                                val percentage = (c * 100) / segments.size
+                                updateNotification(notificationId, title, "Downloading... $percentage%", c, segments.size, true, fileId, false)
                                 updateDbProgress(fileId, c.toFloat() / segments.size.toFloat())
                             } else {
                                 throw IOException("Bad response ${sRes.code}")

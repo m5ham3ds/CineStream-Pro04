@@ -1,42 +1,17 @@
 import re
+
 with open("app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt", "r") as f:
-    content = f.read()
+    c = f.read()
 
-old_launched_effect = """    LaunchedEffect(currentSiteIndex) {
-        if (currentSiteIndex >= safeSites.size) {
-            isLoading = false
-            isFailed = true
-            return@LaunchedEffect
-        }
-        
-        currentExtension = safeSites[currentSiteIndex]
-        bypassStatus = "CHECKING_CLOUDFLARE"
-        forceBypassComplete = false
-        loadingMessage = "جاري الفحص في موقع $currentSiteName..."
-        extractedServers = emptyList()
-        finalWatchUrl = null"""
+target = """                                                .clickable {
+                                                    onPlay(quality.url, selectedServerForQuality ?: "", currentSiteName)
+                                                }"""
+replace = """                                                .clickable {
+                                                    onPlay(quality.url, if (isDownloadMode) quality.name else (selectedServerForQuality ?: ""), currentSiteName)
+                                                }"""
 
-new_launched_effect = """    LaunchedEffect(currentSiteIndex, retryTrigger) {
-        if (!isLoading && extractedServers.isNotEmpty()) {
-            return@LaunchedEffect
-        }
-        if (currentSiteIndex >= safeSites.size) {
-            isLoading = false
-            isFailed = true
-            return@LaunchedEffect
-        }
-        
-        currentExtension = safeSites[currentSiteIndex]
-        bypassStatus = "CHECKING_CLOUDFLARE"
-        forceBypassComplete = false
-        loadingMessage = "جاري الفحص في موقع $currentSiteName..."
-        extractedServers = emptyList()
-        finalWatchUrl = null"""
+c = c.replace(target, replace)
 
-if old_launched_effect in content:
-    content = content.replace(old_launched_effect, new_launched_effect)
-    with open("app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt", "w") as f:
-        f.write(content)
-    print("Updated LaunchedEffect")
-else:
-    print("Could not find LaunchedEffect")
+with open("app/src/main/java/com/example/ui/screens/player/ServerSelectionDialog.kt", "w") as f:
+    f.write(c)
+

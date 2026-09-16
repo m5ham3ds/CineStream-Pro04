@@ -840,7 +840,7 @@ Dialog(
                                                 .background(Color(0xFF16161A))
                                                 .border(1.dp, Color(0xFF222225), RoundedCornerShape(16.dp))
                                                 .clickable {
-                                                    onPlay(quality.url, selectedServerForQuality ?: "", currentSiteName)
+                                                    onPlay(quality.url, if (isDownloadMode) quality.name else (selectedServerForQuality ?: ""), currentSiteName)
                                                 }
                                                 .padding(12.dp),
                                             verticalAlignment = Alignment.CenterVertically

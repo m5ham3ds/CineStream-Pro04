@@ -714,7 +714,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                 val videoUrl = selectedQualityInfo?.url ?: uiState.currentVideoUrl
                 
                 videoUrl?.let { url ->
-                    com.example.utils.AndroidDownloader.downloadVideo(context, url, fileId, uiState.title)
+                    com.example.utils.AndroidDownloader.downloadVideo(context, url, fileId, "${uiState.title} - $quality")
                     scope.launch {
                         downloadRepository.addToDownloads(
                             com.example.data.model.DownloadItem(
