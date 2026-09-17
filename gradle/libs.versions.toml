@@ -40,6 +40,7 @@ secretsGradlePlugin = "2.0.1"
 googleServices = "4.4.2"
 media3 = "1.5.0"
 jsoup = "1.17.2"
+workRuntimeKtx = "2.9.1"
 
 [libraries]
 cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinary" }
@@ -101,6 +102,7 @@ androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", versi
 androidx-media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls", version.ref = "media3" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

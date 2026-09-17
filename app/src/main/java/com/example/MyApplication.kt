@@ -1,6 +1,13 @@
 package com.example
 
 import android.app.Application
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.ExistingPeriodicWorkPolicy
+import com.example.workers.CacheCleanupWorker
+import java.util.concurrent.TimeUnit
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
@@ -16,6 +23,22 @@ class MyApplication : Application(), ImageLoaderFactory {
     
     override fun onCreate() {
         super.onCreate()
+
+        // Schedule automatic cache cleanup every 12 hours (only when connected to internet)
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+            
+        val cacheCleanupRequest = PeriodicWorkRequestBuilder<CacheCleanupWorker>(12, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+            
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "CacheCleanupWork",
+            ExistingPeriodicWorkPolicy.KEEP,
+            cacheCleanupRequest
+        )
+
         appContext = applicationContext
 
         
@@ -57,7 +80,7 @@ class MyApplication : Application(), ImageLoaderFactory {
             .diskCache {
                 DiskCache.Builder()
                     .directory(this.cacheDir.resolve("image_cache"))
-                    .maxSizePercent(0.05) // 5% of total disk space
+                    .maxSizeBytes(450L * 1024 * 1024) // 450 MB // 5% of total disk space
                     .build()
             }
             .crossfade(true)
