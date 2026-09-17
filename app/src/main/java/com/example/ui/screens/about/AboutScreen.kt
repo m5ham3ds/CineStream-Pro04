@@ -30,9 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
-@OptIn(ExperimentalMaterial3Api::class)
 import androidx.compose.runtime.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(onBack: () -> Unit = {}) {
     var transitionFinished by remember { mutableStateOf(false) }

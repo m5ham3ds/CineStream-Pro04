@@ -48,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -110,52 +111,13 @@ import com.example.ui.screens.auth.AuthScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Splash.route
     val context = LocalContext.current
-    val activity = context as? android.app.Activity
-    var consecutiveBackPresses by remember { mutableStateOf(0) }
-    var lastBackPressTime by remember { mutableStateOf(0L) }
-    
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    val handleBackPress = {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastBackPressTime > 3000) {
-            consecutiveBackPresses = 1
-        } else {
-            consecutiveBackPresses++
-        }
-        lastBackPressTime = currentTime
-        
-        if (consecutiveBackPresses >= 3) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Home.route) { inclusive = true }
-            }
-            consecutiveBackPresses = 0
-        } else {
-            if (!navController.popBackStack()) {
-                activity?.finish()
-            }
-        }
-    }
-    
-    BackHandler(enabled = currentRoute != Screen.Home.route && currentRoute != Screen.Splash.route && currentRoute != Screen.Auth.route && currentRoute != Screen.Onboarding.route) {
-        handleBackPress()
-    }
-    
-    // Reset consecutive counter when navigating forward
-    LaunchedEffect(currentRoute) {
-        // We only really want to reset if it's a new screen, but this resets on any route change. 
-        // We will just let it naturally reset by time (3 seconds).
-    }
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
- ?: Screen.Splash.route
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
     
     val authViewModel: AuthViewModel = viewModel()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -183,8 +145,8 @@ fun AppNavigation() {
         } else {
             if (backPressCount < 2) {
                 backPressCount++
-                val popped = handleBackPress()
-                if (!popped) {
+                navController.popBackStack()
+                if (navController.previousBackStackEntry == null) {
                     showExitDialog = true
                 }
             } else {
@@ -952,7 +914,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
             }
             composable(Screen.EditProfile.route) {
                 com.example.ui.screens.profile.EditProfileScreen(
-                    onBack = { handleBackPress() }
+                    onBack = { navController.popBackStack() }
                 )
             }
             
@@ -960,7 +922,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                 val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
                 PublicProfileScreen(
                     userId = userId,
-                    onBack = { handleBackPress() }
+                    onBack = { navController.popBackStack() }
                 )
             }
                 composable(Screen.Downloads.route) { 
@@ -983,14 +945,14 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
             composable(Screen.Social.route) {
                 SocialScreen(
                     onChatSelected = { convId -> navController.navigate("chat/$convId") },
-                    onBack = { handleBackPress() }
+                    onBack = { navController.popBackStack() }
                 )
             }
             composable("chat/{conversationId}") { backStackEntry ->
                 val convId = backStackEntry.arguments?.getString("conversationId") ?: return@composable
                 ChatScreen(
                     conversationId = convId,
-                    onBack = { handleBackPress() },
+                    onBack = { navController.popBackStack() },
                     onUserClick = { userId ->
                         navController.navigate(Screen.PublicProfile.createRoute(userId))
                     }
@@ -998,21 +960,21 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
             }
             composable(Screen.Share.route) {
                 ShareScreen(
-                    onBack = { handleBackPress() }
+                    onBack = { navController.popBackStack() }
                 )
             }
 
             
                 composable(Screen.Security.route) {
-                    SecurityScreen(onBack = { handleBackPress() })
+                    SecurityScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.Subscription.route) {
-                    SubscriptionScreen(onBack = { handleBackPress() })
+                    SubscriptionScreen(onBack = { navController.popBackStack() })
                 }
 
-                composable(Screen.Extensions.route) { com.example.ui.screens.extensions.ExtensionsScreen(onBackClick = { handleBackPress() }) }
+                composable(Screen.Extensions.route) { com.example.ui.screens.extensions.ExtensionsScreen(onBackClick = { navController.popBackStack() }) }
                 composable(Screen.Settings.route) { SettingsScreen() }
-                composable(Screen.HelpSupport.route) { com.example.ui.screens.profile.HelpSupportScreen(onBack = { handleBackPress() }) }
+                composable(Screen.HelpSupport.route) { com.example.ui.screens.profile.HelpSupportScreen(onBack = { navController.popBackStack() }) }
                 composable(Screen.About.route) { AboutScreen() }
                 composable(Screen.Trending.route) {
                     TrendingScreen(
@@ -1023,7 +985,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                                 navController.navigate(Screen.SeriesDetails.createRoute(id))
                             }
                         },
-                        onBack = { handleBackPress() }
+                        onBack = { navController.popBackStack() }
                     )
                 }
                 composable(Screen.Popular.route) {
@@ -1035,7 +997,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                                 navController.navigate(Screen.SeriesDetails.createRoute(id))
                             }
                         },
-                        onBack = { handleBackPress() }
+                        onBack = { navController.popBackStack() }
                     )
                 }
                 composable(Screen.Upcoming.route) {
@@ -1047,7 +1009,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                         navController.navigate(Screen.SeriesDetails.createRoute(id))
                     }
                 },
-                onBack = { handleBackPress() }
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Screen.NewReleases.route) {
@@ -1059,7 +1021,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                                 navController.navigate(Screen.SeriesDetails.createRoute(id))
                             }
                         },
-                        onBack = { handleBackPress() }
+                        onBack = { navController.popBackStack() }
                     )
                 }
                 composable(Screen.Watching.route) {
@@ -1071,7 +1033,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                                 navController.navigate(Screen.SeriesDetails.createRoute(id))
                             }
                         },
-                        onBack = { handleBackPress() }
+                        onBack = { navController.popBackStack() }
                     )
                 }
                 
@@ -1079,7 +1041,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                     val personId = backStackEntry.arguments?.getString("personId") ?: return@composable
                     com.example.ui.screens.details.PersonDetailsScreen(
                         personId = personId,
-                        onBack = { handleBackPress() },
+                        onBack = { navController.popBackStack() },
                         onMovieClick = {  com.example.utils.AdManager.showInterstitial(context)
 navController.navigate(Screen.MovieDetails.createRoute(it)) },
                         onSeriesClick = {  com.example.utils.AdManager.showInterstitial(context)
@@ -1091,7 +1053,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                     val movieId = backStackEntry.arguments?.getString("movieId") ?: return@composable
                     MovieDetailsScreen(
                         movieId = movieId, 
-                        onBack = { handleBackPress() },
+                        onBack = { navController.popBackStack() },
                         onPersonClick = { personId -> navController.navigate("person/$personId") },
                         onNavigateToExtensions = { navController.navigate(Screen.Extensions.route) },
                         onPlay = { title, url, server, website, posterUrl -> 
@@ -1113,7 +1075,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                     val seriesId = backStackEntry.arguments?.getString("seriesId") ?: return@composable
                     SeriesDetailsScreen(
                         seriesId = seriesId, 
-                        onBack = { handleBackPress() },
+                        onBack = { navController.popBackStack() },
                         onPersonClick = { personId -> navController.navigate("person/$personId") },
                         onNavigateToExtensions = { navController.navigate(Screen.Extensions.route) },
                         onPlay = { title, url, server, website, posterUrl -> 
@@ -1159,7 +1121,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(it)) }
                         url = decodedUrl,
                         targetServer = decodedServer,
                         website = decodedWebsite,
-                        onBack = { handleBackPress() }
+                        onBack = { navController.popBackStack() }
                     )
                 }
             }
