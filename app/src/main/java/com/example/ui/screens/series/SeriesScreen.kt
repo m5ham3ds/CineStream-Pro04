@@ -134,7 +134,7 @@ fun SeriesScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                            items(categories, key = { it }) { category ->
+                            items(categories, key = { it.id }) { category ->
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
