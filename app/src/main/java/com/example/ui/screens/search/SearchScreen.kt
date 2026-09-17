@@ -85,7 +85,7 @@ fun SearchScreen(
                 .padding(horizontal = 16.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(8.dp))
             TextField(
                 value = searchQuery,
@@ -105,7 +105,7 @@ fun SearchScreen(
             )
             Box(modifier = Modifier.width(1.dp).height(24.dp).background(MaterialTheme.colorScheme.surfaceVariant))
             Spacer(modifier = Modifier.width(12.dp))
-            Icon(Icons.Default.FilterAlt, contentDescription = "Filter", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp).clickable { /* Filter */ })
+            Icon(Icons.Default.FilterAlt, contentDescription = stringResource(R.string.filter), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp).clickable { /* Filter */ })
         }
 
         if (searchQuery.isEmpty()) {
@@ -247,7 +247,7 @@ fun SearchScreen(
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(recent.second, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                         }
-                        Icon(Icons.Default.Close, contentDescription = "Remove", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp).clickable { /* Remove */ })
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.remove), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp).clickable { /* Remove */ })
                     }
                 }
             }

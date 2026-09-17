@@ -228,7 +228,7 @@ fun ShareScreen(
                                     .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
+                                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.send), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
@@ -263,7 +263,7 @@ fun ShareScreen(
                                     .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Download, contentDescription = "Receive", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Download, contentDescription = stringResource(R.string.receive), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(20.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
@@ -426,7 +426,7 @@ fun ShareScreen(
                             }
                         }
                     } else if (connectedEndpoint != null) {
-                        Text(stringResource(R.string.connected_to, connectedEndpoint?.name ?: ""), color = Color(0xFF10b981), fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.connected_to, connectedEndpoint?.name ?: ""), color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
@@ -458,13 +458,13 @@ fun ShareScreen(
                                                     .padding(vertical = 12.dp, horizontal = 8.dp),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                Icon(Icons.Outlined.Folder, contentDescription = "Folder", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
+                                                Icon(Icons.Outlined.Folder, contentDescription = stringResource(R.string.folder), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
                                                 Spacer(modifier = Modifier.width(16.dp))
                                                 Column(modifier = Modifier.weight(1f)) {
                                                     Text(folderName, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                                                     Text(stringResource(R.string.episodes_count, groupedSeries[folderName]?.size ?: 0), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                                                 }
-                                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Open", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.open), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                                             }
                                         }
                                     }
@@ -474,7 +474,7 @@ fun ShareScreen(
                                             modifier = Modifier.fillMaxWidth().clickable { selectedFolder = null }.padding(vertical = 8.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
+                                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.primary)
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(stringResource(R.string.back_to_folders), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                         }
@@ -515,7 +515,7 @@ fun ShareScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (connectedEndpoint != null) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10b981), modifier = Modifier.size(64.dp))
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(64.dp))
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(stringResource(R.string.connected_to, connectedEndpoint!!.name), fontWeight = FontWeight.Bold)
                         Text(stringResource(R.string.waiting_for_files), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -527,7 +527,7 @@ fun ShareScreen(
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Outlined.QrCode2, contentDescription = "QR Code", tint = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize())
+                            Icon(Icons.Outlined.QrCode2, contentDescription = stringResource(R.string.qr_code), tint = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize())
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
@@ -545,8 +545,8 @@ fun ShareScreen(
             }
         )
     }
-}
 
+    }
 @Composable
 fun RowScope.ContentTypeCard(title: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit) {
     Card(
@@ -566,8 +566,8 @@ fun RowScope.ContentTypeCard(title: String, icon: ImageVector, isSelected: Boole
             Icon(icon, contentDescription = title, tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
             Spacer(modifier = Modifier.height(8.dp))
             Text(title, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, textAlign = TextAlign.Center)
-        }
     }
+}
 }
 
 @Composable
@@ -597,11 +597,11 @@ fun RecentTransferItem(title: String, type: String, size: String, isSent: Boolea
                 Icon(
                     if (isSent) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
                     contentDescription = null,
-                    tint = if (isSent) MaterialTheme.colorScheme.primary else Color(0xFF3b82f6),
+                    tint = if (isSent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(12.dp)
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                Text(if (isSent) stringResource(R.string.sent) else stringResource(R.string.received), color = if (isSent) MaterialTheme.colorScheme.primary else Color(0xFF3b82f6), fontSize = 11.sp)
+                Text(if (isSent) stringResource(R.string.sent) else stringResource(R.string.received), color = if (isSent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
             }
             Text(if (isSent) "To: $targetDevice" else "From: $targetDevice", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
@@ -610,9 +610,9 @@ fun RecentTransferItem(title: String, type: String, size: String, isSent: Boolea
             Text(time, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.CheckCircleOutline, contentDescription = null, tint = Color(0xFF10b981), modifier = Modifier.size(14.dp))
+                Icon(Icons.Default.CheckCircleOutline, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(stringResource(R.string.completed), color = Color(0xFF10b981), fontSize = 11.sp)
+                Text(stringResource(R.string.completed), color = MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
             }
         }
     }
@@ -642,7 +642,7 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
             Text(stringResource(R.string.android_ready), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
         
-        Icon(Icons.Default.SignalCellularAlt, contentDescription = "Signal", tint = Color(0xFF10b981), modifier = Modifier.size(20.dp))
+        Icon(Icons.Default.SignalCellularAlt, contentDescription = stringResource(R.string.signal), tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(16.dp))
         
         Button(
@@ -679,6 +679,12 @@ fun SendItemRow(item: DownloadItem, context: android.content.Context, p2pManager
             Text(if (item.isMovie) "Movie" else "Episode", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
         Spacer(modifier = Modifier.weight(1f))
-        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.send), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
     }
-}
+
+    }
+
+
+
+
+

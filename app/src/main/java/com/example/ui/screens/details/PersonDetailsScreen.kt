@@ -69,7 +69,7 @@ fun PersonDetailsScreen(
                 title = { Text(uiState.person?.name ?: "", color = MaterialTheme.colorScheme.onBackground, fontSize = 20.sp, fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 actions = {
@@ -80,7 +80,7 @@ fun PersonDetailsScreen(
                             .background(MaterialTheme.colorScheme.surface, CircleShape)
                             .size(36.dp)
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = "Share", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(18.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -178,7 +178,7 @@ fun PersonDetailsScreen(
                                 .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.PhotoLibrary, contentDescription = "Gallery", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.PhotoLibrary, contentDescription = stringResource(R.string.gallery), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(16.dp))
                         }
                     }
 
@@ -198,7 +198,7 @@ fun PersonDetailsScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(lastName, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, lineHeight = 32.sp)
                                     Spacer(modifier = Modifier.width(6.dp))
-                                    Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                    Icon(Icons.Default.CheckCircle, contentDescription = stringResource(R.string.verified), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                                 }
                             }
                         }

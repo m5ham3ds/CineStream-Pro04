@@ -1,45 +1,32 @@
+with open("app/src/main/java/com/example/ui/screens/details/DetailsScreens.kt", "r") as f:
+    c = f.read()
+
+# For MovieDetailsScreen, the end is before SeriesDetailsScreen
 import re
+match = re.search(r'\n(        \}\n    \}\n\})(\n\n@Composable\nfun SeriesDetailsScreen)', c)
+if match:
+    c = c[:match.start(1)] + "            }\n" + match.group(1) + match.group(2) + c[match.end():]
+else:
+    print("Could not find end of MovieDetailsScreen")
 
-# Fix MovieDetailsScreen
-with open("app/src/main/java/com/example/ui/screens/details/MovieDetailsScreen.kt", "r") as f:
-    movie_content = f.read()
+match = re.search(r'\n(            \}\n        \}\n    \}\n\})(\n@Composable\nfun AnimatedDownloadIcon)', c)
+if match:
+    # wait, the grep showed:
+    # 925-            }$
+    # 926-        }$
+    # 927-    }$
+    # 928-}$
+    # Let's replace the whole block
+    pass
 
-# Replace the "Movie not found" text with the Skeleton
-target_movie_error = """        if (movie == null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.movie_not_found), color = MaterialTheme.colorScheme.onBackground)
-            }
-            return
-        }"""
-replacement_movie_error = """        if (movie == null) {
-            com.example.ui.components.MovieDetailsSkeleton()
-            return
-        }"""
+# safer replacement for SeriesDetailsScreen:
+match = re.search(r'\n            \}\n        \}\n    \}\n\}(\n@Composable\nfun AnimatedDownloadIcon)', c)
+if match:
+    # Add two closing braces: '            }\n        }\n'
+    c = c[:match.start(1)-18] + "                }\n            }\n            }\n        }\n    }\n}" + match.group(1) + c[match.end():]
+else:
+    print("Could not find end of SeriesDetailsScreen")
 
-movie_content = movie_content.replace(target_movie_error, replacement_movie_error)
-
-with open("app/src/main/java/com/example/ui/screens/details/MovieDetailsScreen.kt", "w") as f:
-    f.write(movie_content)
-
-
-# Fix SeriesDetailsScreen
-with open("app/src/main/java/com/example/ui/screens/details/SeriesDetailsScreen.kt", "r") as f:
-    series_content = f.read()
-
-# Replace the "Series not found" text with the Skeleton
-target_series_error = """        if (series == null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.series_not_found), color = MaterialTheme.colorScheme.onBackground)
-            }
-            return
-        }"""
-replacement_series_error = """        if (series == null) {
-            com.example.ui.components.MovieDetailsSkeleton() // Reuse movie skeleton since layout is similar
-            return
-        }"""
-        
-series_content = series_content.replace(target_series_error, replacement_series_error)
-
-with open("app/src/main/java/com/example/ui/screens/details/SeriesDetailsScreen.kt", "w") as f:
-    f.write(series_content)
+with open("app/src/main/java/com/example/ui/screens/details/DetailsScreens.kt", "w") as f:
+    f.write(c)
 

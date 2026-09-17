@@ -72,11 +72,12 @@ fun HomeScreen(
         transitionFinished = true
     }
 
-    if (uiState.isLoading || !transitionFinished) {
+    
+
+        if (uiState.isLoading || !transitionFinished) {
         MediaScreenSkeleton()
         return
     }
-
     if (uiState.error != null && uiState.trendingMovies.isEmpty()) {
         MediaScreenSkeleton()
         return
@@ -437,7 +438,8 @@ if (showBottomSheet) {
             )
         }
     }
-}
+
+        }
 
 
 
@@ -495,11 +497,13 @@ fun SectionTitle(title: String, onSeeAllClick: (() -> Unit)? = null) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = "See All",
+                    contentDescription = stringResource(R.string.see_all),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp)
                 )
             }
         }
-    }
+    
+
+}
 }

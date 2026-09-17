@@ -99,7 +99,7 @@ fun SocialScreen(
                         viewModel.searchUsers(it)
                     },
                     placeholder = { Text(stringResource(R.string.search_username), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search), tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(1.dp, primaryRed.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
@@ -158,7 +158,7 @@ fun SocialScreen(
                                     .clickable { /* TODO */ },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Add Story", tint = primaryRed, modifier = Modifier.size(32.dp))
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_story), tint = primaryRed, modifier = Modifier.size(32.dp))
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(stringResource(R.string.add_story), color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp)
@@ -226,9 +226,8 @@ fun SocialScreen(
                     }
                 }
             }
-        }
     }
-}
+}}
 
 private fun formatTime(timeMillis: Long): String {
     if (timeMillis == 0L) return ""
@@ -326,4 +325,9 @@ fun ChatListItem(name: String, message: String, time: String, unreadCount: Int, 
             }
         }
     }
+
+    
+
+
+
 }

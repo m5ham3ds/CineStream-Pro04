@@ -185,7 +185,7 @@ fun MovieDetailsScreen(
                         
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Star, contentDescription = "Rating", tint = Color(0xFFFFC107), modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Star, contentDescription = stringResource(R.string.rating_r), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(String.format("%.1f", movie.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                             }
@@ -219,7 +219,7 @@ fun MovieDetailsScreen(
                             
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = "Rating", tint = Color(0xFFFFC107), modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Default.Star, contentDescription = stringResource(R.string.rating_r), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(String.format("%.1f", movie.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                                 }
@@ -252,7 +252,7 @@ fun MovieDetailsScreen(
                         modifier = Modifier.weight(1f).height(50.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.play_now), tint = MaterialTheme.colorScheme.onBackground)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(if (downloadItem?.isCompleted == true) "Resume Offline" else "Resume", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
@@ -291,11 +291,11 @@ fun MovieDetailsScreen(
                             )
                     ) {
                         if (downloadItem?.isCompleted == true) {
-                            Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.completed), tint = MaterialTheme.colorScheme.primary)
                         } else if (downloadItem != null) {
                             AnimatedDownloadIcon(isPaused = downloadItem.isPaused)
                         } else {
-                            Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
+                            Icon(Icons.Default.Download, contentDescription = stringResource(R.string.downloads), tint = MaterialTheme.colorScheme.onBackground)
                         }
                     }
                     IconButton(
@@ -308,7 +308,7 @@ fun MovieDetailsScreen(
                         },
                         modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
-                        Icon(if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, contentDescription = "Favorite", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, contentDescription = stringResource(R.string.add_to_library_favorites), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 }
                 
@@ -402,11 +402,11 @@ fun MovieDetailsScreen(
                     .padding(top = padding.calculateTopPadding() + 8.dp, start = 16.dp)
                     .background(MaterialTheme.colorScheme.background.copy(alpha=0.3f), CircleShape)
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
             }
 
-        }
     }
+}
 }
 
 @Composable
@@ -464,7 +464,6 @@ fun SeriesDetailsScreen(
             }
             return@PullToRefreshBox
         }
-
         if (series != null) {
             val listState = androidx.compose.foundation.lazy.rememberLazyListState()
         val isScrollNearBottom by remember {
@@ -525,7 +524,7 @@ fun SeriesDetailsScreen(
                         
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Star, contentDescription = "Rating", tint = Color(0xFFFFC107), modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Star, contentDescription = stringResource(R.string.rating_r), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(String.format("%.1f", series.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                             }
@@ -559,7 +558,7 @@ fun SeriesDetailsScreen(
                             
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = "Rating", tint = Color(0xFFFFC107), modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Default.Star, contentDescription = stringResource(R.string.rating_r), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(String.format("%.1f", series.rating), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                                 }
@@ -586,7 +585,7 @@ fun SeriesDetailsScreen(
                         modifier = Modifier.weight(1f).height(50.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.play_now), tint = MaterialTheme.colorScheme.onBackground)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.play), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
                     }
@@ -596,7 +595,7 @@ fun SeriesDetailsScreen(
                         },
                         modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
-                        Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.Default.Download, contentDescription = stringResource(R.string.downloads), tint = MaterialTheme.colorScheme.onBackground)
                     }
                     IconButton(
                         onClick = {
@@ -608,7 +607,7 @@ fun SeriesDetailsScreen(
                         },
                         modifier = Modifier.size(50.dp).background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
                     ) {
-                        Icon(if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, contentDescription = "Favorite", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, contentDescription = stringResource(R.string.add_to_library_favorites), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 }
                 
@@ -809,7 +808,7 @@ fun SeriesDetailsScreen(
                     .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 8.dp, start = 16.dp)
                     .background(MaterialTheme.colorScheme.background.copy(alpha=0.3f), CircleShape)
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
             }
         }
     }
@@ -831,7 +830,7 @@ fun TrailerCard(trailer: VideoTrailer, onClick: () -> Unit) {
             modifier = Modifier.fillMaxSize()
         )
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background.copy(alpha=0.3f)), contentAlignment = Alignment.Center) {
-            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(48.dp))
+            Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.play_now), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(48.dp))
         }
         Text(
             text = trailer.name,
@@ -888,7 +887,7 @@ fun EpisodeCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant)
             )
-            Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.align(Alignment.Center))
+            Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.play_now), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.align(Alignment.Center))
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -902,7 +901,7 @@ fun EpisodeCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Star, contentDescription = "Rating", tint = Color(0xFFFFC107), modifier = Modifier.size(12.dp))
+                Icon(Icons.Default.Star, contentDescription = stringResource(R.string.rating_r), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(12.dp))
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(String.format("%.1f", episode.rating), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -922,15 +921,15 @@ fun EpisodeCard(
             contentAlignment = Alignment.Center
         ) {
             if (downloadItem?.isCompleted == true) {
-                Icon(Icons.Default.Check, contentDescription = "Downloaded", tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Default.Check, contentDescription = stringResource(R.string.completed), tint = MaterialTheme.colorScheme.primary)
             } else if (downloadItem != null) {
                 AnimatedDownloadIcon(isPaused = downloadItem.isPaused)
             } else {
-                Icon(Icons.Default.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.onBackground)
-            }
-        }
+                Icon(Icons.Default.Download, contentDescription = stringResource(R.string.downloads), tint = MaterialTheme.colorScheme.onBackground)
     }
-}
+    }
+    }
+    }
 @Composable
 fun AnimatedDownloadIcon(isPaused: Boolean) {
     val infiniteTransition = androidx.compose.animation.core.rememberInfiniteTransition()
@@ -950,9 +949,17 @@ fun AnimatedDownloadIcon(isPaused: Boolean) {
         val tint = if (isPaused) androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.5f) else androidx.compose.material3.MaterialTheme.colorScheme.primary
         androidx.compose.material3.Icon(
             androidx.compose.material.icons.Icons.Default.ArrowDownward, 
-            contentDescription = "Downloading", 
+            contentDescription = stringResource(R.string.downloading), 
             tint = tint, 
             modifier = if (isPaused) androidx.compose.ui.Modifier else androidx.compose.ui.Modifier.offset(y = offset.dp)
         )
-    }
+    
+
+
 }
+
+
+
+
+}
+

@@ -66,10 +66,10 @@ fun ProfileScreen(
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
     var showLogoutConfirm by remember { mutableStateOf(false) }
 
-    val bgColor = Color(0xFF09090C)
-    val cardBg = Color(0xFF16161A)
+    val bgColor = MaterialTheme.colorScheme.background
+    val cardBg = MaterialTheme.colorScheme.surfaceVariant
     val redPrimary = androidx.compose.material3.MaterialTheme.colorScheme.primary
-    val textGrey = Color(0xFFAAAAAA)
+    val textGrey = MaterialTheme.colorScheme.onSurfaceVariant
 
     if (showLogoutConfirm) {
         AlertDialog(
@@ -87,7 +87,7 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutConfirm = false }) {
-                    Text("Cancel", color = Color.White)
+                    Text(stringResource(R.string.cancel), color = Color.White)
                 }
             },
             containerColor = cardBg
@@ -126,7 +126,7 @@ fun ProfileScreen(
                         .size(64.dp)
                         .clip(CircleShape)
                         .border(2.dp, redPrimary, CircleShape)
-                        .background(Color(0xFF1C1C1E)),
+                        .background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
                     val initial = currentUser?.firstName?.firstOrNull()?.toString() 
@@ -141,7 +141,7 @@ fun ProfileScreen(
                             .offset(x = (-4).dp, y = (-4).dp)
                             .size(20.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF2C2C2E)),
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(Icons.Outlined.CameraAlt, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
@@ -167,7 +167,7 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = "Edit Profile",
+                            contentDescription = stringResource(R.string.edit_profile),
                             tint = redPrimary,
                             modifier = Modifier
                                 .size(16.dp)
@@ -193,7 +193,7 @@ fun ProfileScreen(
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF4A0E13), Color(0xFF2A080C))
+                                    colors = listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.surface)
                                 )
                             )
                             .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -201,13 +201,13 @@ fun ProfileScreen(
                     ) {
                         Text("👑", fontSize = 9.sp)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Premium Plan >", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                        Text(stringResource(R.string.premium_plan) + " >", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                     }
                 }
 
                 // Right Text Block
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("GOOD\nSTORIES\nNEVER\nEND", color = textGrey, fontSize = 9.sp, textAlign = TextAlign.End, lineHeight = 14.sp)
+                    Text(stringResource(R.string.good_stories_never_end), color = textGrey, fontSize = 9.sp, textAlign = TextAlign.End, lineHeight = 14.sp)
                     Spacer(modifier = Modifier.height(4.dp))
                     Box(modifier = Modifier.width(24.dp).height(2.dp).background(redPrimary))
                 }
@@ -238,10 +238,10 @@ fun ProfileScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .border(1.dp, Color(0xFF3A1015), RoundedCornerShape(16.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color(0xFF2A0C10), cardBg)
+                            colors = listOf(MaterialTheme.colorScheme.surface, cardBg)
                         )
                     )
                     .padding(16.dp),
@@ -262,7 +262,7 @@ fun ProfileScreen(
                         fontSize = 18.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Enjoy ad-free streaming\nand exclusive content.", color = textGrey, fontSize = 9.sp, lineHeight = 16.sp)
+                    Text(stringResource(R.string.enjoy_ad_free), color = textGrey, fontSize = 9.sp, lineHeight = 16.sp)
                 }
                 
                 Button(
@@ -271,7 +271,7 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(24.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Text("Manage Plan →", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.manage_plan) + " →", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -284,7 +284,7 @@ fun ProfileScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(stringResource(R.string.account), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text("Manage your account settings", color = textGrey, fontSize = 9.sp)
+                Text(stringResource(R.string.settings_desc), color = textGrey, fontSize = 9.sp)
             }
 
             // Account List
@@ -350,7 +350,7 @@ fun ProfileListItem(icon: ImageVector, title: String, subtitle: String, isLast: 
             modifier = Modifier
                 .size(30.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF1E1E22)), // Slightly lighter dark circle
+                .background(MaterialTheme.colorScheme.surface), // Slightly lighter dark circle
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = tintColor, modifier = Modifier.size(16.dp))
@@ -364,6 +364,6 @@ fun ProfileListItem(icon: ImageVector, title: String, subtitle: String, isLast: 
         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
     }
     if (!isLast) {
-        HorizontalDivider(modifier = Modifier.padding(start = 68.dp), color = Color(0xFF222225), thickness = 1.dp)
+        HorizontalDivider(modifier = Modifier.padding(start = 68.dp), color = MaterialTheme.colorScheme.outlineVariant, thickness = 1.dp)
     }
 }

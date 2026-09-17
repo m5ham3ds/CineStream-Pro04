@@ -384,7 +384,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                             .align(Alignment.CenterStart)
                             .padding(32.dp)
                     ) {
-                        Icon(Icons.Default.Lock, contentDescription = "Unlock", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(32.dp))
+                        Icon(Icons.Default.Lock, contentDescription = stringResource(R.string.unlock), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(32.dp))
                     }
                 } else {
                     // Top Bar
@@ -399,7 +399,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack, 
-                                contentDescription = "Back", 
+                                contentDescription = stringResource(R.string.back), 
                                 tint = MaterialTheme.colorScheme.onBackground, 
                                 modifier = Modifier.size(28.dp).clickable { onBack() }
                             )
@@ -437,7 +437,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
                                 Icons.Default.MoreVert, 
-                                contentDescription = "Menu", 
+                                contentDescription = stringResource(R.string.menu), 
                                 tint = MaterialTheme.colorScheme.onBackground, 
                                 modifier = Modifier.size(28.dp).clickable { /* Menu */ }
                             )
@@ -474,7 +474,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                                     .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), CircleShape)
                                     .clickable { exoPlayer.seekTo(exoPlayer.currentPosition - 10000) }
                             ) {
-                                Icon(Icons.Default.Replay10, contentDescription = "Rewind", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
+                                Icon(Icons.Default.Replay10, contentDescription = stringResource(R.string.rewind), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
                             }
                             
                             Box(
@@ -489,7 +489,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                                 } else {
                                     Icon(
                                         if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                        contentDescription = "Play/Pause",
+                                        contentDescription = stringResource(R.string.play_pause),
                                         tint = MaterialTheme.colorScheme.onBackground,
                                         modifier = Modifier.size(36.dp)
                                     )
@@ -503,7 +503,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                                     .border(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f), CircleShape)
                                     .clickable { exoPlayer.seekTo(exoPlayer.currentPosition + 10000) }
                             ) {
-                                Icon(Icons.Default.Forward10, contentDescription = "Forward", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
+                                Icon(Icons.Default.Forward10, contentDescription = stringResource(R.string.forward), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(28.dp))
                             }
                         }
                     }

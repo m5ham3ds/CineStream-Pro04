@@ -86,12 +86,12 @@ fun HelpSupportScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.options))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -131,12 +131,12 @@ fun HelpSupportScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(stringResource(R.string.cinestream_support), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
-                        Text("We're here to help you", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                        Text(stringResource(R.string.help_support_desc), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     }
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFF1E3A2A)) // Dark green tint
+                            .background(MaterialTheme.colorScheme.primaryContainer) // Dark green tint
                             .border(1.dp, Color.Green, RoundedCornerShape(16.dp))
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
@@ -194,7 +194,7 @@ fun HelpSupportScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { /* Attachment */ }) {
-                    Icon(Icons.Default.AttachFile, contentDescription = "Attach", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Icon(Icons.Default.AttachFile, contentDescription = stringResource(R.string.attach), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 
                 TextField(
@@ -213,7 +213,7 @@ fun HelpSupportScreen(
                     ),
                     trailingIcon = {
                         IconButton(onClick = { /* Emoji */ }) {
-                            Icon(Icons.Outlined.EmojiEmotions, contentDescription = "Emoji", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Icon(Icons.Outlined.EmojiEmotions, contentDescription = stringResource(R.string.emoji), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 )
@@ -233,7 +233,7 @@ fun HelpSupportScreen(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.send), tint = Color.White)
                 }
             }
         }
@@ -290,7 +290,7 @@ fun SupportMessageBubble(message: SupportMessage) {
                 Text(text = timeString, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 if (message.isFromUser) {
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.Default.Check, contentDescription = "Sent", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.Check, contentDescription = stringResource(R.string.sent), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
                 }
             }
         }

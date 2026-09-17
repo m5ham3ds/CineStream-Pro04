@@ -37,7 +37,7 @@ fun SubscriptionScreen(onBack: () -> Unit) {
                 title = { Text(stringResource(R.string.subscription), color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
@@ -84,7 +84,7 @@ fun SubscriptionScreen(onBack: () -> Unit) {
             
             // Premium Plan
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2C1E20)),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 modifier = Modifier.fillMaxWidth().border(2.dp, primaryRed, RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp)
             ) {

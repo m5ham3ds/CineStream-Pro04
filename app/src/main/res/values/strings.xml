@@ -401,5 +401,36 @@ to your taste.</string>
     <string name="not_released_yet">This work has not been released yet, but will be available soon.</string>
     <string name="ok_button">OK</string>
     <string name="batch_download">Batch Download</string>
+    <string name="empty">Empty</string>
+    <string name="pause_resume">Pause/Resume</string>
+    <string name="logo">Logo</string>
+    <string name="mark_all_read">Mark all as read</string>
+    <string name="filter">Filter</string>
+    <string name="folder">Folder</string>
+    <string name="open">Open</string>
+    <string name="qr_code">QR Code</string>
+    <string name="signal">Signal</string>
+    <string name="more">More</string>
+    <string name="close">Close</string>
+    <string name="back">Back</string>
+    <string name="receive">Receive</string>
+    <string name="gallery">Gallery</string>
+    <string name="verified">Verified</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="edit_photo">Edit Photo</string>
+    <string name="avatar">Avatar</string>
+    <string name="options">Options</string>
+    <string name="attach">Attach</string>
+    <string name="emoji">Emoji</string>
+    <string name="help_support_desc">We\'re here to help you</string>
+    <string name="unlock">Unlock</string>
+    <string name="menu">Menu</string>
+    <string name="rewind">Rewind</string>
+    <string name="forward">Forward</string>
+    <string name="play_pause">Play/Pause</string>
+    <string name="no_other_sites">No other sites</string>
+    <string name="no_other_sites_desc">Sorry, failed to search all available sites.</string>
+    <string name="cancel_op_title">Cancel Operation</string>
+    <string name="cancel_op_desc">Are you sure you want to cancel the operation?</string>
 </resources>
 

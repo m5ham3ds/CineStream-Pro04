@@ -135,7 +135,7 @@ fun DownloadsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.Download, contentDescription = "Downloads", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
+                    Icon(Icons.Outlined.Download, contentDescription = stringResource(R.string.downloads), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.downloads), color = MaterialTheme.colorScheme.onBackground, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                 }
@@ -365,11 +365,11 @@ fun DownloadItemRow(item: DownloadItem, onClick: () -> Unit, onPauseResume: () -
         Spacer(modifier = Modifier.width(8.dp))
         if (!item.isCompleted) {
             IconButton(onClick = onPauseResume) {
-                Icon(if (item.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause, contentDescription = "Pause/Resume", tint = MaterialTheme.colorScheme.onBackground)
+                Icon(if (item.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause, contentDescription = stringResource(R.string.pause_resume), tint = MaterialTheme.colorScheme.onBackground)
             }
         }
         IconButton(onClick = onDelete) {
-            Icon(Icons.Default.Close, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.delete), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

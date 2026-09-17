@@ -213,7 +213,7 @@ Dialog(
         val isNormal = bypassStatus == "NORMAL"
         val isCloudflare = bypassStatus == "CLOUDFLARE"
 
-        val activeColor = if (isVerified || isNormal) Color(0xFF00C853) else Color(0xFFFF1111)
+        val activeColor = if (isVerified || isNormal) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
 
 
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -523,7 +523,7 @@ Dialog(
                 else -> androidx.compose.material.icons.Icons.Outlined.CloudDownload
             }
             
-            val iconTint = if (isFailed) Color(0xFFFF1111) else if (isVerified || isNormal) Color(0xFF00C853) else MaterialTheme.colorScheme.primary
+            val iconTint = if (isFailed) MaterialTheme.colorScheme.error else if (isVerified || isNormal) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
             
             val isHorizontal = isLoading && !isCloudflare && extractedServers.isEmpty() && !isFailed
             
@@ -532,7 +532,7 @@ Dialog(
                     .fillMaxWidth(0.95f)
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFF101014))
+                    .background(MaterialTheme.colorScheme.background)
                     .border(1.dp, iconTint.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
                     .clickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
@@ -584,7 +584,7 @@ Dialog(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 val progress = (currentSiteIndex.toFloat() / safeSites.size.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
                                 val animatedProgress by androidx.compose.animation.core.animateFloatAsState(targetValue = if (progress == 0f) 0.1f else progress)
-                                Box(modifier = Modifier.fillMaxWidth(0.6f).height(4.dp).clip(CircleShape).background(Color(0xFF222222))) {
+                                Box(modifier = Modifier.fillMaxWidth(0.6f).height(4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth(animatedProgress)
@@ -599,8 +599,8 @@ Dialog(
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                                 .size(36.dp)
-                                .background(Color(0xFF222225), CircleShape)
-                                .border(1.dp, Color(0xFF333333), CircleShape)
+                                .background(MaterialTheme.colorScheme.surface, CircleShape)
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape)
                                 .clip(CircleShape)
                                 .clickable {
                                     if (isLoading || isExtractingQuality) {
@@ -611,7 +611,7 @@ Dialog(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Close, contentDescription = "إغلاق", tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close), tint = Color.White, modifier = Modifier.size(16.dp))
                         }
                     }
                     
@@ -623,16 +623,16 @@ Dialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF220000))
-                                    .border(1.dp, Color(0x33FF1111), RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.errorContainer)
+                                    .border(1.dp, MaterialTheme.colorScheme.error, RoundedCornerShape(12.dp))
                                     .padding(16.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(androidx.compose.material.icons.Icons.Default.Error, contentDescription = null, tint = Color(0xFFFF1111), modifier = Modifier.size(24.dp))
+                                    Icon(androidx.compose.material.icons.Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(24.dp))
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = "عذراً، لم نتمكن من العثور على سيرفرات تعمل لهذا العمل في جميع المواقع المدعومة.",
-                                        color = Color(0xFFFF4444),
+                                        color = MaterialTheme.colorScheme.error,
                                         style = MaterialTheme.typography.bodySmall,
                                         lineHeight = 18.sp
                                     )
@@ -650,7 +650,7 @@ Dialog(
                                     retryTrigger++
                                 },
                                 modifier = Modifier.fillMaxWidth().height(48.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF1111)),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                                 shape = RoundedCornerShape(24.dp)
                             ) {
                                 Icon(androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
@@ -663,12 +663,12 @@ Dialog(
                             Button(
                                 onClick = { showOpenBrowserConfirmDialog = true },
                                 modifier = Modifier.fillMaxWidth().height(48.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF222225)),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
                                 shape = RoundedCornerShape(24.dp)
                             ) {
-                                Icon(androidx.compose.material.icons.Icons.Default.OpenInBrowser, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                                Icon(androidx.compose.material.icons.Icons.Default.OpenInBrowser, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(stringResource(R.string.open_browser_manual), color = Color.LightGray, fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.open_browser_manual), color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
                             }
                             
                             Spacer(modifier = Modifier.height(12.dp))
@@ -676,20 +676,20 @@ Dialog(
                             Button(
                                 onClick = { showSkipSiteConfirmDialog = true },
                                 modifier = Modifier.fillMaxWidth().height(48.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF222225)),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
                                 shape = RoundedCornerShape(24.dp)
                             ) {
-                                Icon(androidx.compose.material.icons.Icons.Default.Language, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                                Icon(androidx.compose.material.icons.Icons.Default.Language, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(stringResource(R.string.skip_current), color = Color.LightGray, fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.skip_current), color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
                             }
                             
                             if (showOpenBrowserConfirmDialog) {
                                 androidx.compose.material3.AlertDialog(
                                     onDismissRequest = { showOpenBrowserConfirmDialog = false },
                                     title = { Text(stringResource(R.string.confirm_browser), color = MaterialTheme.colorScheme.onBackground) },
-                                    text = { Text(stringResource(R.string.confirm_open_browser), color = Color.LightGray) },
-                                    containerColor = Color(0xFF222225),
+                                    text = { Text(stringResource(R.string.confirm_open_browser), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    containerColor = MaterialTheme.colorScheme.surface,
                                     confirmButton = {
                                         androidx.compose.material3.TextButton(
                                             onClick = {
@@ -716,8 +716,8 @@ Dialog(
                                 androidx.compose.material3.AlertDialog(
                                     onDismissRequest = { showSkipSiteConfirmDialog = false },
                                     title = { Text(stringResource(R.string.confirm_skip), color = MaterialTheme.colorScheme.onBackground) },
-                                    text = { Text(stringResource(R.string.confirm_skip_site), color = Color.LightGray) },
-                                    containerColor = Color(0xFF222225),
+                                    text = { Text(stringResource(R.string.confirm_skip_site), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    containerColor = MaterialTheme.colorScheme.surface,
                                     confirmButton = {
                                         androidx.compose.material3.TextButton(
                                             onClick = {
@@ -745,9 +745,9 @@ Dialog(
                             if (showNoMoreExtensionsDialog) {
                                 androidx.compose.material3.AlertDialog(
                                     onDismissRequest = { showNoMoreExtensionsDialog = false },
-                                    title = { Text("لا يوجد مواقع أخرى", color = MaterialTheme.colorScheme.onBackground) },
-                                    text = { Text("عذراً، فشل البحث في جميع المواقع المتاحة.", color = Color.LightGray) },
-                                    containerColor = Color(0xFF222225),
+                                    title = { Text(stringResource(R.string.no_other_sites), color = MaterialTheme.colorScheme.onBackground) },
+                                    text = { Text(stringResource(R.string.no_other_sites_desc), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    containerColor = MaterialTheme.colorScheme.surface,
                                     confirmButton = {
                                         androidx.compose.material3.TextButton(
                                             onClick = {
@@ -756,7 +756,7 @@ Dialog(
                                                 onNavigateToExtensions()
                                             }
                                         ) {
-                                            Text("الإضافات", color = MaterialTheme.colorScheme.primary)
+                                            Text(stringResource(R.string.extensions), color = MaterialTheme.colorScheme.primary)
                                         }
                                     },
                                     dismissButton = {
@@ -766,7 +766,7 @@ Dialog(
                                                 onDismiss()
                                             }
                                         ) {
-                                            Text("إغلاق", color = Color.LightGray)
+                                            Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 )
@@ -781,8 +781,8 @@ Dialog(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clip(RoundedCornerShape(16.dp))
-                                            .background(Color(0xFF16161A))
-                                            .border(1.dp, Color(0xFF222225), RoundedCornerShape(16.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                                            .border(1.dp, MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                                             .clickable {
                                                 val finalUrl = extractedServerLinks[server] ?: ""
                                                 val dLink = extractedDownloadLinks[server] ?: ""
@@ -857,8 +857,8 @@ Dialog(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .clip(RoundedCornerShape(16.dp))
-                                                .background(Color(0xFF16161A))
-                                                .border(1.dp, Color(0xFF222225), RoundedCornerShape(16.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                                .border(1.dp, MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                                                 .clickable {
                                                     onPlay(quality.url, if (isDownloadMode) quality.name else (selectedServerForQuality ?: ""), currentSiteName)
                                                 }
@@ -866,7 +866,7 @@ Dialog(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Box(
-                                                modifier = Modifier.size(32.dp).background(Color(0x15FFFFFF), CircleShape),
+                                                modifier = Modifier.size(32.dp).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), CircleShape),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
@@ -876,9 +876,9 @@ Dialog(
                                             Spacer(modifier = Modifier.weight(1f))
                                                 
                                             val badgeColor = when {
-                                                quality.name.contains("1080") || quality.name.contains("FHD") -> Color(0xFFE91E63)
-                                                quality.name.contains("720") || quality.name.contains("HD") -> Color(0xFF9C27B0)
-                                                else -> Color(0xFF607D8B)
+                                                quality.name.contains("1080") || quality.name.contains("FHD") -> MaterialTheme.colorScheme.primary
+                                                quality.name.contains("720") || quality.name.contains("HD") -> MaterialTheme.colorScheme.secondary
+                                                else -> MaterialTheme.colorScheme.onSurfaceVariant
                                             }
                                             val badgeText = when {
                                                 quality.name.contains("1080") || quality.name.contains("FHD") -> "FHD"
@@ -920,9 +920,9 @@ Dialog(
         if (showCancelConfirmDialog) {
             androidx.compose.material3.AlertDialog(
                 onDismissRequest = { showCancelConfirmDialog = false },
-                title = { Text("إلغاء العملية", color = MaterialTheme.colorScheme.onBackground) },
-                text = { Text("هل أنت متأكد أنك تود إلغاء العملية؟", color = Color.LightGray) },
-                containerColor = Color(0xFF222225),
+                title = { Text(stringResource(R.string.cancel_op_title), color = MaterialTheme.colorScheme.onBackground) },
+                text = { Text(stringResource(R.string.cancel_op_desc), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                containerColor = MaterialTheme.colorScheme.surface,
                 confirmButton = {
                     androidx.compose.material3.TextButton(
                         onClick = {
@@ -930,12 +930,12 @@ Dialog(
                             onDismiss()
                         }
                     ) {
-                        Text("نعم", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.yes_cancel), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     androidx.compose.material3.TextButton(onClick = { showCancelConfirmDialog = false }) {
-                        Text("لا", color = MaterialTheme.colorScheme.onBackground)
+                        Text(stringResource(R.string.no), color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             )
@@ -993,7 +993,7 @@ fun StatusBadge(text: String, icon: androidx.compose.ui.graphics.vector.ImageVec
     ) {
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(12.dp))
         Spacer(modifier = Modifier.width(2.dp))
-        Text(text, color = Color.LightGray, fontSize = 9.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+        Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 9.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.width(2.dp))
         Box(modifier = Modifier.size(6.dp).background(statusColor, CircleShape))
 }}

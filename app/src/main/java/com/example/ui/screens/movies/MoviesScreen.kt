@@ -79,11 +79,12 @@ fun MoviesScreen(
         transitionFinished = true
     }
 
-    if (uiState.isLoading || !transitionFinished) {
+    
+
+        if (uiState.isLoading || !transitionFinished) {
         MediaScreenSkeleton()
         return
     }
-
     if (uiState.error != null && uiState.movies.isEmpty()) {
         MediaScreenSkeleton()
         return
@@ -354,4 +355,6 @@ if (showBottomSheet) {
                 }
             )
         }
-    }
+    
+        }
+    

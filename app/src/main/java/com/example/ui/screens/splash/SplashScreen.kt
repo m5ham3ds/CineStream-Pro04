@@ -77,7 +77,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF09090C))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Red glows at top corners
         Box(
@@ -122,11 +122,11 @@ fun SplashScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF09090C),
-                            Color(0xFF09090C).copy(alpha = 0.5f),
-                            Color(0xFF09090C).copy(alpha = 0.2f),
-                            Color(0xFF09090C).copy(alpha = 0.5f),
-                            Color(0xFF09090C)
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+                            MaterialTheme.colorScheme.background
                         )
                     )
                 )
@@ -144,7 +144,7 @@ fun SplashScreen(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF09090C))
+                    .background(MaterialTheme.colorScheme.background)
                     .border(4.dp, MaterialTheme.colorScheme.primary, CircleShape)
                     // Inner red glow
                     .background(

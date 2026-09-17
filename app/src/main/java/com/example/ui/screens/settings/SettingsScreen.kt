@@ -154,15 +154,15 @@ fun SettingsScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(modifier = Modifier.clip(CircleShape).background(if(themeMode == 0) MaterialTheme.colorScheme.primary else Color.Transparent).clickable { pendingThemeMode = 0 }.padding(8.dp)) {
-                        Icon(Icons.Outlined.Settings, contentDescription = "System", tint = if(themeMode == 0) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.system), tint = if(themeMode == 0) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                     }
                     Spacer(modifier = Modifier.width(4.dp))
                     Box(modifier = Modifier.clip(CircleShape).background(if(themeMode == 1) MaterialTheme.colorScheme.primary else Color.Transparent).clickable { pendingThemeMode = 1 }.padding(8.dp)) {
-                        Icon(Icons.Outlined.LightMode, contentDescription = "Light", tint = if(themeMode == 1) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Outlined.LightMode, contentDescription = stringResource(R.string.light), tint = if(themeMode == 1) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                     }
                     Spacer(modifier = Modifier.width(4.dp))
                     Box(modifier = Modifier.clip(CircleShape).background(if(themeMode == 2) MaterialTheme.colorScheme.primary else Color.Transparent).clickable { pendingThemeMode = 2 }.padding(8.dp)) {
-                        Icon(Icons.Outlined.DarkMode, contentDescription = "Dark", tint = if(themeMode == 2) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Outlined.DarkMode, contentDescription = stringResource(R.string.dark), tint = if(themeMode == 2) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                     }
                 }
             }
@@ -477,8 +477,8 @@ fun DownloadSettingsDialog(
         onDismissRequest = onDismiss,
         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        val darkBg = Color(0xFF0F0F11)
-        val cardBg = Color(0xFF19191B)
+        val darkBg = MaterialTheme.colorScheme.background
+        val cardBg = MaterialTheme.colorScheme.surfaceVariant
         val redPrimary = androidx.compose.material3.MaterialTheme.colorScheme.primary
         
         Box(
@@ -501,7 +501,7 @@ fun DownloadSettingsDialog(
                             modifier = Modifier
                                 .size(48.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF1C1C1E))
+                                .background(MaterialTheme.colorScheme.surface)
                                 .border(1.dp, redPrimary, RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
@@ -514,7 +514,7 @@ fun DownloadSettingsDialog(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF2C2C2E))
+                            .background(MaterialTheme.colorScheme.outlineVariant)
                             .clickable { onDismiss() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -547,7 +547,7 @@ fun DownloadSettingsDialog(
                         colors = androidx.compose.material3.SliderDefaults.colors(
                             thumbColor = Color.White,
                             activeTrackColor = redPrimary,
-                            inactiveTrackColor = Color(0xFF2C2C2E),
+                            inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant,
                             
                             
                         )
@@ -588,7 +588,7 @@ fun DownloadSettingsDialog(
                         colors = androidx.compose.material3.SliderDefaults.colors(
                             thumbColor = Color.White,
                             activeTrackColor = redPrimary,
-                            inactiveTrackColor = Color(0xFF2C2C2E),
+                            inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant,
                             
                             
                         )
@@ -613,7 +613,7 @@ fun DownloadSettingsDialog(
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 16.dp)) {
                         Icon(Icons.Default.Wifi, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Download Network", color = Color.LightGray, fontSize = 14.sp)
+                        Text(stringResource(R.string.download_network), color = Color.LightGray, fontSize = 14.sp)
                     }
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -658,9 +658,9 @@ fun DownloadSettingsDialog(
 
 @Composable
 fun NetworkOption(modifier: Modifier = Modifier, title: String, subtitle: String?, isSelected: Boolean, onClick: () -> Unit) {
-    val bgColor = if (isSelected) Color(0xFF2B1114) else Color(0xFF141416)
-    val borderColor = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary else Color(0xFF2C2C2E)
-    val iconColor = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary else Color(0xFF555555)
+    val bgColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+    val borderColor = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+    val iconColor = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
 
     Row(
         modifier = modifier

@@ -79,11 +79,12 @@ fun AnimeScreen(
         transitionFinished = true
     }
 
-    if (uiState.isLoading || !transitionFinished) {
+    
+
+        if (uiState.isLoading || !transitionFinished) {
         MediaScreenSkeleton()
         return
     }
-
     if (uiState.error != null && uiState.series.isEmpty()) {
         MediaScreenSkeleton()
         return
@@ -357,4 +358,7 @@ if (showBottomSheet) {
                 }
             )
         }
-    }
+    
+        }
+    
+

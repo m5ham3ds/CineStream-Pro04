@@ -57,13 +57,13 @@ fun NotificationsScreen(
                 title = { Text(stringResource(R.string.notifications), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (notifications.isNotEmpty()) {
                         IconButton(onClick = { viewModel.markAllAsRead() }) {
-                            Icon(Icons.Default.Check, contentDescription = "Mark all as read", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.mark_all_read), tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 },
@@ -140,7 +140,7 @@ fun NotificationCard(
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete), tint = Color.White)
             }
         },
         enableDismissFromStartToEnd = false

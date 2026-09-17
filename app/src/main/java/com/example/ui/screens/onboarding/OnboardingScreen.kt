@@ -267,7 +267,7 @@ fun PageOneContent() {
                 .padding(horizontal = 24.dp)
                 .align(Alignment.BottomCenter)
                 .border(1.dp, Color.DarkGray.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                .background(Color(0xFF0D0D0D).copy(alpha = 0.8f), RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.8f), RoundedCornerShape(20.dp))
                 .padding(vertical = 16.dp)
         ) {
             Row(
@@ -407,7 +407,7 @@ fun RowScope.SmallCard(icon: ImageVector, text: String) {
             .height(90.dp)
             .padding(horizontal = 4.dp)
             .border(1.dp, Color.DarkGray.copy(alpha=0.4f), RoundedCornerShape(16.dp))
-            .background(Color(0xFF0D0D0D).copy(alpha=0.8f), RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.background.copy(alpha=0.8f), RoundedCornerShape(16.dp))
             .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {

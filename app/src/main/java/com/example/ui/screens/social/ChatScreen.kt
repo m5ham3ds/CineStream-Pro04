@@ -119,7 +119,7 @@ fun ChatScreen(
                                     .background(bgColor, CircleShape)
                                     .padding(2.dp)
                             ) {
-                                Box(modifier = Modifier.fillMaxSize().background(Color(0xFF4CAF50), CircleShape))
+                                Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary, CircleShape))
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))

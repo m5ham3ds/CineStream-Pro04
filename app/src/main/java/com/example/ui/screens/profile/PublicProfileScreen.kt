@@ -60,7 +60,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                 title = { Text(stringResource(R.string.profile), color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = surfaceColor)
@@ -88,7 +88,7 @@ fun PublicProfileScreen(userId: String, onBack: () -> Unit) {
                         if (userProfile!!.photoUrl.isNotEmpty()) {
                             AsyncImage(
                                 model = userProfile!!.photoUrl,
-                                contentDescription = "Avatar",
+                                contentDescription = stringResource(R.string.avatar),
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )

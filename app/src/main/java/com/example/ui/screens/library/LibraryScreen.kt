@@ -139,7 +139,7 @@ fun LibraryScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         if (selectedTab == watchlistStr) Icons.Default.Favorite else Icons.Default.Download,
-                        contentDescription = "Empty",
+                        contentDescription = stringResource(R.string.empty),
                         tint = MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.size(64.dp)
                     )

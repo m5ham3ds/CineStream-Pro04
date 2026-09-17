@@ -199,7 +199,7 @@ fun SearchAndFilterRow(searchQuery: String, onSearchQueryChange: (String) -> Uni
                 .clickable { /* Filter logic */ },
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Filled.Tune, contentDescription = "Filter", tint = MaterialTheme.colorScheme.onBackground)
+            Icon(Icons.Filled.Tune, contentDescription = stringResource(R.string.filter), tint = MaterialTheme.colorScheme.onBackground)
         }
         
         Spacer(modifier = Modifier.width(12.dp))
@@ -211,7 +211,7 @@ fun SearchAndFilterRow(searchQuery: String, onSearchQueryChange: (String) -> Uni
                 .weight(1f)
                 .height(52.dp),
             placeholder = { Text(stringResource(R.string.search_extensions), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-            trailingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+            trailingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search), tint = MaterialTheme.colorScheme.onSurfaceVariant) },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -361,7 +361,7 @@ fun ExtensionItem(ext: ProviderExtension, isInstalled: Boolean, onInstallClick: 
                 }
                 
                 IconButton(onClick = { /* TODO */ }, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.more), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -424,7 +424,7 @@ fun NoticeBanner(onDismiss: () -> Unit) {
             }
             
             IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-                Icon(Icons.Filled.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.close), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

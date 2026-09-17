@@ -73,7 +73,7 @@ fun EditProfileScreen(
                 title = { Text(stringResource(R.string.edit_profile), color = MaterialTheme.colorScheme.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -106,7 +106,7 @@ fun EditProfileScreen(
             ) {
                 AsyncImage(
                     model = selectedPhotoUri ?: currentUser?.photoUrl?.takeIf { it.isNotEmpty() } ?: R.drawable.ic_launcher_background,
-                    contentDescription = "Profile Picture",
+                    contentDescription = stringResource(R.string.profile_picture),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -116,7 +116,7 @@ fun EditProfileScreen(
                         .background(MaterialTheme.colorScheme.background.copy(alpha = 0.4f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Photo", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(32.dp))
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit_photo), tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(32.dp))
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))

@@ -97,7 +97,7 @@ fun AboutScreen(onBack: () -> Unit = {}) {
             Box(modifier = Modifier.weight(0.4f).padding(start = 16.dp), contentAlignment = Alignment.Center) {
                 AsyncImage(
                     model = "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=300&auto=format&fit=crop",
-                    contentDescription = "Logo",
+                    contentDescription = stringResource(R.string.logo),
                     modifier = Modifier
                         .size(120.dp)
                         .clip(RoundedCornerShape(24.dp))
@@ -189,8 +189,8 @@ fun AboutScreen(onBack: () -> Unit = {}) {
         }
         Spacer(modifier = Modifier.height(32.dp))
     }
-}
 
+    }
 @Composable
 fun FeatureCard(modifier: Modifier = Modifier, icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String) {
     Column(
@@ -226,4 +226,10 @@ fun AboutLinkItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: 
     if (!isLast) {
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.surfaceVariant))
     }
+
+    
+
+
+
 }
+

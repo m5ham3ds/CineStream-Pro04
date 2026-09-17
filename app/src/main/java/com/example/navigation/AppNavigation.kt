@@ -734,9 +734,9 @@ fun AppNavigation() {
                 enterTransition = { 
                     val route = targetState.destination.route ?: ""
                     val initialRoute = initialState.destination.route ?: ""
-                    if (initialRoute == Screen.Splash.route && topLevelRoutes.any { route.startsWith(it) }) {
+                    if (initialRoute == Screen.Splash.route && topLevelRoutes.any { r: String -> route.startsWith(r) }) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(700))
-                    } else if (topLevelRoutes.any { route.startsWith(it) }) {
+                    } else if (topLevelRoutes.any { r: String -> route.startsWith(r) }) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
                         slideIntoContainer(
@@ -750,7 +750,7 @@ fun AppNavigation() {
                     val initialRoute = initialState.destination.route ?: ""
                     if (initialRoute == Screen.Splash.route) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(700))
-                    } else if (topLevelRoutes.any { route.startsWith(it) }) {
+                    } else if (topLevelRoutes.any { r: String -> route.startsWith(r) }) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
                         slideOutOfContainer(
@@ -761,7 +761,7 @@ fun AppNavigation() {
                 },
                 popEnterTransition = { 
                     val route = targetState.destination.route ?: ""
-                    if (topLevelRoutes.any { route.startsWith(it) }) {
+                    if (topLevelRoutes.any { r: String -> route.startsWith(r) }) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
                         slideIntoContainer(
@@ -772,7 +772,7 @@ fun AppNavigation() {
                 },
                 popExitTransition = { 
                     val route = targetState.destination.route ?: ""
-                    if (topLevelRoutes.any { route.startsWith(it) }) {
+                    if (topLevelRoutes.any { r: String -> route.startsWith(r) }) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
                         slideOutOfContainer(
