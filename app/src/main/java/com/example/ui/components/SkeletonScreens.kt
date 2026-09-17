@@ -345,17 +345,49 @@ fun DownloadsScreenSkeleton() {
 
 @Composable
 fun ShareScreenSkeleton() {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(modifier = Modifier.height(64.dp))
-        // Center huge radar/qr area
-        Box(modifier = Modifier.size(250.dp).clip(CircleShape).align(Alignment.CenterHorizontally).shimmerEffect())
-        Spacer(modifier = Modifier.height(48.dp))
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+        Spacer(modifier = Modifier.height(16.dp))
         
-        // Buttons
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-            Box(modifier = Modifier.weight(1f).height(60.dp).clip(RoundedCornerShape(16.dp)).shimmerEffect())
-            Spacer(modifier = Modifier.width(16.dp))
-            Box(modifier = Modifier.weight(1f).height(60.dp).clip(RoundedCornerShape(16.dp)).shimmerEffect())
+        // Connection Status Card
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(96.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .shimmerEffect()
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Action Buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f).height(72.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+            Box(modifier = Modifier.weight(1f).height(72.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect())
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Items list title
+        Box(modifier = Modifier.width(150.dp).height(24.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Items
+        repeat(4) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = Modifier.width(100.dp).height(60.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect())
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Box(modifier = Modifier.width(140.dp).height(16.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Box(modifier = Modifier.width(80.dp).height(12.dp).clip(RoundedCornerShape(4.dp)).shimmerEffect())
+                }
+            }
         }
     }
 }

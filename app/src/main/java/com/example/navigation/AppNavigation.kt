@@ -976,6 +976,7 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
                 composable(Screen.Settings.route) { SettingsScreen() }
                 composable(Screen.HelpSupport.route) { com.example.ui.screens.profile.HelpSupportScreen(onBack = { navController.popBackStack() }) }
                 composable(Screen.About.route) { AboutScreen() }
+                composable(Screen.Notifications.route) { com.example.ui.screens.notifications.NotificationsScreen(onBack = { navController.popBackStack() }) }
                 composable(Screen.Trending.route) {
                     TrendingScreen(
                         onItemClick = { id, isMovie ->
