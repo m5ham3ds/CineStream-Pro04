@@ -68,7 +68,7 @@ fun ProfileScreen(
 
     val bgColor = Color(0xFF09090C)
     val cardBg = Color(0xFF16161A)
-    val redPrimary = Color(0xFFE50914)
+    val redPrimary = androidx.compose.material3.MaterialTheme.colorScheme.primary
     val textGrey = Color(0xFFAAAAAA)
 
     if (showLogoutConfirm) {

@@ -65,7 +65,7 @@ class SocialViewModel : ViewModel() {
     private fun startListening() {
         stopListening()
         conversationJob = viewModelScope.launch {
-            kotlinx.coroutines.delay(1000)
+            kotlinx.coroutines.delay(1200)
             _isLoading.value = false
         }
         viewModelScope.launch {

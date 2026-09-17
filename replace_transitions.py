@@ -1,10 +1,22 @@
 import re
 
 with open("app/src/main/java/com/example/navigation/AppNavigation.kt", "r") as f:
-    c = f.read()
+    content = f.read()
 
-# Make all transitions fade
 target_transitions = """                enterTransition = { 
+                    androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
+                },
+                exitTransition = { 
+                    androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
+                },
+                popEnterTransition = { 
+                    androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
+                },
+                popExitTransition = { 
+                    androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
+                }"""
+
+replacement = """                enterTransition = { 
                     val route = targetState.destination.route ?: ""
                     val initialRoute = initialState.destination.route ?: ""
                     if (initialRoute == Screen.Splash.route && topLevelRoutes.any { route.startsWith(it) }) {
@@ -26,7 +38,10 @@ target_transitions = """                enterTransition = {
                     } else if (topLevelRoutes.any { route.startsWith(it) }) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
-                        androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
+                        slideOutOfContainer(
+                            towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Start, 
+                            animationSpec = androidx.compose.animation.core.tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
                     }
                 },
                 popEnterTransition = { 
@@ -34,7 +49,10 @@ target_transitions = """                enterTransition = {
                     if (topLevelRoutes.any { route.startsWith(it) }) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
-                        androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
+                        slideIntoContainer(
+                            towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.End, 
+                            animationSpec = androidx.compose.animation.core.tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
                     }
                 },
                 popExitTransition = { 
@@ -49,20 +67,7 @@ target_transitions = """                enterTransition = {
                     }
                 }"""
 
-replacement_transitions = """                enterTransition = { 
-                    androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
-                },
-                exitTransition = { 
-                    androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
-                },
-                popEnterTransition = { 
-                    androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
-                },
-                popExitTransition = { 
-                    androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
-                }"""
-
-c = c.replace(target_transitions, replacement_transitions)
-
+content = content.replace(target_transitions, replacement)
 with open("app/src/main/java/com/example/navigation/AppNavigation.kt", "w") as f:
-    f.write(c)
+    f.write(content)
+

@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import com.example.R
+import androidx.compose.ui.res.stringResource
+
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.background
@@ -229,7 +232,7 @@ fun BatchDownloadProcessor(
     // UI Dialog
     AlertDialog(
         onDismissRequest = {}, 
-        title = { Text("التحميل الجماعي") },
+        title = { Text(stringResource(R.string.batch_download)) },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -245,7 +248,7 @@ fun BatchDownloadProcessor(
         },
         confirmButton = {
             TextButton(onClick = onCancel) {
-                Text("إلغاء")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

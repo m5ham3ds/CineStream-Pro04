@@ -753,7 +753,10 @@ fun AppNavigation() {
                     } else if (topLevelRoutes.any { route.startsWith(it) }) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
-                        androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
+                        slideOutOfContainer(
+                            towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Start, 
+                            animationSpec = androidx.compose.animation.core.tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))
                     }
                 },
                 popEnterTransition = { 
@@ -761,7 +764,10 @@ fun AppNavigation() {
                     if (topLevelRoutes.any { route.startsWith(it) }) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
-                        androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
+                        slideIntoContainer(
+                            towards = androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.End, 
+                            animationSpec = androidx.compose.animation.core.tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(400))
                     }
                 },
                 popExitTransition = { 

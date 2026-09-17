@@ -343,4 +343,7 @@
     <string name="support_online">متصل</string>
     <string name="support_status">متصل • عادة ما يرد خلال دقائق قليلة</string>
     <string name="type_a_message">اكتب رسالة...</string>
+    <string name="not_released_yet">هذا العمل لم يُعرض بعد، ولكنه سيعرض قريباً.</string>
+    <string name="ok_button">حسناً</string>
+    <string name="batch_download">التحميل الجماعي</string>
 </resources>

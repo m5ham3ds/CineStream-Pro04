@@ -63,7 +63,7 @@ fun SocialScreen(
     
     var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(400)
+        kotlinx.coroutines.delay(1200)
         transitionFinished = true
     }
 

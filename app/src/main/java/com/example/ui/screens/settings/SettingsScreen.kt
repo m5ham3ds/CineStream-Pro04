@@ -479,7 +479,7 @@ fun DownloadSettingsDialog(
     ) {
         val darkBg = Color(0xFF0F0F11)
         val cardBg = Color(0xFF19191B)
-        val redPrimary = Color(0xFFE50914)
+        val redPrimary = androidx.compose.material3.MaterialTheme.colorScheme.primary
         
         Box(
             modifier = Modifier
@@ -659,8 +659,8 @@ fun DownloadSettingsDialog(
 @Composable
 fun NetworkOption(modifier: Modifier = Modifier, title: String, subtitle: String?, isSelected: Boolean, onClick: () -> Unit) {
     val bgColor = if (isSelected) Color(0xFF2B1114) else Color(0xFF141416)
-    val borderColor = if (isSelected) Color(0xFFE50914) else Color(0xFF2C2C2E)
-    val iconColor = if (isSelected) Color(0xFFE50914) else Color(0xFF555555)
+    val borderColor = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary else Color(0xFF2C2C2E)
+    val iconColor = if (isSelected) androidx.compose.material3.MaterialTheme.colorScheme.primary else Color(0xFF555555)
 
     Row(
         modifier = modifier

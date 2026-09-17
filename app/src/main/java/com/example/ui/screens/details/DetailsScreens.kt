@@ -100,14 +100,14 @@ fun MovieDetailsScreen(
 
     var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(400) // matches slide transition
+        kotlinx.coroutines.delay(1200) // matches slide transition and ensures full skeleton cycle
         transitionFinished = true
     }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        if (uiState.isLoading || !transitionFinished) {
+        if (uiState.isLoading || !transitionFinished || uiState.movie == null) {
             DetailsSkeleton()
         } else if (uiState.movie != null) {
             val movie = uiState.movie!!
@@ -156,9 +156,9 @@ fun MovieDetailsScreen(
         AlertDialog(
             onDismissRequest = { showNotReleasedDialog = false },
             title = { Text(stringResource(R.string.coming_soon), color = MaterialTheme.colorScheme.onBackground) },
-            text = { Text("هذا العمل لم يُعرض بعد، ولكنه سيعرض قريباً.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            text = { Text(stringResource(R.string.not_released_yet), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
-                TextButton(onClick = { showNotReleasedDialog = false }) { Text("حسناً") }
+                TextButton(onClick = { showNotReleasedDialog = false }) { Text(stringResource(R.string.ok_button)) }
             },
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -443,7 +443,7 @@ fun SeriesDetailsScreen(
 
     var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(400) // matches slide transition
+        kotlinx.coroutines.delay(1200) // matches slide transition and ensures full skeleton cycle
         transitionFinished = true
     }
 
@@ -497,9 +497,9 @@ fun SeriesDetailsScreen(
         AlertDialog(
             onDismissRequest = { showNotReleasedDialog = false },
             title = { Text(stringResource(R.string.coming_soon), color = MaterialTheme.colorScheme.onBackground) },
-            text = { Text("هذا العمل لم يُعرض بعد، ولكنه سيعرض قريباً.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            text = { Text(stringResource(R.string.not_released_yet), color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
-                TextButton(onClick = { showNotReleasedDialog = false }) { Text("حسناً") }
+                TextButton(onClick = { showNotReleasedDialog = false }) { Text(stringResource(R.string.ok_button)) }
             },
             containerColor = MaterialTheme.colorScheme.surface
         )

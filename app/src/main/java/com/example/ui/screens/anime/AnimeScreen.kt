@@ -75,7 +75,7 @@ fun AnimeScreen(
 
     var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(350)
+        kotlinx.coroutines.delay(1200)
         transitionFinished = true
     }
 
@@ -84,10 +84,8 @@ fun AnimeScreen(
         return
     }
 
-    if (uiState.error != null) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = uiState.error ?: "Unknown error", color = MaterialTheme.colorScheme.onBackground)
-        }
+    if (uiState.error != null && uiState.series.isEmpty()) {
+        MediaScreenSkeleton()
         return
     }
 

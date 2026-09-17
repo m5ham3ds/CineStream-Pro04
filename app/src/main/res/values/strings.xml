@@ -398,5 +398,8 @@ to your taste.</string>
     <string name="support_online">متصل</string>
     <string name="support_status">متصل • عادة ما يرد خلال دقائق قليلة</string>
     <string name="type_a_message">اكتب رسالة...</string>
+    <string name="not_released_yet">This work has not been released yet, but will be available soon.</string>
+    <string name="ok_button">OK</string>
+    <string name="batch_download">Batch Download</string>
 </resources>
 
