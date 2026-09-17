@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Face
@@ -38,6 +39,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Security : Screen("security", "Security", Icons.Default.Person)
     object Subscription : Screen("subscription", "Subscription", Icons.Default.Person)
     object About : Screen("about", "About Us", Icons.Default.Info)
+    object Notifications : Screen("notifications", "Notifications", Icons.Default.Notifications)
     object Trending : Screen("trending", "Trending Now", Icons.Default.Movie)
     object Watching : Screen("watching", "Continue Watching", Icons.Default.Tv)
     object Popular : Screen("popular", "Popular", Icons.Default.Movie)

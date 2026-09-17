@@ -723,7 +723,7 @@ fun AppNavigation() {
                 Screen.Series.route, Screen.Anime.route, Screen.Library.route, 
                 Screen.Profile.route, Screen.Downloads.route, Screen.Settings.route, 
                 Screen.Extensions.route, Screen.Share.route, Screen.About.route, 
-                Screen.Social.route, Screen.Splash.route, Screen.Onboarding.route, Screen.Auth.route
+                Screen.Social.route, Screen.Splash.route, Screen.Onboarding.route, Screen.Auth.route, Screen.Notifications.route
             )
 
             NavHost(
