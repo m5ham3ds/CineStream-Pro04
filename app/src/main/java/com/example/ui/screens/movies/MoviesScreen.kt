@@ -82,11 +82,7 @@ fun MoviesScreen(
 
     
 
-        if (uiState.isLoading || !transitionFinished) {
-        MediaScreenSkeleton()
-        return
-    }
-    if (uiState.error != null && uiState.movies.isEmpty()) {
+        if (uiState.isLoading || !transitionFinished || (uiState.trendingMovies.isEmpty() && uiState.movies.isEmpty())) {
         MediaScreenSkeleton()
         return
     }

@@ -1,5 +1,6 @@
 package com.example.ui.screens.social
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import com.example.ui.theme.SuccessGreen
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -119,7 +120,7 @@ fun ChatScreen(
                                     .background(bgColor, CircleShape)
                                     .padding(2.dp)
                             ) {
-                                Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.tertiary, CircleShape))
+                                Box(modifier = Modifier.fillMaxSize().background(SuccessGreen, CircleShape))
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))

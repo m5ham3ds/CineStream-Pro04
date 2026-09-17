@@ -75,11 +75,7 @@ fun HomeScreen(
 
     
 
-        if (uiState.isLoading || !transitionFinished) {
-        MediaScreenSkeleton()
-        return
-    }
-    if (uiState.error != null && uiState.trendingMovies.isEmpty()) {
+        if (uiState.isLoading || !transitionFinished || (uiState.trendingMovies.isEmpty())) {
         MediaScreenSkeleton()
         return
     }

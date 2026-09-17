@@ -1,5 +1,6 @@
 package com.example.ui.screens.player
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import com.example.ui.theme.SuccessGreen
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -213,7 +214,7 @@ Dialog(
         val isNormal = bypassStatus == "NORMAL"
         val isCloudflare = bypassStatus == "CLOUDFLARE"
 
-        val activeColor = if (isVerified || isNormal) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
+        val activeColor = if (isVerified || isNormal) SuccessGreen else MaterialTheme.colorScheme.error
 
 
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -523,7 +524,7 @@ Dialog(
                 else -> androidx.compose.material.icons.Icons.Outlined.CloudDownload
             }
             
-            val iconTint = if (isFailed) MaterialTheme.colorScheme.error else if (isVerified || isNormal) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
+            val iconTint = if (isFailed) MaterialTheme.colorScheme.error else if (isVerified || isNormal) SuccessGreen else MaterialTheme.colorScheme.primary
             
             val isHorizontal = isLoading && !isCloudflare && extractedServers.isEmpty() && !isFailed
             

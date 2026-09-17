@@ -83,11 +83,7 @@ fun SeriesScreen(
 
     
 
-        if (uiState.isLoading || !transitionFinished) {
-        MediaScreenSkeleton()
-        return
-    }
-    if (uiState.error != null && uiState.series.isEmpty()) {
+        if (uiState.isLoading || !transitionFinished || (uiState.trendingSeries.isEmpty() && uiState.series.isEmpty())) {
         MediaScreenSkeleton()
         return
     }

@@ -1,6 +1,7 @@
 package com.example.ui.screens.share
 
 import androidx.compose.ui.res.stringResource
+import com.example.ui.theme.SuccessGreen
 import com.example.R
 
 import android.Manifest
@@ -426,7 +427,7 @@ fun ShareScreen(
                             }
                         }
                     } else if (connectedEndpoint != null) {
-                        Text(stringResource(R.string.connected_to, connectedEndpoint?.name ?: ""), color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.connected_to, connectedEndpoint?.name ?: ""), color = SuccessGreen, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
@@ -515,7 +516,7 @@ fun ShareScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     if (connectedEndpoint != null) {
-                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(64.dp))
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(64.dp))
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(stringResource(R.string.connected_to, connectedEndpoint!!.name), fontWeight = FontWeight.Bold)
                         Text(stringResource(R.string.waiting_for_files), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -610,9 +611,9 @@ fun RecentTransferItem(title: String, type: String, size: String, isSent: Boolea
             Text(time, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.CheckCircleOutline, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(14.dp))
+                Icon(Icons.Default.CheckCircleOutline, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(14.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(stringResource(R.string.completed), color = MaterialTheme.colorScheme.tertiary, fontSize = 11.sp)
+                Text(stringResource(R.string.completed), color = SuccessGreen, fontSize = 11.sp)
             }
         }
     }
@@ -642,7 +643,7 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
             Text(stringResource(R.string.android_ready), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
         
-        Icon(Icons.Default.SignalCellularAlt, contentDescription = stringResource(R.string.signal), tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
+        Icon(Icons.Default.SignalCellularAlt, contentDescription = stringResource(R.string.signal), tint = SuccessGreen, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(16.dp))
         
         Button(

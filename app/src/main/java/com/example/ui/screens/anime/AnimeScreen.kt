@@ -82,11 +82,7 @@ fun AnimeScreen(
 
     
 
-        if (uiState.isLoading || !transitionFinished) {
-        MediaScreenSkeleton()
-        return
-    }
-    if (uiState.error != null && uiState.series.isEmpty()) {
+        if (uiState.isLoading || !transitionFinished || (uiState.trendingAnime.isEmpty() && uiState.series.isEmpty())) {
         MediaScreenSkeleton()
         return
     }
