@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -89,8 +90,6 @@ fun AnimeScreen(
         MediaScreenSkeleton()
         return
     }
-
-    val scrollState = rememberScrollState()
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedMediaId by remember { mutableStateOf("") }
     var selectedMediaTitle by remember { mutableStateOf("") }
@@ -115,116 +114,153 @@ fun AnimeScreen(
         state = ptrState,
         modifier = Modifier.fillMaxSize()
     ) {
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
     ) {
         // Hero Section
-        HeroCarousel(items = uiState.newEpisodes.take(10).map { HeroItem(it.id, it.title, it.backdropUrl, false) }, onClick = onAnimeClick)
 
+        item {
+            HeroCarousel(items = uiState.newEpisodes.take(10).map { HeroItem(it.id, it.title, it.backdropUrl, false) }, onClick = onAnimeClick)
 
-        Spacer(modifier = Modifier.height(16.dp))
-        // Categories Tab Row
-        LazyRow(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(categories) { category ->
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (selectedCategory == category.id) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                        .clickable {
-                            if (selectedCategory == category.id) {
-                                selectedCategory = animeStr
-                            } else {
-                                selectedCategory = category.id
-                            }
-                        }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = category.icon, 
-                            contentDescription = category.label, 
-                            tint = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = category.label,
-                            color = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 14.sp,
-                            fontWeight = if (selectedCategory == category.id) FontWeight.SemiBold else FontWeight.Normal
-                        )
-                    }
-                }
-            }
         }
-        Spacer(modifier = Modifier.height(24.dp))
-        if (selectedCategory == animeStr) {
-            if (animeHistoryItems.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(animeHistoryItems) { item ->
-                        ContinueWatchingCardShared(item = item) {
-                            onAnimeClick(item.id)
+
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+
+        }        // Categories Tab Row
+
+        item {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories, key = { it }) { category ->
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (selectedCategory == category.id) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                            .clickable {
+                                if (selectedCategory == category.id) {
+                                    selectedCategory = animeStr
+                                } else {
+                                    selectedCategory = category.id
+                                }
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = category.icon, 
+                                contentDescription = category.label, 
+                                tint = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = category.label,
+                                color = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp,
+                                fontWeight = if (selectedCategory == category.id) FontWeight.SemiBold else FontWeight.Normal
+                            )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Trending Anime
-            if (uiState.trendingAnime.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.trending_anime), onSeeAllClick = onNavigateToTrending)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    itemsIndexed(uiState.trendingAnime) { index, series ->
-                        MediaCard(
-                            title = series.title,
-                            posterUrl = series.posterUrl,
-                                                        rating = series.rating,
-                            year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
-                            isMovie = false,
-                            mediaId = series.id,
-                            onClick = { onAnimeClick(series.id) },
-                            onLongClick = { 
-                                selectedMediaId = series.id
-                                selectedMediaTitle = series.title
-                                selectedMediaPoster = series.posterUrl
-                                showBottomSheet = true
+        }
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+
+        }
+        item {
+            if (selectedCategory == animeStr) {
+                if (animeHistoryItems.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(animeHistoryItems, key = { it.id }) { item ->
+                            ContinueWatchingCardShared(item = item) {
+                                onAnimeClick(item.id)
                             }
-                        )
+                        }
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            // New Releases
-            if (uiState.newEpisodes.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
+                // Trending Anime
+                if (uiState.trendingAnime.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.trending_anime), onSeeAllClick = onNavigateToTrending)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(uiState.trendingAnime, key = { _, series -> series.id }) { index, series ->
+                            MediaCard(
+                                title = series.title,
+                                posterUrl = series.posterUrl,
+                                                            rating = series.rating,
+                                year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
+                                isMovie = false,
+                                mediaId = series.id,
+                                onClick = { onAnimeClick(series.id) },
+                                onLongClick = { 
+                                    selectedMediaId = series.id
+                                    selectedMediaTitle = series.title
+                                    selectedMediaPoster = series.posterUrl
+                                    showBottomSheet = true
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // New Releases
+                if (uiState.newEpisodes.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(uiState.newEpisodes, key = { _, series -> series.id }) { index, series ->
+                            MediaCard(
+                                title = series.title,
+                                posterUrl = series.posterUrl,
+                                rank = index + 1,
+                                rating = series.rating,
+                                year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
+                                isMovie = false,
+                                mediaId = series.id,
+                                onClick = { onAnimeClick(series.id) },
+                                onLongClick = { 
+                                    selectedMediaId = series.id
+                                    selectedMediaTitle = series.title
+                                    selectedMediaPoster = series.posterUrl
+                                    showBottomSheet = true
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // Popular Anime
+                SectionTitleShared(stringResource(R.string.popular_anime), onSeeAllClick = onNavigateToPopular)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    itemsIndexed(uiState.newEpisodes) { index, series ->
+                    itemsIndexed(uiState.series, key = { _, series -> series.id }) { index, series ->
                         MediaCard(
                             title = series.title,
                             posterUrl = series.posterUrl,
                             rank = index + 1,
                             rating = series.rating,
-                            year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
+                            year = "2024",
                             isMovie = false,
                             mediaId = series.id,
                             onClick = { onAnimeClick(series.id) },
@@ -238,21 +274,54 @@ fun AnimeScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            // Popular Anime
-            SectionTitleShared(stringResource(R.string.popular_anime), onSeeAllClick = onNavigateToPopular)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                itemsIndexed(uiState.series) { index, series ->
+                // Coming Soon Anime
+                if (uiState.upcomingAnime.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(uiState.upcomingAnime, key = { _, series -> series.id }) { index, series ->
+                            MediaCard(
+                                title = series.title,
+                                posterUrl = series.posterUrl,
+                                rank = index + 1,
+                                rating = series.rating,
+                                year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
+                                isMovie = false,
+                                mediaId = series.id,
+                                onClick = { onAnimeClick(series.id) },
+                                onLongClick = { 
+                                    selectedMediaId = series.id
+                                    selectedMediaTitle = series.title
+                                    selectedMediaPoster = series.posterUrl
+                                    showBottomSheet = true
+                                },
+                                modifier = Modifier.width(140.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            } else {
+                val displayItems = when (selectedCategory) {
+                    "New Releases" -> uiState.series.reversed()
+                    "Top Rated" -> uiState.series.sortedByDescending { it.rating }
+                    "Genres" -> uiState.series.shuffled()
+                    else -> uiState.series
+                }
+
+                com.example.ui.components.VerticalGrid(
+                    items = displayItems,
+                    columns = 3,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) { series ->
                     MediaCard(
                         title = series.title,
                         posterUrl = series.posterUrl,
-                        rank = index + 1,
-                        rating = series.rating,
-                        year = "2024",
+                                            rating = series.rating,
+                        year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
                         isMovie = false,
                         mediaId = series.id,
                         onClick = { onAnimeClick(series.id) },
@@ -265,68 +334,8 @@ fun AnimeScreen(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
 
-            // Coming Soon Anime
-            if (uiState.upcomingAnime.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    itemsIndexed(uiState.upcomingAnime) { index, series ->
-                        MediaCard(
-                            title = series.title,
-                            posterUrl = series.posterUrl,
-                            rank = index + 1,
-                            rating = series.rating,
-                            year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
-                            isMovie = false,
-                            mediaId = series.id,
-                            onClick = { onAnimeClick(series.id) },
-                            onLongClick = { 
-                                selectedMediaId = series.id
-                                selectedMediaTitle = series.title
-                                selectedMediaPoster = series.posterUrl
-                                showBottomSheet = true
-                            },
-                            modifier = Modifier.width(140.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        } else {
-            val displayItems = when (selectedCategory) {
-                "New Releases" -> uiState.series.reversed()
-                "Top Rated" -> uiState.series.sortedByDescending { it.rating }
-                "Genres" -> uiState.series.shuffled()
-                else -> uiState.series
-            }
-            
-            com.example.ui.components.VerticalGrid(
-                items = displayItems,
-                columns = 3,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) { series ->
-                MediaCard(
-                    title = series.title,
-                    posterUrl = series.posterUrl,
-                                        rating = series.rating,
-                    year = com.example.utils.SeasonFormatter.getSeasonString(androidx.compose.ui.platform.LocalContext.current, series.seasons.size),
-                    isMovie = false,
-                    mediaId = series.id,
-                    onClick = { onAnimeClick(series.id) },
-                    onLongClick = { 
-                        selectedMediaId = series.id
-                        selectedMediaTitle = series.title
-                        selectedMediaPoster = series.posterUrl
-                        showBottomSheet = true
-                    }
-                )
-            }
-        }
-    }
+        }}
     }
 if (showBottomSheet) {
             MediaActionBottomSheet(

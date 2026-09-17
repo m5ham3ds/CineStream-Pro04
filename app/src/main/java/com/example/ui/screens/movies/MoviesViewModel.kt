@@ -31,21 +31,23 @@ class MoviesViewModel(private val repository: MediaRepository) : ViewModel() {
         loadMovies()
     }
 
-    fun loadMovies() {
+        fun loadMovies() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
-            launch {
+            try {
                 repository.getTrendingMovies().combine(repository.getArabicMovies()) { trending, arabic ->
                     (trending.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
                 }
                 .catch { }
                 .collect { trending ->
-                    _uiState.update { it.copy(trendingMovies = trending) }
+                    _uiState.update { it.copy(trendingMovies = trending, isLoading = false) }
                 }
-            }
-            
-            launch {
+            } catch(e: Exception) {}
+        }
+        
+        viewModelScope.launch {
+            try {
                 repository.getNewReleasesMovies().combine(repository.getArabicMovies()) { newReleases, arabic ->
                     (newReleases.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
                 }
@@ -53,19 +55,23 @@ class MoviesViewModel(private val repository: MediaRepository) : ViewModel() {
                 .collect { newReleases ->
                     _uiState.update { it.copy(newReleasesMovies = newReleases) }
                 }
-            }
-
-            launch {
+            } catch(e: Exception) {}
+        }
+        
+        viewModelScope.launch {
+            try {
                 repository.getMovies().combine(repository.getArabicMovies()) { movies, arabic ->
                     (movies.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
                 }
                 .catch { e -> _uiState.update { it.copy(error = e.message) } }
                 .collect { movies ->
-                    _uiState.update { it.copy(movies = movies, isLoading = false) }
+                    _uiState.update { it.copy(movies = movies) }
                 }
-            }
-            
-            launch {
+            } catch(e: Exception) {}
+        }
+        
+        viewModelScope.launch {
+            try {
                 repository.getUpcomingMovies().map { upcoming ->
                     upcoming.sortedByDescending { it.rating }.distinctBy { it.id }
                 }
@@ -73,7 +79,7 @@ class MoviesViewModel(private val repository: MediaRepository) : ViewModel() {
                 .collect { upcoming ->
                     _uiState.update { it.copy(upcomingMovies = upcoming) }
                 }
-            }
+            } catch(e: Exception) {}
         }
     }
 }

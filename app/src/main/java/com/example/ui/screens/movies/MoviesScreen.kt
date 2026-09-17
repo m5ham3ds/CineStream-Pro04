@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -89,8 +90,6 @@ fun MoviesScreen(
         MediaScreenSkeleton()
         return
     }
-
-    val scrollState = rememberScrollState()
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedMediaId by remember { mutableStateOf("") }
     var selectedMediaTitle by remember { mutableStateOf("") }
@@ -113,113 +112,149 @@ fun MoviesScreen(
         state = ptrState,
         modifier = Modifier.fillMaxSize()
     ) {
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
     ) {
         // Hero Section
-        HeroCarousel(items = uiState.movies.take(10).map { HeroItem(it.id, it.title, it.backdropUrl, true) }, onClick = onMovieClick)
 
+        item {
+            HeroCarousel(items = uiState.movies.take(10).map { HeroItem(it.id, it.title, it.backdropUrl, true) }, onClick = onMovieClick)
 
-        Spacer(modifier = Modifier.height(16.dp))
-        // Categories Tab Row
-        LazyRow(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(categories) { category ->
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (selectedCategory == category.id) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
-                        .clickable {
-                            if (selectedCategory == category.id) {
-                                selectedCategory = "Movies"
-                            } else {
-                                selectedCategory = category.id
-                            }
-                        }
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = category.icon, 
-                            contentDescription = category.label, 
-                            tint = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = category.label,
-                            color = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 14.sp,
-                            fontWeight = if (selectedCategory == category.id) FontWeight.SemiBold else FontWeight.Normal
-                        )
-                    }
-                }
-            }
         }
 
 
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        
-        if (selectedCategory == "Movies") {
-            if (movieHistoryItems.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(movieHistoryItems) { item ->
-                        ContinueWatchingCardShared(item = item) {
-                            onMovieClick(item.id)
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+
+        }        // Categories Tab Row
+
+        item {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(categories, key = { it }) { category ->
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (selectedCategory == category.id) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface)
+                            .clickable {
+                                if (selectedCategory == category.id) {
+                                    selectedCategory = "Movies"
+                                } else {
+                                    selectedCategory = category.id
+                                }
+                            }
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = category.icon, 
+                                contentDescription = category.label, 
+                                tint = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = category.label,
+                                color = if (selectedCategory == category.id) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp,
+                                fontWeight = if (selectedCategory == category.id) FontWeight.SemiBold else FontWeight.Normal
+                            )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Trending Movies
-            if (uiState.trendingMovies.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.trending_movies), onSeeAllClick = onNavigateToTrending)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    itemsIndexed(uiState.trendingMovies) { index, movie ->
-                        MediaCard(
-                            title = movie.title,
-                            posterUrl = movie.posterUrl,
-                                                        rating = movie.rating,
-                            year = movie.releaseDate?.take(4) ?: "2024",
-                            mediaId = movie.id,
-                            onClick = { onMovieClick(movie.id) },
-                            onLongClick = { 
-                                selectedMediaId = movie.id
-                                selectedMediaTitle = movie.title
-                                selectedMediaPoster = movie.posterUrl
-                                showBottomSheet = true
+        }
+
+
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+
+        }        
+        
+
+        item {
+            if (selectedCategory == "Movies") {
+                if (movieHistoryItems.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.continue_watching), onSeeAllClick = onNavigateToWatching)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(movieHistoryItems, key = { it.id }) { item ->
+                            ContinueWatchingCardShared(item = item) {
+                                onMovieClick(item.id)
                             }
-                        )
+                        }
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            // New Releases
-            if (uiState.newReleasesMovies.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
+                // Trending Movies
+                if (uiState.trendingMovies.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.trending_movies), onSeeAllClick = onNavigateToTrending)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(uiState.trendingMovies, key = { _, movie -> movie.id }) { index, movie ->
+                            MediaCard(
+                                title = movie.title,
+                                posterUrl = movie.posterUrl,
+                                                            rating = movie.rating,
+                                year = movie.releaseDate?.take(4) ?: "2024",
+                                mediaId = movie.id,
+                                onClick = { onMovieClick(movie.id) },
+                                onLongClick = { 
+                                    selectedMediaId = movie.id
+                                    selectedMediaTitle = movie.title
+                                    selectedMediaPoster = movie.posterUrl
+                                    showBottomSheet = true
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // New Releases
+                if (uiState.newReleasesMovies.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.new_releases), onSeeAllClick = onNavigateToNewReleases)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(uiState.newReleasesMovies, key = { _, movie -> movie.id }) { index, movie ->
+                            MediaCard(
+                                title = movie.title,
+                                posterUrl = movie.posterUrl,
+                                rank = index + 1,
+                                rating = movie.rating,
+                                year = movie.releaseDate?.take(4) ?: "2024",
+                                mediaId = movie.id,
+                                onClick = { onMovieClick(movie.id) },
+                                onLongClick = { 
+                                    selectedMediaId = movie.id
+                                    selectedMediaTitle = movie.title
+                                    selectedMediaPoster = movie.posterUrl
+                                    showBottomSheet = true
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // Popular Movies
+                SectionTitleShared(stringResource(R.string.popular_movies), onSeeAllClick = onNavigateToPopular)
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    itemsIndexed(uiState.newReleasesMovies) { index, movie ->
+                    itemsIndexed(uiState.movies, key = { _, movie -> movie.id }) { index, movie ->
                         MediaCard(
                             title = movie.title,
                             posterUrl = movie.posterUrl,
@@ -238,21 +273,53 @@ fun MoviesScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            // Popular Movies
-            SectionTitleShared(stringResource(R.string.popular_movies), onSeeAllClick = onNavigateToPopular)
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                itemsIndexed(uiState.movies) { index, movie ->
+                // Coming Soon Movies
+                if (uiState.upcomingMovies.isNotEmpty()) {
+                    SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        itemsIndexed(uiState.upcomingMovies, key = { _, movie -> movie.id }) { index, movie ->
+                            MediaCard(
+                                title = movie.title,
+                                posterUrl = movie.posterUrl,
+                                rank = index + 1,
+                                rating = movie.rating,
+                                year = movie.releaseDate?.take(4) ?: "2024",
+                                mediaId = movie.id,
+                                onClick = { onMovieClick(movie.id) },
+                                onLongClick = { 
+                                    selectedMediaId = movie.id
+                                    selectedMediaTitle = movie.title
+                                    selectedMediaPoster = movie.posterUrl
+                                    showBottomSheet = true
+                                }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            } else {
+                val displayItems = when (selectedCategory) {
+                    "New Releases" -> uiState.movies.reversed()
+                    "Top Rated" -> uiState.movies.sortedByDescending { it.rating }
+                    "Genres" -> uiState.movies.shuffled() // Placeholder for genres
+                    else -> uiState.movies
+                }
+
+                com.example.ui.components.VerticalGrid(
+                    items = displayItems,
+                    columns = 3,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) { movie ->
                     MediaCard(
                         title = movie.title,
                         posterUrl = movie.posterUrl,
-                        rank = index + 1,
-                        rating = movie.rating,
-                        year = movie.releaseDate?.take(4) ?: "2024",
+                                            rating = movie.rating,
+                        year = movie.year.toString(),
+                        isMovie = true,
                         mediaId = movie.id,
                         onClick = { onMovieClick(movie.id) },
                         onLongClick = { 
@@ -264,66 +331,8 @@ fun MoviesScreen(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
 
-            // Coming Soon Movies
-            if (uiState.upcomingMovies.isNotEmpty()) {
-                SectionTitleShared(stringResource(R.string.coming_soon), onSeeAllClick = onNavigateToUpcoming)
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    itemsIndexed(uiState.upcomingMovies) { index, movie ->
-                        MediaCard(
-                            title = movie.title,
-                            posterUrl = movie.posterUrl,
-                            rank = index + 1,
-                            rating = movie.rating,
-                            year = movie.releaseDate?.take(4) ?: "2024",
-                            mediaId = movie.id,
-                            onClick = { onMovieClick(movie.id) },
-                            onLongClick = { 
-                                selectedMediaId = movie.id
-                                selectedMediaTitle = movie.title
-                                selectedMediaPoster = movie.posterUrl
-                                showBottomSheet = true
-                            }
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-        } else {
-            val displayItems = when (selectedCategory) {
-                "New Releases" -> uiState.movies.reversed()
-                "Top Rated" -> uiState.movies.sortedByDescending { it.rating }
-                "Genres" -> uiState.movies.shuffled() // Placeholder for genres
-                else -> uiState.movies
-            }
-            
-            com.example.ui.components.VerticalGrid(
-                items = displayItems,
-                columns = 3,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) { movie ->
-                MediaCard(
-                    title = movie.title,
-                    posterUrl = movie.posterUrl,
-                                        rating = movie.rating,
-                    year = movie.year.toString(),
-                    isMovie = true,
-                    mediaId = movie.id,
-                    onClick = { onMovieClick(movie.id) },
-                    onLongClick = { 
-                        selectedMediaId = movie.id
-                        selectedMediaTitle = movie.title
-                        selectedMediaPoster = movie.posterUrl
-                        showBottomSheet = true
-                    }
-                )
-            }
-        }
-    }
+        }}
     }
 if (showBottomSheet) {
             MediaActionBottomSheet(

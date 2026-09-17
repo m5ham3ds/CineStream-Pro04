@@ -40,6 +40,9 @@ import com.example.data.repository.LibraryRepository
 import androidx.compose.runtime.collectAsState
 
 import coil.compose.AsyncImage
+import androidx.compose.ui.graphics.painter.ColorPainter
+import coil.request.ImageRequest
+import coil.size.Scale
 
 @Composable
 fun MediaCard(
@@ -105,8 +108,15 @@ fun MediaCard(
                 )
             }
     ) {
+        val placeholderColor = MaterialTheme.colorScheme.surfaceVariant
         AsyncImage(
-            model = posterUrl,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(posterUrl)
+                .crossfade(true)
+                .scale(Scale.FILL)
+                .build(),
+            placeholder = ColorPainter(placeholderColor),
+            error = ColorPainter(placeholderColor),
             contentDescription = title,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

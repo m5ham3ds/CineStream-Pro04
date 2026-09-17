@@ -31,41 +31,47 @@ class SeriesViewModel(private val repository: MediaRepository) : ViewModel() {
         loadSeries()
     }
 
-    fun loadSeries() {
+        fun loadSeries() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
-            launch {
+            try {
                 repository.getTrendingSeries().combine(repository.getArabicSeries()) { trending, arabic ->
                     (trending.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
                 }
                 .catch { }
                 .collect { trending ->
-                    _uiState.update { it.copy(trendingSeries = trending) }
+                    _uiState.update { it.copy(trendingSeries = trending, isLoading = false) }
                 }
-            }
-            
-            launch {
-                repository.getNewReleasesSeries().combine(repository.getArabicSeries()) { newEps, arabic ->
-                    (newEps.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
+            } catch(e: Exception) {}
+        }
+        
+        viewModelScope.launch {
+            try {
+                repository.getNewReleasesSeries().combine(repository.getArabicSeries()) { newReleases, arabic ->
+                    (newReleases.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
                 }
-                .catch { e -> }
-                .collect { newEps ->
-                    _uiState.update { it.copy(newEpisodes = newEps) }
+                .catch { }
+                .collect { newReleases ->
+                    _uiState.update { it.copy(newEpisodes = newReleases) }
                 }
-            }
-
-            launch {
+            } catch(e: Exception) {}
+        }
+        
+        viewModelScope.launch {
+            try {
                 repository.getSeries().combine(repository.getArabicSeries()) { series, arabic ->
                     (series.take(20) + arabic.take(20)).sortedByDescending { it.rating }.distinctBy { it.id }
                 }
                 .catch { e -> _uiState.update { it.copy(error = e.message) } }
                 .collect { series ->
-                    _uiState.update { it.copy(series = series, isLoading = false) }
+                    _uiState.update { it.copy(series = series) }
                 }
-            }
-            
-            launch {
+            } catch(e: Exception) {}
+        }
+        
+        viewModelScope.launch {
+            try {
                 repository.getUpcomingSeries().map { upcoming ->
                     upcoming.sortedByDescending { it.rating }.distinctBy { it.id }
                 }
@@ -73,7 +79,7 @@ class SeriesViewModel(private val repository: MediaRepository) : ViewModel() {
                 .collect { upcoming ->
                     _uiState.update { it.copy(upcomingSeries = upcoming) }
                 }
-            }
+            } catch(e: Exception) {}
         }
     }
 }
