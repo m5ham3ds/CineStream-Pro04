@@ -276,9 +276,7 @@ fun SearchScreen(
         } else {
             // Search Results
             if (uiState.isSearching) {
-                Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                com.example.ui.components.SearchScreenSkeleton()
             } else {
                 Text(text = stringResource(R.string.results_for) + searchQuery + "\"",
                     style = MaterialTheme.typography.titleMedium,

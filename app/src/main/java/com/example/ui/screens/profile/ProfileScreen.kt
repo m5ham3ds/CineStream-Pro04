@@ -51,6 +51,16 @@ fun ProfileScreen(
     onNavigateToAuth: () -> Unit = {},
     authViewModel: AuthViewModel = viewModel()
 ) {
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(600)
+        isLoading = false
+    }
+    if (isLoading) {
+        com.example.ui.components.ProfileScreenSkeleton()
+        return
+    }
+
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()

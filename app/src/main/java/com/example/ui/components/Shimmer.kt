@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 fun Modifier.shimmerEffect(): Modifier = composed {
     val shimmerColors = listOf(
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
     )
 

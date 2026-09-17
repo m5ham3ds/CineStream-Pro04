@@ -1,4 +1,6 @@
-package com.example.ui.components
+import os
+
+skeleton_code = """package com.example.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -162,8 +164,37 @@ fun SocialScreenSkeleton() {
 
 @Composable
 fun SearchScreenSkeleton() {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Search Bar
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .height(56.dp)
+                .clip(RoundedCornerShape(50))
+                .shimmerEffect()
+        )
+        
+        // Filter Row
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            userScrollEnabled = false
+        ) {
+            items(5) {
+                Box(
+                    modifier = Modifier
+                        .width(80.dp)
+                        .height(32.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .shimmerEffect()
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        // Results Grid
         GridScreenSkeleton()
     }
 }
@@ -277,3 +308,8 @@ fun ExtensionsScreenSkeleton() {
         }
     }
 }
+"""
+
+with open("app/src/main/java/com/example/ui/components/SkeletonScreens.kt", "w") as f:
+    f.write(skeleton_code)
+

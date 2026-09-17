@@ -49,6 +49,17 @@ enum class ExtensionFilter(val title: String, val icon: ImageVector) {
 
 @Composable
 fun ExtensionsScreen(onBackClick: () -> Unit) {
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(800)
+        isLoading = false
+    }
+    
+    if (isLoading) {
+        com.example.ui.components.ExtensionsScreenSkeleton()
+        return
+    }
+
     val installedExtensions by ExtensionManager.installedExtensions.collectAsState()
     val availableExtensions = ExtensionManager.availableExtensions
 

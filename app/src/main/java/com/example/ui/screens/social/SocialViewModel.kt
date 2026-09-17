@@ -24,6 +24,8 @@ class SocialViewModel : ViewModel() {
     
     private val _searchResults = MutableStateFlow<List<UserProfile>>(emptyList())
     val searchResults: StateFlow<List<UserProfile>> = _searchResults.asStateFlow()
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     
     private var searchJob: Job? = null
     private var conversationJob: Job? = null
@@ -45,6 +47,7 @@ class SocialViewModel : ViewModel() {
                     startListening()
                 } else {
                     _currentUser.value = null
+                    _isLoading.value = false
                     stopListening()
                 }
             }
@@ -64,6 +67,7 @@ class SocialViewModel : ViewModel() {
         conversationJob = viewModelScope.launch {
             repo.getConversations().collect { convs ->
                 _conversations.value = convs
+                _isLoading.value = false
             }
         }
         storiesJob = viewModelScope.launch {

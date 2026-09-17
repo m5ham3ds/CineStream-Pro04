@@ -35,6 +35,16 @@ import com.example.data.repository.DownloadRepository
 fun LibraryScreen(
     onItemClick: (String, Boolean) -> Unit
 ) {
+    var isLoading by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(600)
+        isLoading = false
+    }
+    if (isLoading) {
+        com.example.ui.components.LibraryScreenSkeleton()
+        return
+    }
+
     val context = LocalContext.current
     val libraryRepository = remember { LibraryRepository(context) }
     val downloadRepository = remember { DownloadRepository(context) }
