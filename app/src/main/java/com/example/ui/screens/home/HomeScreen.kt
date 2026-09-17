@@ -68,7 +68,7 @@ fun HomeScreen(
 
     var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(700)
+        kotlinx.coroutines.delay(1000)
         transitionFinished = true
     }
 

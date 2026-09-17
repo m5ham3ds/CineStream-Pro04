@@ -31,8 +31,21 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
+import androidx.compose.runtime.*
+
 @Composable
 fun AboutScreen(onBack: () -> Unit = {}) {
+    var transitionFinished by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(400)
+        transitionFinished = true
+    }
+
+    if (!transitionFinished) {
+        com.example.ui.components.AboutScreenSkeleton()
+        return
+    }
+
     val scrollState = rememberScrollState()
 
     Column(
