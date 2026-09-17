@@ -66,7 +66,13 @@ fun HomeScreen(
     val downloadRepository = remember { DownloadRepository(context) }
     val scope = rememberCoroutineScope()
 
-    if (uiState.isLoading) {
+    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(350)
+        transitionFinished = true
+    }
+
+    if (uiState.isLoading || !transitionFinished) {
         MediaScreenSkeleton()
         return
     }

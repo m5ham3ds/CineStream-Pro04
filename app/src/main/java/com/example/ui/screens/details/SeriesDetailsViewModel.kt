@@ -99,7 +99,7 @@ class SeriesDetailsViewModel(
                 return@launch
             }
             
-            kotlinx.coroutines.delay(800) // Simulate network delay for UI feedback
+            kotlinx.coroutines.delay(350) // Simulate network delay for UI feedback
             updateAndCache(currentSeries.id) { it.copy(visibleEpisodesCount = it.visibleEpisodesCount + 10, isLoadingMore = false) }
         }
     }

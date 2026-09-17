@@ -98,10 +98,16 @@ fun MovieDetailsScreen(
         viewModel.loadMovie(movieId)
     }
 
+    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(400) // matches slide transition
+        transitionFinished = true
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        if (uiState.isLoading) {
+        if (uiState.isLoading || !transitionFinished) {
             DetailsSkeleton()
         } else if (uiState.movie != null) {
             val movie = uiState.movie!!
@@ -435,6 +441,12 @@ fun SeriesDetailsScreen(
         viewModel.loadSeries(seriesId)
     }
 
+    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(400) // matches slide transition
+        transitionFinished = true
+    }
+
     val pullRefreshState = rememberPullToRefreshState()
     PullToRefreshBox(
         isRefreshing = uiState.isLoading,
@@ -442,7 +454,7 @@ fun SeriesDetailsScreen(
         state = pullRefreshState
     ) {
         val series = uiState.series
-        if (uiState.isLoading && series == null) {
+        if ((uiState.isLoading || !transitionFinished) && series == null) {
             DetailsSkeleton()
             return@PullToRefreshBox
         }

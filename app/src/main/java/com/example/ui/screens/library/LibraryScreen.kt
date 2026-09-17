@@ -37,7 +37,7 @@ fun LibraryScreen(
 ) {
     var isLoading by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(600)
+        kotlinx.coroutines.delay(350)
         isLoading = false
     }
     if (isLoading) {

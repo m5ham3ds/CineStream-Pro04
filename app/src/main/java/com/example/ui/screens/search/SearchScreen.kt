@@ -57,6 +57,17 @@ fun SearchScreen(
     val searchResults = uiState.movieResults.map { UnifiedMediaResult(it.id, it.title, it.posterUrl, true) } +
                         uiState.seriesResults.map { UnifiedMediaResult(it.id, it.title, it.posterUrl, false) }
 
+    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(300)
+        transitionFinished = true
+    }
+    
+    if (!transitionFinished) {
+        com.example.ui.components.SearchScreenSkeleton()
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

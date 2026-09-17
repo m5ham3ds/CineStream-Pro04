@@ -51,7 +51,7 @@ enum class ExtensionFilter(val title: String, val icon: ImageVector) {
 fun ExtensionsScreen(onBackClick: () -> Unit) {
     var isLoading by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(800)
+        kotlinx.coroutines.delay(350)
         isLoading = false
     }
     
