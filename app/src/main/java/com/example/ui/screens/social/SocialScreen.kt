@@ -59,6 +59,18 @@ fun SocialScreen(
     val surfaceColor = MaterialTheme.colorScheme.surface
     
     var searchQuery by remember { mutableStateOf("") }
+    val isLoading by viewModel.isLoading.collectAsState()
+    
+    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(400)
+        transitionFinished = true
+    }
+
+    if (isLoading || !transitionFinished) {
+        com.example.ui.components.SocialScreenSkeleton()
+        return
+    }
 
     if (currentUser == null) {
         Box(modifier = Modifier.fillMaxSize().background(bgColor), contentAlignment = Alignment.Center) {

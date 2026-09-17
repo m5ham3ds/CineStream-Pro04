@@ -59,6 +59,16 @@ fun ShareScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(400)
+        transitionFinished = true
+    }
+    if (!transitionFinished) {
+        com.example.ui.components.ShareScreenSkeleton()
+        return
+    }
+
     val p2pManager = remember { P2PManager(context) }
     val downloadRepository = remember { com.example.data.repository.DownloadRepository(context) }
     

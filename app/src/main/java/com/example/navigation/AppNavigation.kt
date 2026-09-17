@@ -732,7 +732,10 @@ fun AppNavigation() {
                 modifier = navHostModifier,
                 enterTransition = { 
                     val route = targetState.destination.route ?: ""
-                    if (topLevelRoutes.any { route.startsWith(it) }) {
+                    val initialRoute = initialState.destination.route ?: ""
+                    if (initialRoute == Screen.Splash.route && topLevelRoutes.any { route.startsWith(it) }) {
+                        androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(700))
+                    } else if (topLevelRoutes.any { route.startsWith(it) }) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
                         slideIntoContainer(
@@ -743,7 +746,10 @@ fun AppNavigation() {
                 },
                 exitTransition = { 
                     val route = targetState.destination.route ?: ""
-                    if (topLevelRoutes.any { route.startsWith(it) }) {
+                    val initialRoute = initialState.destination.route ?: ""
+                    if (initialRoute == Screen.Splash.route) {
+                        androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(700))
+                    } else if (topLevelRoutes.any { route.startsWith(it) }) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(300)) 
                     } else {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(400))

@@ -50,6 +50,16 @@ fun DownloadsScreen(
     val downloadRepository = remember { DownloadRepository(context) }
     val downloads by downloadRepository.getDownloadItems().collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
+    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(400)
+        transitionFinished = true
+    }
+    if (!transitionFinished) {
+        com.example.ui.components.DownloadsScreenSkeleton()
+        return
+    }
+
 
     var selectedTab by remember { mutableStateOf("All") }
     var itemToDelete by remember { mutableStateOf<DownloadItem?>(null) }
