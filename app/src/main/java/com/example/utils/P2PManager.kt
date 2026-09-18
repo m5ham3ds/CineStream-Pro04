@@ -21,6 +21,12 @@ enum class P2PState {
 
 data class Endpoint(val id: String, val name: String, val isConnected: Boolean = false)
 
+data class ConnectionRequest(
+    val endpointId: String,
+    val deviceName: String,
+    val isSocket: Boolean = true
+)
+
 class P2PManager(private val context: Context) {
     private val connectionsClient = Nearby.getConnectionsClient(context)
     private val STRATEGY = Strategy.P2P_STAR
@@ -40,8 +46,14 @@ class P2PManager(private val context: Context) {
     private val _transferProgress = MutableStateFlow(0f)
     val transferProgress: StateFlow<Float> = _transferProgress.asStateFlow()
 
+    private val _pendingConnectionRequest = MutableStateFlow<ConnectionRequest?>(null)
+    val pendingConnectionRequest: StateFlow<ConnectionRequest?> = _pendingConnectionRequest.asStateFlow()
+
     var onMediaReceived: ((String, String, String, Boolean, String, String) -> Unit)? = null
     var onMediaSent: ((DownloadItem) -> Unit)? = null
+    var onConnectionEstablished: ((String) -> Unit)? = null
+    var onConnectionDeclined: ((String) -> Unit)? = null
+    var onDisconnected: ((String) -> Unit)? = null
 
     // Socket server & client state
     private var serverSocket: ServerSocket? = null
@@ -49,6 +61,9 @@ class P2PManager(private val context: Context) {
     private var activeSocket: Socket? = null
     private var socketReader: BufferedReader? = null
     private var socketWriter: BufferedWriter? = null
+    
+    // CompletableDeferred for receiver user confirmation
+    private var connectionDecision: CompletableDeferred<Boolean>? = null
 
     // Nearby incoming payloads
     private val incomingFilePayloads = mutableMapOf<Long, File>()
@@ -64,7 +79,7 @@ class P2PManager(private val context: Context) {
         ).addOnSuccessListener {
             _p2pState.value = P2PState.ADVERTISING
         }.addOnFailureListener {
-            _p2pState.value = P2PState.ADVERTISING // Keep advertising state as socket server is active
+            _p2pState.value = P2PState.ADVERTISING
         }
     }
 
@@ -97,7 +112,7 @@ class P2PManager(private val context: Context) {
                     handleIncomingSocketConnection(client)
                 }
             } catch (e: Exception) {
-                // Server stopped or error
+                // Server closed
             }
         }
     }
@@ -110,28 +125,48 @@ class P2PManager(private val context: Context) {
                 socketReader = reader
                 socketWriter = writer
 
-                // 1. Handshake
-                val handshakeLine = reader.readLine() ?: return@withContext
-                val handshakeJson = JSONObject(handshakeLine)
-                val senderName = handshakeJson.optString("deviceName", "Nearby Device")
+                // 1. Read connection request
+                val requestLine = reader.readLine() ?: return@withContext
+                val requestJson = JSONObject(requestLine)
+                val senderName = requestJson.optString("deviceName", "Nearby Device")
+                val endpointId = socket.inetAddress?.hostAddress ?: "peer"
 
-                // Reply handshake ack
+                // 2. Request user confirmation on Receiver's UI
+                val decisionDeferred = CompletableDeferred<Boolean>()
+                connectionDecision = decisionDeferred
+                _pendingConnectionRequest.value = ConnectionRequest(endpointId, senderName, isSocket = true)
+
+                // Wait for user to click Accept or Decline
+                val accepted = decisionDeferred.await()
+                _pendingConnectionRequest.value = null
+
+                if (!accepted) {
+                    // Send rejection
+                    val rejectJson = JSONObject().apply {
+                        put("type", "connection_rejected")
+                    }
+                    writer.write(rejectJson.toString() + "\n")
+                    writer.flush()
+                    socket.close()
+                    return@withContext
+                }
+
+                // User Accepted: send confirmation ack
                 val ackJson = JSONObject().apply {
-                    put("type", "handshake_ack")
+                    put("type", "connection_accepted")
                     put("deviceName", Build.MODEL)
                 }
                 writer.write(ackJson.toString() + "\n")
                 writer.flush()
 
-                val endpoint = Endpoint(socket.inetAddress.hostAddress ?: "peer", senderName, isConnected = true)
+                val endpoint = Endpoint(endpointId, senderName, isConnected = true)
                 _connectedEndpoint.value = endpoint
                 _p2pState.value = P2PState.CONNECTED
-                
-                // Add to discovered endpoints list so it appears in Nearby Devices
                 updateEndpointInList(endpoint)
                 TransferNotificationHelper.showConnectionNotification(context, senderName)
+                onConnectionEstablished?.invoke(senderName)
 
-                // 2. Loop to listen for file transfers
+                // 3. Listen for file transfers
                 while (isActive && !socket.isClosed) {
                     val line = reader.readLine() ?: break
                     val header = JSONObject(line)
@@ -163,7 +198,7 @@ class P2PManager(private val context: Context) {
                             fileOut.write(buffer, 0, read)
                             bytesReadTotal += read
 
-                            val progress = bytesReadTotal.toFloat() / fileSize.toFloat()
+                            val progress = if (fileSize > 0) bytesReadTotal.toFloat() / fileSize.toFloat() else 1f
                             _transferProgress.value = progress
 
                             val now = System.currentTimeMillis()
@@ -175,7 +210,7 @@ class P2PManager(private val context: Context) {
                         fileOut.flush()
                         fileOut.close()
 
-                        // Acknowledge receipt
+                        // Acknowledge complete
                         val completeJson = JSONObject().apply {
                             put("type", "transfer_complete")
                             put("id", id)
@@ -191,6 +226,43 @@ class P2PManager(private val context: Context) {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                val current = _connectedEndpoint.value
+                if (current != null) {
+                    onDisconnected?.invoke(current.name)
+                }
+                _connectedEndpoint.value = null
+                _p2pState.value = P2PState.IDLE
+            }
+        }
+    }
+
+    fun acceptConnection() {
+        val req = _pendingConnectionRequest.value
+        if (req != null) {
+            if (req.isSocket) {
+                connectionDecision?.complete(true)
+            } else {
+                connectionsClient.acceptConnection(req.endpointId, payloadCallback)
+                val endpoint = Endpoint(req.endpointId, req.deviceName, isConnected = true)
+                _connectedEndpoint.value = endpoint
+                _p2pState.value = P2PState.CONNECTED
+                updateEndpointInList(endpoint)
+                TransferNotificationHelper.showConnectionNotification(context, req.deviceName)
+                onConnectionEstablished?.invoke(req.deviceName)
+                _pendingConnectionRequest.value = null
+            }
+        }
+    }
+
+    fun rejectConnection() {
+        val req = _pendingConnectionRequest.value
+        if (req != null) {
+            if (req.isSocket) {
+                connectionDecision?.complete(false)
+            } else {
+                connectionsClient.rejectConnection(req.endpointId)
+                _pendingConnectionRequest.value = null
             }
         }
     }
@@ -200,7 +272,7 @@ class P2PManager(private val context: Context) {
             try {
                 activeSocket?.close()
                 val socket = Socket()
-                socket.connect(InetSocketAddress(ip, port), 5000)
+                socket.connect(InetSocketAddress(ip, port), 6000)
                 activeSocket = socket
 
                 val writer = BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
@@ -208,28 +280,36 @@ class P2PManager(private val context: Context) {
                 socketWriter = writer
                 socketReader = reader
 
-                // Send Handshake
-                val handshakeJson = JSONObject().apply {
-                    put("type", "handshake")
+                // Send Connection Request
+                val requestJson = JSONObject().apply {
+                    put("type", "connection_request")
                     put("deviceName", Build.MODEL)
                 }
-                writer.write(handshakeJson.toString() + "\n")
+                writer.write(requestJson.toString() + "\n")
                 writer.flush()
 
-                // Read ACK
-                val ackLine = reader.readLine()
-                val targetName = if (ackLine != null) {
-                    JSONObject(ackLine).optString("deviceName", fallbackName)
-                } else fallbackName
-
-                val endpoint = Endpoint(ip, targetName, isConnected = true)
-                _connectedEndpoint.value = endpoint
-                _p2pState.value = P2PState.CONNECTED
-                updateEndpointInList(endpoint)
-                TransferNotificationHelper.showConnectionNotification(context, targetName)
+                // Wait for Receiver to Accept / Decline
+                val responseLine = reader.readLine()
+                if (responseLine != null) {
+                    val resp = JSONObject(responseLine)
+                    if (resp.optString("type") == "connection_accepted") {
+                        val targetName = resp.optString("deviceName", fallbackName)
+                        val endpoint = Endpoint(ip, targetName, isConnected = true)
+                        _connectedEndpoint.value = endpoint
+                        _p2pState.value = P2PState.CONNECTED
+                        updateEndpointInList(endpoint)
+                        TransferNotificationHelper.showConnectionNotification(context, targetName)
+                        onConnectionEstablished?.invoke(targetName)
+                    } else {
+                        // Declined
+                        _p2pState.value = P2PState.IDLE
+                        onConnectionDeclined?.invoke(fallbackName)
+                        socket.close()
+                    }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Fallback to simulated endpoint if direct socket failed
+                // Graceful fallback for demo or simulated environment
                 connectDirectly("sim_${System.currentTimeMillis()}", fallbackName)
             }
         }
@@ -248,12 +328,13 @@ class P2PManager(private val context: Context) {
         _p2pState.value = P2PState.CONNECTED
         updateEndpointInList(endpoint)
         TransferNotificationHelper.showConnectionNotification(context, deviceName)
+        onConnectionEstablished?.invoke(deviceName)
 
         if (!endpointId.startsWith("sim_")) {
             try {
                 connectionsClient.requestConnection(Build.MODEL, endpointId, connectionLifecycleCallback)
             } catch (e: Exception) {
-                // Handled gracefully
+                // Ignore
             }
         }
     }
@@ -261,7 +342,6 @@ class P2PManager(private val context: Context) {
     fun sendMedia(endpointId: String, downloadItem: DownloadItem, file: File) {
         val socket = activeSocket
         if (socket != null && socket.isConnected && !socket.isClosed) {
-            // Direct High-Speed Socket Transfer
             scope.launch(Dispatchers.IO) {
                 try {
                     _p2pState.value = P2PState.TRANSFERRING
@@ -308,9 +388,8 @@ class P2PManager(private val context: Context) {
                     rawOut.flush()
                     fileIn.close()
 
-                    // Await complete confirmation
                     val reader = socketReader ?: BufferedReader(InputStreamReader(socket.getInputStream()))
-                    val confirmLine = reader.readLine()
+                    reader.readLine() // Wait for ACK
                     
                     _p2pState.value = P2PState.CONNECTED
                     _transferProgress.value = 1f
@@ -324,7 +403,6 @@ class P2PManager(private val context: Context) {
             return
         }
 
-        // Simulation / Nearby Connection fallback
         fallbackSimulateSend(downloadItem)
     }
 
@@ -362,9 +440,14 @@ class P2PManager(private val context: Context) {
         connectionsClient.stopAdvertising()
         connectionsClient.stopDiscovery()
         connectionsClient.stopAllEndpoints()
+        
+        val curr = _connectedEndpoint.value
+        if (curr != null) {
+            onDisconnected?.invoke(curr.name)
+        }
         _p2pState.value = P2PState.IDLE
         _connectedEndpoint.value = null
-        _discoveredEndpoints.value = emptyList()
+        _pendingConnectionRequest.value = null
         TransferNotificationHelper.cancelProgressNotification(context)
     }
 
@@ -438,11 +521,7 @@ class P2PManager(private val context: Context) {
 
     private val connectionLifecycleCallback = object : ConnectionLifecycleCallback() {
         override fun onConnectionInitiated(endpointId: String, info: ConnectionInfo) {
-            connectionsClient.acceptConnection(endpointId, payloadCallback)
-            val endpoint = Endpoint(endpointId, info.endpointName, isConnected = true)
-            _connectedEndpoint.value = endpoint
-            updateEndpointInList(endpoint)
-            TransferNotificationHelper.showConnectionNotification(context, info.endpointName)
+            _pendingConnectionRequest.value = ConnectionRequest(endpointId, info.endpointName, isSocket = false)
         }
 
         override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
@@ -456,7 +535,9 @@ class P2PManager(private val context: Context) {
         }
 
         override fun onDisconnected(endpointId: String) {
-            if (_connectedEndpoint.value?.id == endpointId) {
+            val curr = _connectedEndpoint.value
+            if (curr?.id == endpointId) {
+                onDisconnected?.invoke(curr.name)
                 _p2pState.value = P2PState.IDLE
                 _connectedEndpoint.value = null
             }
