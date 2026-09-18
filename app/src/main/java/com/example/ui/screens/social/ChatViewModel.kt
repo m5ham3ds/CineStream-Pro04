@@ -68,6 +68,20 @@ class ChatViewModel : ViewModel() {
         }
     }
 
+    fun sendMultipleMedia(uris: List<android.net.Uri>) {
+        if (currentConversationId.isEmpty()) return
+        viewModelScope.launch {
+            _isUploading.value = true
+            for (uri in uris) {
+                val url = repo.uploadMedia(uri)
+                if (url != null) {
+                    repo.sendMediaMessage(currentConversationId, "", url)
+                }
+            }
+            _isUploading.value = false
+        }
+    }
+
     fun sendVoiceMessage(voicePath: String) {
         if (currentConversationId.isEmpty()) return
         viewModelScope.launch {

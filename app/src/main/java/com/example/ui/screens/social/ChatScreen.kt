@@ -1,6 +1,9 @@
 package com.example.ui.screens.social
 
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +31,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -103,9 +109,9 @@ fun ChatScreen(
             Toast.makeText(context, "Microphone permission denied", Toast.LENGTH_SHORT).show()
         }
     }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            viewModel.sendMessage("", uri)
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(maxItems = 10)) { uris ->
+        if (uris.isNotEmpty()) {
+            viewModel.sendMultipleMedia(uris)
         }
     }
 
@@ -233,29 +239,14 @@ fun ChatScreen(
                             .size(48.dp)
                             .clip(CircleShape)
                             .background(if (isRecording) Color.Red else primaryRed)
-                            .pointerInput(messageText) {
-                                detectTapGestures(
-                                    onPress = { offset ->
-                                        if (messageText.isBlank() && editingMessage == null) {
-                                            if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                                                isRecording = true
-                                                recordedFile = audioRecorder.startRecording()
-                                            } else {
-                                                micPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
-                                            }
-                                        }
-                                        tryAwaitRelease()
-                                        if (isRecording) {
-                                            isRecording = false
-                                            audioRecorder.stopRecording()
-                                            recordedFile?.let {
-                                                viewModel.sendVoiceMessage(it.absolutePath)
-                                            }
-                                            recordedFile = null
-                                        }
-                                    },
-                                    onTap = {
+                            .pointerInput(messageText, editingMessage) {
+                                awaitPointerEventScope {
+                                    while (true) {
+                                        val down = awaitFirstDown(requireUnconsumed = false)
+                                        
                                         if (messageText.isNotBlank() || editingMessage != null) {
+                                            // Tap to send text
+                                            waitForUpOrCancellation()
                                             if (editingMessage != null) {
                                                 viewModel.editMessage(editingMessage!!.id, messageText)
                                                 editingMessage = null
@@ -264,10 +255,27 @@ fun ChatScreen(
                                             }
                                             messageText = ""
                                         } else {
-                                            Toast.makeText(context, "Hold to record voice", Toast.LENGTH_SHORT).show()
+                                            // Hold to record
+                                            if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                                isRecording = true
+                                                recordedFile = audioRecorder.startRecording()
+                                            } else {
+                                                micPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                                            }
+                                            
+                                            waitForUpOrCancellation()
+                                            
+                                            if (isRecording) {
+                                                isRecording = false
+                                                audioRecorder.stopRecording()
+                                                recordedFile?.let {
+                                                    viewModel.sendVoiceMessage(it.absolutePath)
+                                                }
+                                                recordedFile = null
+                                            }
                                         }
                                     }
-                                )
+                                }
                             },
                         contentAlignment = Alignment.Center
                     ) {
