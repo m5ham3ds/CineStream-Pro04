@@ -3,59 +3,76 @@ package com.example.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
+import android.net.wifi.WifiManager
+import java.net.Inet4Address
+import java.net.NetworkInterface
+import java.util.Collections
 
 object NetworkUtils {
+
+    fun isInternetAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
     fun getEstimatedBandwidthKbps(context: Context): Int {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = cm.activeNetwork ?: return 2000 // Default 2Mbps
-            val caps = cm.getNetworkCapabilities(network) ?: return 2000
-            return caps.linkDownstreamBandwidthKbps
-        }
-        return 2000 // Default fallback
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return 5000
+        val activeNetwork = connectivityManager.activeNetwork ?: return 5000
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return 5000
+        val downstream = capabilities.linkDownstreamBandwidthKbps
+        return if (downstream > 0) downstream else 5000
     }
 
     fun selectBestQuality(qualities: List<M3U8Parser.QualityInfo>, bandwidthKbps: Int): M3U8Parser.QualityInfo {
-        if (qualities.isEmpty()) return M3U8Parser.QualityInfo("Auto", "")
-        if (qualities.size == 1) return qualities.first()
-
-        val targetHeight = when {
-            bandwidthKbps >= 15000 -> 2160
-            bandwidthKbps >= 5000 -> 1080
-            bandwidthKbps >= 2500 -> 720
-            bandwidthKbps >= 1000 -> 480
-            else -> 360
+        if (qualities.isEmpty()) {
+            return M3U8Parser.QualityInfo("Auto", "")
         }
-
-        val sortedQualities = qualities.sortedByDescending { it.name.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0 }
-        
-        for (q in sortedQualities) {
-            val h = q.name.replace(Regex("[^0-9]"), "").toIntOrNull() ?: 0
-            if (h <= targetHeight && h > 0) {
-                return q
-            }
+        return when {
+            bandwidthKbps >= 5000 -> qualities.find { it.name.contains("1080") } ?: qualities.first()
+            bandwidthKbps >= 2500 -> qualities.find { it.name.contains("720") } ?: qualities.first()
+            bandwidthKbps >= 1000 -> qualities.find { it.name.contains("480") } ?: qualities.first()
+            else -> qualities.find { it.name.contains("360") } ?: qualities.last()
         }
-        
-        return sortedQualities.lastOrNull() ?: qualities.first()
     }
 
-    fun isInternetAvailable(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork ?: return false
-            val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
-            return when {
-                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
-                else -> false
+    fun getLocalIpAddress(context: Context? = null): String {
+        try {
+            val interfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
+            for (intf in interfaces) {
+                if (!intf.isUp || intf.isLoopback) continue
+                val addrs = Collections.list(intf.inetAddresses)
+                for (addr in addrs) {
+                    if (!addr.isLoopbackAddress && addr is Inet4Address) {
+                        val host = addr.hostAddress ?: continue
+                        if (!host.startsWith("127.")) {
+                            return host
+                        }
+                    }
+                }
             }
-        } else {
-            @Suppress("DEPRECATION")
-            val networkInfo = connectivityManager.activeNetworkInfo ?: return false
-            @Suppress("DEPRECATION")
-            return networkInfo.isConnected
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
+        if (context != null) {
+            try {
+                val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+                val ipInt = wifiManager?.connectionInfo?.ipAddress ?: 0
+                if (ipInt != 0) {
+                    return String.format(
+                        "%d.%d.%d.%d",
+                        ipInt and 0xff,
+                        ipInt shr 8 and 0xff,
+                        ipInt shr 16 and 0xff,
+                        ipInt shr 24 and 0xff
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        return "127.0.0.1"
     }
 }
