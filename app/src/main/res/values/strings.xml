@@ -432,5 +432,7 @@ to your taste.</string>
     <string name="no_other_sites_desc">Sorry, failed to search all available sites.</string>
     <string name="cancel_op_title">Cancel Operation</string>
     <string name="cancel_op_desc">Are you sure you want to cancel the operation?</string>
+    <string name="scan_qr">Scan QR Code</string>
+    <string name="no_recent_transfers">No recent transfers</string>
 </resources>
 

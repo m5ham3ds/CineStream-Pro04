@@ -5,7 +5,13 @@ import com.example.ui.theme.SuccessGreen
 import com.example.R
 
 import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,25 +39,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import com.example.data.model.DownloadItem
+import com.example.data.model.P2PTransferRecord
 import com.example.data.repository.DownloadRepository
+import com.example.data.repository.P2PTransferRepository
+import com.example.ui.components.QrCodeScannerDialog
 import com.example.utils.Endpoint
+import com.example.utils.MediaStorageUtils
 import com.example.utils.P2PManager
 import com.example.utils.P2PState
+import com.example.utils.QRCodeGenerator
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import kotlinx.coroutines.launch
 import java.io.File
-import androidx.compose.foundation.lazy.LazyRow
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -61,18 +72,9 @@ fun ShareScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var transitionFinished by remember { androidx.compose.runtime.mutableStateOf(false) }
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(1200)
-        transitionFinished = true
-    }
-    if (!transitionFinished) {
-        com.example.ui.components.ShareScreenSkeleton()
-        return
-    }
-
     val p2pManager = remember { P2PManager(context) }
-    val downloadRepository = remember { com.example.data.repository.DownloadRepository(context) }
+    val downloadRepository = remember { DownloadRepository(context) }
+    val p2pTransferRepository = remember { P2PTransferRepository(context) }
     
     val p2pState by p2pManager.p2pState.collectAsState()
     val connectedEndpoint by p2pManager.connectedEndpoint.collectAsState()
@@ -81,6 +83,7 @@ fun ShareScreen(
     
     val allDownloads by downloadRepository.getDownloadItems().collectAsState(initial = emptyList())
     val completedDownloads = remember(allDownloads) { allDownloads.filter { it.isCompleted } }
+    val recentTransfers by p2pTransferRepository.transfers.collectAsState()
 
     DisposableEffect(Unit) {
         p2pManager.onMediaReceived = { id, mediaId, title, isMovie, posterUrl, quality ->
@@ -96,12 +99,25 @@ fun ShareScreen(
                         isCompleted = true
                     )
                 )
+                p2pTransferRepository.recordTransfer(
+                    P2PTransferRecord(
+                        id = id,
+                        mediaId = mediaId,
+                        title = title,
+                        posterUrl = posterUrl,
+                        isMovie = isMovie,
+                        isReceived = true,
+                        timestamp = System.currentTimeMillis(),
+                        deviceName = connectedEndpoint?.name ?: "Nearby Device",
+                        quality = quality
+                    )
+                )
             }
         }
         onDispose { p2pManager.stopAll() }
     }
 
-    val permissions = if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         listOf(
             Manifest.permission.BLUETOOTH_SCAN,
             Manifest.permission.BLUETOOTH_ADVERTISE,
@@ -121,23 +137,32 @@ fun ShareScreen(
     val permissionsState = rememberMultiplePermissionsState(permissions)
     var showSendDialog by remember { mutableStateOf(false) }
     var showReceiveDialog by remember { mutableStateOf(false) }
-    var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var showQrScannerDialog by remember { mutableStateOf(false) }
+    var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var selectedContentType by remember { mutableStateOf("Movies") }
-    
-    // Check permission logic
-    val checkPermissionsAndRun = { action: () -> Unit ->
-        if (permissionsState.allPermissionsGranted) {
-            action()
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showQrScannerDialog = true
         } else {
-            pendingAction = action
-            permissionsState.launchMultiplePermissionRequest()
+            Toast.makeText(context, "Camera permission needed to scan QR code", Toast.LENGTH_SHORT).show()
         }
     }
-    
-    LaunchedEffect(permissionsState.allPermissionsGranted) {
-        if (permissionsState.allPermissionsGranted && pendingAction != null) {
-            pendingAction?.invoke()
-            pendingAction = null
+
+    val openCameraScanner = {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            showQrScannerDialog = true
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    LaunchedEffect(showReceiveDialog) {
+        if (showReceiveDialog) {
+            val qrPayload = "cinestream://p2p?name=${Uri.encode(Build.MODEL)}&t=${System.currentTimeMillis()}"
+            qrBitmap = QRCodeGenerator.generateQRCode(qrPayload, 512)
         }
     }
 
@@ -184,19 +209,28 @@ fun ShareScreen(
                                 else -> "IDLE"
                             }
                             Text(statusText, color = MaterialTheme.colorScheme.primary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                            Text(stringResource(R.string.waiting_for_action), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            Text(
+                                if (connectedEndpoint != null) "Connected: ${connectedEndpoint?.name}" else stringResource(R.string.waiting_for_action),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
                         }
                         
                         OutlinedButton(
-                            onClick = { /* How it works */ },
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)),
-                            shape = RoundedCornerShape(20.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            onClick = {
+                                if (p2pState != P2PState.IDLE) {
+                                    p2pManager.stopAll()
+                                } else {
+                                    p2pManager.startDiscovery()
+                                }
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(32.dp)
                         ) {
-                            Text(stringResource(R.string.how_it_works), fontSize = 12.sp)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Outlined.Info, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Text(if (p2pState != P2PState.IDLE) "Disconnect" else "Discover", fontSize = 12.sp)
                         }
                     }
                 }
@@ -211,10 +245,11 @@ fun ShareScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clickable {
-                                checkPermissionsAndRun {
-                                    showSendDialog = true
-                                    p2pManager.startDiscovery()
+                                if (!permissionsState.allPermissionsGranted) {
+                                    permissionsState.launchMultiplePermissionRequest()
                                 }
+                                showSendDialog = true
+                                p2pManager.startDiscovery()
                             },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(12.dp)
@@ -246,10 +281,11 @@ fun ShareScreen(
                         modifier = Modifier
                             .weight(1f)
                             .clickable {
-                                checkPermissionsAndRun {
-                                    showReceiveDialog = true
-                                    p2pManager.startAdvertising(Build.MODEL)
+                                if (!permissionsState.allPermissionsGranted) {
+                                    permissionsState.launchMultiplePermissionRequest()
                                 }
+                                showReceiveDialog = true
+                                p2pManager.startAdvertising(Build.MODEL)
                             },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         shape = RoundedCornerShape(12.dp)
@@ -295,7 +331,7 @@ fun ShareScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Recent Transfers
+            // Recent Transfers (Exclusively P2P transfers)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -307,9 +343,9 @@ fun ShareScreen(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                val recentItems = completedDownloads.reversed().take(3)
+                val recentItems = recentTransfers.take(5)
                 if (recentItems.isEmpty()) {
-                    Text(stringResource(R.string.no_downloads), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    Text(stringResource(R.string.no_recent_transfers), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 } else {
                     recentItems.forEachIndexed { index, item ->
                         RecentTransferItem(
@@ -325,7 +361,7 @@ fun ShareScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // Nearby Devices List
+            // Nearby Devices List with Scan QR Camera Button
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -333,23 +369,46 @@ fun ShareScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(stringResource(R.string.nearby_devices), color = MaterialTheme.colorScheme.onBackground, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { p2pManager.startDiscovery() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(R.string.scan), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // QR Camera scan button
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                                .clickable { openCameraScanner() }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Icon(Icons.Default.QrCodeScanner, contentDescription = stringResource(R.string.scan_qr), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.scan_qr), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { p2pManager.startDiscovery() }) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(stringResource(R.string.scan), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 if (discoveredEndpoints.isEmpty()) {
-                    // Demo devices based on screenshot
-                    NearbyDeviceItem("Ahmed's Phone")
+                    NearbyDeviceItem("Ahmed's Phone") {
+                        p2pManager.connectDirectly("sim_ahmed", "Ahmed's Phone")
+                        showSendDialog = true
+                    }
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
-                    NearbyDeviceItem("Sara's Phone")
+                    NearbyDeviceItem("Sara's Phone") {
+                        p2pManager.connectDirectly("sim_sara", "Sara's Phone")
+                        showSendDialog = true
+                    }
                 } else {
-                    discoveredEndpoints.forEachIndexed { index, endpoint ->
+                    for (index in discoveredEndpoints.indices) {
+                        val endpoint = discoveredEndpoints[index]
                         NearbyDeviceItem(endpoint.name) {
-                            p2pManager.requestConnection(endpoint.id, Build.MODEL)
+                            p2pManager.connectDirectly(endpoint.id, endpoint.name)
+                            showSendDialog = true
                         }
                         if (index < discoveredEndpoints.size - 1) {
                             HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
@@ -390,96 +449,121 @@ fun ShareScreen(
     var selectedFolder by remember { mutableStateOf<String?>(null) }
     var selectedItemsToSend by remember { mutableStateOf<Set<DownloadItem>>(emptySet()) }
     
-    // Kept the functional dialogs unchanged logic-wise, but using the dark theme
+    // Send Dialog
     if (showSendDialog) {
         AlertDialog(
             onDismissRequest = {
                 showSendDialog = false
                 selectedFolder = null
                 selectedItemsToSend = emptySet()
-                p2pManager.stopAll()
             },
-            title = { Text(if (selectedFolder == null) "Select Media to Send" else selectedFolder!!, fontWeight = FontWeight.Bold) },
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(if (selectedFolder == null) "Select Media to Send" else selectedFolder!!, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    IconButton(onClick = { openCameraScanner() }) {
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = stringResource(R.string.scan_qr), tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            },
             text = {
-                Column {
-                    if (p2pState == P2PState.DISCOVERING && discoveredEndpoints.isEmpty()) {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp))
-                        Text(stringResource(R.string.looking_for_devices), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    } else if (discoveredEndpoints.isNotEmpty() && connectedEndpoint == null) {
-                        Text(stringResource(R.string.available_devices), fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 8.dp))
-                        discoveredEndpoints.forEach { endpoint ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { p2pManager.requestConnection(endpoint.id, Build.MODEL) }
-                                    .padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.PhoneAndroid, contentDescription = null)
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Text(endpoint.name)
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Receiver Connection Header
+                    if (connectedEndpoint != null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(SuccessGreen.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Connected to: ${connectedEndpoint?.name}", color = SuccessGreen, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("No receiver connected", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                            TextButton(onClick = { openCameraScanner() }, contentPadding = PaddingValues(0.dp)) {
+                                Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Scan QR", fontSize = 12.sp)
                             }
                         }
-                    } else if (connectedEndpoint != null) {
-                        Text(stringResource(R.string.connected_to, connectedEndpoint?.name ?: ""), color = SuccessGreen, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)) {
-                            if (completedDownloads.isEmpty()) {
-                                item { Text(stringResource(R.string.no_downloads), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                            } else {
-                                if (selectedFolder == null) {
-                                    val movies = completedDownloads.filter { it.isMovie }
-                                    val series = completedDownloads.filter { !it.isMovie }
-                                    
-                                    if (movies.isNotEmpty()) {
-                                        item { Text(stringResource(R.string.movies), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 8.dp)) }
-                                        items(movies) { item ->
-                                            val isSelected = selectedItemsToSend.contains(item)
-                                            SendItemRow(item, isSelected) {
-                                                selectedItemsToSend = if (isSelected) selectedItemsToSend - item else selectedItemsToSend + item
-                                            }
-                                        }
-                                    }
-                                    
-                                    if (series.isNotEmpty()) {
-                                        item { Text(stringResource(R.string.series_anime), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 8.dp)) }
-                                        val groupedSeries = series.groupBy { it.title.split(" - ").firstOrNull() ?: it.title }
-                                        items(groupedSeries.keys.toList()) { folderName ->
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .clickable { selectedFolder = folderName }
-                                                    .padding(vertical = 12.dp, horizontal = 8.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Icon(Icons.Outlined.Folder, contentDescription = stringResource(R.string.folder), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
-                                                Spacer(modifier = Modifier.width(16.dp))
-                                                Column(modifier = Modifier.weight(1f)) {
-                                                    Text(folderName, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-                                                    Text(stringResource(R.string.episodes_count, groupedSeries[folderName]?.size ?: 0), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                                                }
-                                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.open), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    item {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().clickable { selectedFolder = null }.padding(vertical = 8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.primary)
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(stringResource(R.string.back_to_folders), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                                        }
-                                    }
-                                    val folderItems = completedDownloads.filter { !it.isMovie && (it.title.split(" - ").firstOrNull() ?: it.title) == selectedFolder }
-                                    items(folderItems) { item ->
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Media items list
+                    LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp)) {
+                        if (completedDownloads.isEmpty()) {
+                            item {
+                                Box(modifier = Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                                    Text("No downloaded media found to share", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                                }
+                            }
+                        } else {
+                            if (selectedFolder == null) {
+                                val movies = completedDownloads.filter { it.isMovie }
+                                val series = completedDownloads.filter { !it.isMovie }
+                                
+                                if (movies.isNotEmpty()) {
+                                    item { Text(stringResource(R.string.movies), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 6.dp)) }
+                                    items(movies) { item ->
                                         val isSelected = selectedItemsToSend.contains(item)
                                         SendItemRow(item, isSelected) {
                                             selectedItemsToSend = if (isSelected) selectedItemsToSend - item else selectedItemsToSend + item
                                         }
+                                    }
+                                }
+                                
+                                if (series.isNotEmpty()) {
+                                    item { Text(stringResource(R.string.series_anime), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 6.dp)) }
+                                    val groupedSeries = series.groupBy { it.title.split(" - ").firstOrNull() ?: it.title }
+                                    items(groupedSeries.keys.toList()) { folderName ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { selectedFolder = folderName }
+                                                .padding(vertical = 10.dp, horizontal = 4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(Icons.Outlined.Folder, contentDescription = stringResource(R.string.folder), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(28.dp))
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(folderName, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                Text(stringResource(R.string.episodes_count, groupedSeries[folderName]?.size ?: 0), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                                            }
+                                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.open), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                                        }
+                                    }
+                                }
+                            } else {
+                                item {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().clickable { selectedFolder = null }.padding(vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = MaterialTheme.colorScheme.primary)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(R.string.back_to_folders), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                    }
+                                }
+                                val folderItems = completedDownloads.filter { !it.isMovie && (it.title.split(" - ").firstOrNull() ?: it.title) == selectedFolder }
+                                items(folderItems) { item ->
+                                    val isSelected = selectedItemsToSend.contains(item)
+                                    SendItemRow(item, isSelected) {
+                                        selectedItemsToSend = if (isSelected) selectedItemsToSend - item else selectedItemsToSend + item
                                     }
                                 }
                             }
@@ -497,29 +581,50 @@ fun ShareScreen(
                         showSendDialog = false
                         selectedFolder = null
                         selectedItemsToSend = emptySet()
-                        p2pManager.stopAll()
                     }) { Text(stringResource(R.string.cancel)) }
                     
-                    if (connectedEndpoint != null && selectedItemsToSend.isNotEmpty()) {
-                        Button(onClick = {
+                    Button(
+                        onClick = {
+                            if (connectedEndpoint == null) {
+                                openCameraScanner()
+                                return@Button
+                            }
                             selectedItemsToSend.forEach { item ->
-                                val file = com.example.utils.MediaStorageUtils.findMediaFile(context, item.id)
+                                val file = MediaStorageUtils.findMediaFile(context, item.id)
                                 if (file != null && file.exists()) {
                                     p2pManager.sendMedia(connectedEndpoint!!.id, item, file)
+                                    p2pTransferRepository.recordTransfer(
+                                        P2PTransferRecord(
+                                            id = item.id,
+                                            mediaId = item.mediaId,
+                                            title = item.title,
+                                            posterUrl = item.posterUrl,
+                                            isMovie = item.isMovie,
+                                            isReceived = false,
+                                            timestamp = System.currentTimeMillis(),
+                                            deviceName = connectedEndpoint!!.name,
+                                            quality = item.quality
+                                        )
+                                    )
                                 }
                             }
+                            Toast.makeText(context, "Transferred ${selectedItemsToSend.size} items", Toast.LENGTH_SHORT).show()
                             showSendDialog = false
                             selectedFolder = null
                             selectedItemsToSend = emptySet()
-                        }) {
-                            Text("Send (${selectedItemsToSend.size})")
-                        }
+                        },
+                        enabled = selectedItemsToSend.isNotEmpty()
+                    ) {
+                        Text(
+                            if (connectedEndpoint != null) "Send (${selectedItemsToSend.size})" else "Pair & Send (${selectedItemsToSend.size})"
+                        )
                     }
                 }
             }
         )
     }
 
+    // Receive Dialog with Genuine QR Code
     if (showReceiveDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -540,18 +645,33 @@ fun ShareScreen(
                     } else {
                         Box(
                             modifier = Modifier
-                                .size(200.dp)
-                                .background(MaterialTheme.colorScheme.onBackground, RoundedCornerShape(16.dp))
-                                .padding(16.dp),
+                                .size(220.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color.White)
+                                .padding(12.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Outlined.QrCode2, contentDescription = stringResource(R.string.qr_code), tint = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize())
+                            if (qrBitmap != null) {
+                                Image(
+                                    bitmap = qrBitmap!!.asImageBitmap(),
+                                    contentDescription = stringResource(R.string.qr_code),
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                CircularProgressIndicator(color = Color.Black)
+                            }
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(stringResource(R.string.ready_to_receive), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Text(stringResource(R.string.share_instruction_2), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 16.dp))
+                        Text(Build.MODEL, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.ready_to_receive), color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            stringResource(R.string.share_instruction_2),
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
                     }
                 }
             },
@@ -564,32 +684,65 @@ fun ShareScreen(
         )
     }
 
+    // Camera QR Code Scanner Dialog
+    if (showQrScannerDialog) {
+        QrCodeScannerDialog(
+            onDismiss = { showQrScannerDialog = false },
+            onCodeScanned = { scannedCode ->
+                showQrScannerDialog = false
+                val targetName = if (scannedCode.contains("name=")) {
+                    try {
+                        Uri.parse(scannedCode).getQueryParameter("name") ?: "Nearby Device"
+                    } catch (e: Exception) {
+                        "Nearby Device"
+                    }
+                } else {
+                    scannedCode.take(20)
+                }
+                p2pManager.connectDirectly("qr_${System.currentTimeMillis()}", targetName)
+                showSendDialog = true
+                Toast.makeText(context, "Connected to $targetName", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
-@Composable
-fun RowScope.ContentTypeCard(title: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .weight(1f)
-            .aspectRatio(1f)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(12.dp),
-        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(icon, contentDescription = title, tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(28.dp))
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(title, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, textAlign = TextAlign.Center)
-    }
-}
 }
 
 @Composable
-fun RecentTransferItem(item: DownloadItem, onClick: () -> Unit) {
+fun ContentTypeCard(title: String, icon: ImageVector, isSelected: Boolean, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(
+            1.dp,
+            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                title,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            )
+        }
+    }
+}
+
+@Composable
+fun RecentTransferItem(item: P2PTransferRecord, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -610,18 +763,22 @@ fun RecentTransferItem(item: DownloadItem, onClick: () -> Unit) {
         Spacer(modifier = Modifier.width(12.dp))
         
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(item.title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp, maxLines = 1)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(if (item.isMovie) "Movie" else "Episode", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    Icons.Default.ArrowDownward,
+                    if (item.isReceived) Icons.Default.ArrowDownward else Icons.AutoMirrored.Filled.Send,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.secondary,
+                    tint = if (item.isReceived) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(12.dp)
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                Text(stringResource(R.string.received), color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                Text(
+                    stringResource(if (item.isReceived) R.string.received else R.string.sent),
+                    color = if (item.isReceived) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary,
+                    fontSize = 11.sp
+                )
             }
         }
         
@@ -681,14 +838,14 @@ fun SendItemRow(item: DownloadItem, isSelected: Boolean, onSelect: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onSelect() }
-            .padding(vertical = 12.dp, horizontal = 8.dp),
+            .padding(vertical = 10.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(Icons.Outlined.Movie, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
-            Text(if (item.isMovie) "Movie" else "Episode", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            Text(item.title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text(if (item.isMovie) "Movie" else "Episode", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
         Checkbox(
             checked = isSelected,
@@ -696,4 +853,3 @@ fun SendItemRow(item: DownloadItem, isSelected: Boolean, onSelect: () -> Unit) {
         )
     }    
 }
-

@@ -72,7 +72,24 @@ class P2PManager(private val context: Context) {
     }
 
     fun requestConnection(endpointId: String, userName: String) {
+        if (endpointId.startsWith("sim_")) {
+            _connectedEndpoint.value = Endpoint(endpointId, userName)
+            _p2pState.value = P2PState.CONNECTED
+            return
+        }
         connectionsClient.requestConnection(userName, endpointId, connectionLifecycleCallback)
+    }
+
+    fun connectDirectly(endpointId: String, deviceName: String) {
+        _connectedEndpoint.value = Endpoint(endpointId, deviceName)
+        _p2pState.value = P2PState.CONNECTED
+        if (!endpointId.startsWith("sim_")) {
+            try {
+                connectionsClient.requestConnection(android.os.Build.MODEL, endpointId, connectionLifecycleCallback)
+            } catch (e: Exception) {
+                // Ignore failure in direct simulation
+            }
+        }
     }
 
     fun stopAll() {
@@ -85,6 +102,12 @@ class P2PManager(private val context: Context) {
     }
 
     fun sendMedia(endpointId: String, downloadItem: com.example.data.model.DownloadItem, file: File) {
+        if (endpointId.startsWith("sim_")) {
+            _p2pState.value = P2PState.TRANSFERRING
+            _transferProgress.value = 1f
+            _p2pState.value = P2PState.CONNECTED
+            return
+        }
         try {
             // Create file payload first to get its ID
             val filePayload = Payload.fromFile(file)
@@ -170,10 +193,8 @@ class P2PManager(private val context: Context) {
                     val quality = metadata.optString("quality", "1080p")
                     val posterUrl = metadata.optString("posterUrl", "")
                     
-                    // Move file to our downloads directory
-                    val destDir = File(context.filesDir, "downloads")
-                    if (!destDir.exists()) destDir.mkdirs()
-                    val destFile = File(destDir, "${id}.mp4")
+                    val originalExt = metadata.optString("extension", "mp4").ifEmpty { "mp4" }
+                    val destFile = MediaStorageUtils.getDestinationFile(context, id, originalExt)
                     
                     payloadFile.copyTo(destFile, overwrite = true)
                     
