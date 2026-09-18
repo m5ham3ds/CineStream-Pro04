@@ -32,11 +32,12 @@ class NearbyDeviceRepository(context: Context) {
             val list = mutableListOf<NearbyDevice>()
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
+                val rawIp = obj.optString("ip", "").trim()
                 list.add(
                     NearbyDevice(
                         id = obj.getString("id"),
                         name = obj.getString("name"),
-                        ip = obj.optString("ip", null),
+                        ip = if (rawIp.isNotEmpty() && rawIp != "null") rawIp else null,
                         port = obj.optInt("port", 8888),
                         isConnected = false, // Always start as disconnected on app launch
                         lastSeen = obj.optLong("lastSeen", System.currentTimeMillis())
@@ -51,8 +52,14 @@ class NearbyDeviceRepository(context: Context) {
 
     fun addOrUpdateDevice(device: NearbyDevice) {
         val current = _devices.value.toMutableList()
-        current.removeAll { it.id == device.id || it.name == device.name }
-        current.add(0, device)
+        val existing = current.find { it.id == device.id || it.name == device.name }
+        val finalDevice = if (device.ip.isNullOrBlank() && !existing?.ip.isNullOrBlank()) {
+            device.copy(ip = existing?.ip)
+        } else {
+            device
+        }
+        current.removeAll { it.id == finalDevice.id || it.name == finalDevice.name }
+        current.add(0, finalDevice)
         _devices.value = current
         saveDevices(current)
     }

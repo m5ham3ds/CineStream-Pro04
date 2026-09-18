@@ -82,6 +82,7 @@ fun ShareScreen(
     
     val p2pState by p2pManager.p2pState.collectAsState()
     val connectedEndpoint by p2pManager.connectedEndpoint.collectAsState()
+    val connectedEndpoints by p2pManager.connectedEndpoints.collectAsState()
     val discoveredEndpoints by p2pManager.discoveredEndpoints.collectAsState()
     val transferProgress by p2pManager.transferProgress.collectAsState()
     val pendingConnectionRequest by p2pManager.pendingConnectionRequest.collectAsState()
@@ -98,16 +99,22 @@ fun ShareScreen(
     var showReceiveDialog by remember { mutableStateOf(false) }
     var showQrScannerDialog by remember { mutableStateOf(false) }
     var showHowItWorksDialog by remember { mutableStateOf(false) }
+    var deviceToDisconnect by remember { mutableStateOf<NearbyDevice?>(null) }
     var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var selectedContentType by remember { mutableStateOf("Movies") }
 
     // Sync callbacks with repositories
     DisposableEffect(Unit) {
-        p2pManager.onConnectionEstablished = { peerName ->
+        // Start background socket server and UDP responder so device is always discoverable and ready to reconnect
+        p2pManager.startBackgroundService(Build.MODEL, 8888)
+
+        p2pManager.onConnectionEstablished = { peerName, peerIp ->
             nearbyDeviceRepository.addOrUpdateDevice(
                 NearbyDevice(
-                    id = peerName,
+                    id = peerIp ?: peerName,
                     name = peerName,
+                    ip = peerIp,
+                    port = 8888,
                     isConnected = true,
                     lastSeen = System.currentTimeMillis()
                 )
@@ -301,7 +308,13 @@ fun ShareScreen(
                                     fontSize = 17.sp
                                 )
                                 val subtitleText = when (p2pState) {
-                                    P2PState.CONNECTED -> "Connected to: ${connectedEndpoint?.name ?: "Nearby Device"}"
+                                    P2PState.CONNECTED -> {
+                                        if (connectedEndpoints.size > 1) {
+                                            "Connected to ${connectedEndpoints.size} devices"
+                                        } else {
+                                            "Connected to: ${connectedEndpoint?.name ?: "Nearby Device"}"
+                                        }
+                                    }
                                     P2PState.TRANSFERRING -> "Transferring: ${(transferProgress * 100).toInt()}%"
                                     else -> "Waiting for action"
                                 }
@@ -707,31 +720,32 @@ fun ShareScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 // Merge: 
+                // Merge: 
                 // 1. Remembered (historically connected) devices
                 // 2. Currently discovered nearby devices that clicked "Receive" (runtime-only, NOT saved if user doesn't click connect)
-                val displayList = remember(rememberedDevices, discoveredEndpoints, connectedEndpoint) {
+                val displayList = remember(rememberedDevices, discoveredEndpoints, connectedEndpoints) {
                     val list = rememberedDevices.toMutableList()
                     // Add discovered devices that are not already remembered
                     discoveredEndpoints.forEach { ep ->
-                        if (list.none { it.name == ep.name || it.id == ep.id }) {
+                        if (list.none { it.name == ep.name || it.id == ep.id || (it.ip != null && it.ip == ep.ip) }) {
                             list.add(
                                 NearbyDevice(
                                     id = ep.id,
                                     name = ep.name,
                                     ip = ep.ip,
+                                    port = ep.port,
                                     isConnected = false
                                 )
                             )
                         }
                     }
-                    // Update connected state
-                    if (connectedEndpoint != null) {
-                        val conn = connectedEndpoint!!
-                        val idx = list.indexOfFirst { it.name == conn.name || it.id == conn.id }
+                    // Update connected state for all connected endpoints
+                    connectedEndpoints.forEach { conn ->
+                        val idx = list.indexOfFirst { it.name == conn.name || it.id == conn.id || (it.ip != null && it.ip == conn.ip) }
                         if (idx != -1) {
-                            list[idx] = list[idx].copy(isConnected = true)
+                            list[idx] = list[idx].copy(isConnected = true, ip = conn.ip ?: list[idx].ip)
                         } else {
-                            list.add(0, NearbyDevice(id = conn.id, name = conn.name, ip = conn.ip, isConnected = true))
+                            list.add(0, NearbyDevice(id = conn.id, name = conn.name, ip = conn.ip, port = conn.port, isConnected = true))
                         }
                     }
                     list
@@ -750,36 +764,37 @@ fun ShareScreen(
                             name = device.name,
                             isConnected = device.isConnected,
                             onConnect = {
-                                if (device.isConnected) {
-                                    showSendDialog = true
-                                } else {
-                                    // DOES NOT AUTO-CONNECT! Sends request and waits for approval
-                                    p2pManager.requestConnectionToPeer(
-                                        ip = device.ip,
-                                        port = device.port,
-                                        peerName = device.name,
-                                        endpointId = device.id,
-                                        onAccepted = { realName ->
-                                            Toast.makeText(context, "Connected to $realName!", Toast.LENGTH_SHORT).show()
-                                            nearbyDeviceRepository.addOrUpdateDevice(
-                                                NearbyDevice(
-                                                    id = device.id,
-                                                    name = realName,
-                                                    ip = device.ip,
-                                                    port = device.port,
-                                                    isConnected = true
-                                                )
+                                p2pManager.requestConnectionToPeer(
+                                    ip = device.ip,
+                                    port = device.port,
+                                    peerName = device.name,
+                                    endpointId = device.id,
+                                    onAccepted = { realName ->
+                                        Toast.makeText(context, "Connected to $realName!", Toast.LENGTH_SHORT).show()
+                                        nearbyDeviceRepository.addOrUpdateDevice(
+                                            NearbyDevice(
+                                                id = device.ip ?: device.id,
+                                                name = realName,
+                                                ip = device.ip,
+                                                port = device.port,
+                                                isConnected = true
                                             )
-                                            showSendDialog = true
-                                        },
-                                        onDeclined = {
-                                            Toast.makeText(context, "Connection declined by ${device.name}", Toast.LENGTH_SHORT).show()
-                                        },
-                                        onError = { errorMsg ->
-                                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
-                                        }
-                                    )
-                                }
+                                        )
+                                        showSendDialog = true
+                                    },
+                                    onDeclined = {
+                                        Toast.makeText(context, "Connection declined by ${device.name}", Toast.LENGTH_SHORT).show()
+                                    },
+                                    onError = { errorMsg ->
+                                        Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                                    }
+                                )
+                            },
+                            onDisconnect = {
+                                deviceToDisconnect = device
+                            },
+                            onSend = {
+                                showSendDialog = true
                             }
                         )
                         if (index < displayList.size - 1) {
@@ -895,9 +910,12 @@ fun ShareScreen(
                         p2pManager.acceptConnection()
                         nearbyDeviceRepository.addOrUpdateDevice(
                             NearbyDevice(
-                                id = req.endpointId,
+                                id = req.ip ?: req.endpointId,
                                 name = req.deviceName,
-                                isConnected = true
+                                ip = req.ip,
+                                port = 8888,
+                                isConnected = true,
+                                lastSeen = System.currentTimeMillis()
                             )
                         )
                     },
@@ -909,6 +927,48 @@ fun ShareScreen(
             dismissButton = {
                 TextButton(onClick = { p2pManager.rejectConnection() }) {
                     Text("Decline")
+                }
+            }
+        )
+    }
+
+    // Disconnect Confirmation Dialog
+    if (deviceToDisconnect != null) {
+        val dev = deviceToDisconnect!!
+        AlertDialog(
+            onDismissRequest = { deviceToDisconnect = null },
+            icon = {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(36.dp)
+                )
+            },
+            title = {
+                Text("Disconnect Device", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text("Are you sure you want to disconnect from ${dev.name}?")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        p2pManager.disconnectPeer(dev.id)
+                        p2pManager.disconnectPeer(dev.name)
+                        nearbyDeviceRepository.setDeviceConnected(dev.id, false)
+                        nearbyDeviceRepository.setDeviceConnected(dev.name, false)
+                        deviceToDisconnect = null
+                        Toast.makeText(context, "Disconnected from ${dev.name}", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Disconnect")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deviceToDisconnect = null }) {
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -984,7 +1044,34 @@ fun ShareScreen(
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     // Receiver Connection Header
-                    if (connectedEndpoint != null) {
+                    if (connectedEndpoints.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(SuccessGreen.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = SuccessGreen,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    if (connectedEndpoints.size == 1) {
+                                        "Connected to: ${connectedEndpoints.first().name}"
+                                    } else {
+                                        "Connected to ${connectedEndpoints.size} devices (${connectedEndpoints.joinToString(", ") { it.name }})"
+                                    },
+                                    color = SuccessGreen,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+                    } else if (connectedEndpoint != null) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1169,31 +1256,33 @@ fun ShareScreen(
                     
                     Button(
                         onClick = {
-                            if (connectedEndpoint == null) {
+                            if (connectedEndpoints.isEmpty() && connectedEndpoint == null) {
                                 openCameraScanner()
                                 return@Button
                             }
                             selectedItemsToSend.forEach { item ->
                                 val file = MediaStorageUtils.findMediaFile(context, item.id)
                                 if (file != null && file.exists()) {
-                                    p2pManager.sendMedia(connectedEndpoint!!.id, item, file)
+                                    p2pManager.sendMediaToAll(item, file)
                                 } else {
                                     val tempFile = File(context.cacheDir, "${item.id}.mp4").apply {
                                         if (!exists()) {
                                             writeBytes(ByteArray(1024 * 512))
                                         }
                                     }
-                                    p2pManager.sendMedia(connectedEndpoint!!.id, item, tempFile)
+                                    p2pManager.sendMediaToAll(item, tempFile)
                                 }
                             }
-                            Toast.makeText(context, "Sending ${selectedItemsToSend.size} items...", Toast.LENGTH_SHORT).show()
+                            val count = if (connectedEndpoints.isNotEmpty()) connectedEndpoints.size else 1
+                            Toast.makeText(context, "Sending ${selectedItemsToSend.size} items to $count device(s)...", Toast.LENGTH_SHORT).show()
                             showSendDialog = false
                             selectedFolder = null
                             selectedItemsToSend = emptySet()
                         },
-                        enabled = selectedItemsToSend.isNotEmpty() && connectedEndpoint != null
+                        enabled = selectedItemsToSend.isNotEmpty() && (connectedEndpoints.isNotEmpty() || connectedEndpoint != null)
                     ) {
-                        Text("Send (${selectedItemsToSend.size})")
+                        val count = connectedEndpoints.size
+                        Text(if (count > 1) "Send (${selectedItemsToSend.size}) to $count devices" else "Send (${selectedItemsToSend.size})")
                     }
                 }
             }
@@ -1206,7 +1295,6 @@ fun ShareScreen(
             onDismissRequest = {
                 showReceiveDialog = false
                 hotspotManager.stopLocalHotspot()
-                p2pManager.stopAll()
             },
             title = {
                 Text(
@@ -1220,7 +1308,7 @@ fun ShareScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    if (connectedEndpoint != null) {
+                    if (connectedEndpoints.isNotEmpty()) {
                         Icon(
                             Icons.Default.CheckCircle,
                             contentDescription = null,
@@ -1228,8 +1316,25 @@ fun ShareScreen(
                             modifier = Modifier.size(64.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(stringResource(R.string.connected_to, connectedEndpoint!!.name), fontWeight = FontWeight.Bold)
-                        Text(stringResource(R.string.waiting_for_files), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            if (connectedEndpoints.size == 1) "Connected to: ${connectedEndpoints.first().name}"
+                            else "Connected to ${connectedEndpoints.size} devices",
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text("Ready to send & receive files freely!", color = SuccessGreen, fontSize = 13.sp)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                showReceiveDialog = false
+                                showSendDialog = true
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Send Content Now")
+                        }
                     } else if (pendingConnectionRequest != null) {
                         val req = pendingConnectionRequest!!
                         Icon(
@@ -1268,8 +1373,10 @@ fun ShareScreen(
                                 onClick = {
                                     nearbyDeviceRepository.addOrUpdateDevice(
                                         NearbyDevice(
-                                            id = req.endpointId,
+                                            id = req.ip ?: req.endpointId,
                                             name = req.deviceName,
+                                            ip = req.ip,
+                                            port = 8888,
                                             isConnected = true,
                                             lastSeen = System.currentTimeMillis()
                                         )
@@ -1320,7 +1427,6 @@ fun ShareScreen(
                     TextButton(onClick = {
                         showReceiveDialog = false
                         hotspotManager.stopLocalHotspot()
-                        p2pManager.stopAll()
                     }) { Text(stringResource(R.string.cancel)) }
                 }
             }
@@ -1506,7 +1612,9 @@ fun RecentTransferItem(item: P2PTransferRecord, onClick: () -> Unit) {
 fun NearbyDeviceItem(
     name: String,
     isConnected: Boolean = false,
-    onConnect: () -> Unit = {}
+    onConnect: () -> Unit = {},
+    onDisconnect: (() -> Unit)? = null,
+    onSend: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -1545,23 +1653,69 @@ fun NearbyDeviceItem(
             tint = if (isConnected) SuccessGreen else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             modifier = Modifier.size(20.dp)
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         
-        Button(
-            onClick = onConnect,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isConnected) SuccessGreen.copy(alpha = 0.2f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                contentColor = if (isConnected) SuccessGreen else MaterialTheme.colorScheme.primary
-            ),
-            shape = RoundedCornerShape(8.dp),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-            modifier = Modifier.height(32.dp)
-        ) {
-            Text(
-                if (isConnected) "Connected" else stringResource(R.string.connect),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
+        if (isConnected) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                // Send button
+                Button(
+                    onClick = { onSend?.invoke() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        contentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.height(32.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.send),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Connected button: clicking it opens disconnect confirmation dialog
+                Button(
+                    onClick = { onDisconnect?.invoke() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = SuccessGreen.copy(alpha = 0.2f),
+                        contentColor = SuccessGreen
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.height(32.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        "Connected",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        } else {
+            Button(
+                onClick = onConnect,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                    contentColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                modifier = Modifier.height(32.dp)
+            ) {
+                Text(
+                    stringResource(R.string.connect),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
