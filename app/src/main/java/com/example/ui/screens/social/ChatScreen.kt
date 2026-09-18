@@ -182,7 +182,26 @@ fun ChatScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {}) { Icon(Icons.Default.Phone, contentDescription = "Call", tint = primaryRed) }
+                    otherUser?.let { targetUser ->
+                        androidx.compose.ui.viewinterop.AndroidView(
+                            factory = { ctx ->
+                                val btn = com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton(ctx)
+                                btn.setIsVideoCall(false)
+                                btn.setInvitees(listOf(com.zegocloud.uikit.service.defines.ZegoUIKitUser(targetUser.uid, targetUser.displayName ?: targetUser.username)))
+                                btn
+                            },
+                            modifier = Modifier.size(48.dp).padding(8.dp)
+                        )
+                        androidx.compose.ui.viewinterop.AndroidView(
+                            factory = { ctx ->
+                                val btn = com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton(ctx)
+                                btn.setIsVideoCall(true)
+                                btn.setInvitees(listOf(com.zegocloud.uikit.service.defines.ZegoUIKitUser(targetUser.uid, targetUser.displayName ?: targetUser.username)))
+                                btn
+                            },
+                            modifier = Modifier.size(48.dp).padding(8.dp)
+                        )
+                    }
                     
                     IconButton(onClick = {}) { Icon(Icons.Default.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onBackground) }
                 },

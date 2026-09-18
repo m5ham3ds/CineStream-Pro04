@@ -3,6 +3,8 @@ package com.example
 import android.Manifest
 import android.os.Build
 import com.example.extensions.ExtensionManager
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationService
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -45,6 +47,34 @@ class MainActivity : AppCompatActivity() {
     val userPreferences = UserPreferencesRepository(this)
     
     setContent {
+      
+      LaunchedEffect(Unit) {
+          val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+          auth.addAuthStateListener { firebaseAuth ->
+              val user = firebaseAuth.currentUser
+              if (user != null) {
+                  try {
+                      // Attempt to fetch Zego credentials (ensure they are strings in build config or handle long)
+                      val appIdStr = com.example.BuildConfig.ZEGO_APP_ID
+                      val appID = appIdStr.toLongOrNull() ?: 0L
+                      val appSign = com.example.BuildConfig.ZEGO_APP_SIGN
+                      if (appID != 0L && appSign.isNotBlank()) {
+                          val callInvitationConfig = ZegoUIKitPrebuiltCallInvitationConfig()
+                          ZegoUIKitPrebuiltCallInvitationService.init(
+                              application, appID, appSign, user.uid, user.displayName ?: "User", callInvitationConfig
+                          )
+                      }
+                  } catch (e: Exception) {
+                      e.printStackTrace()
+                  }
+              } else {
+                  try {
+                      ZegoUIKitPrebuiltCallInvitationService.unInit()
+                  } catch (e: Exception) {}
+              }
+          }
+      }
+
       val themeMode by userPreferences.themeMode.collectAsState(initial = 0)
       val primaryColor by userPreferences.primaryColor.collectAsState(initial = 0)
       val appLanguage by userPreferences.appLanguage.collectAsState(initial = null)

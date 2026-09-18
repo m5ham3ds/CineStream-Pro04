@@ -17,7 +17,7 @@ android {
 
   defaultConfig {
     applicationId = "com.aistudio.cinestream.xyzabc"
-    minSdk = 24
+    minSdk = 26
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
@@ -82,6 +82,7 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
+    implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
   implementation("com.github.darkryh:Cloudflare-Bypass:0.0.5")
   implementation("com.startapp:inapp-sdk:5.1.0")
   implementation(libs.cloudinary.android)
