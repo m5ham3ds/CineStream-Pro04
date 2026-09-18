@@ -11,19 +11,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ChatViewModel : ViewModel() {
-
     private val repo = SocialRepository()
-
     private val _currentUser = MutableStateFlow<UserProfile?>(repo.getCurrentUser())
     val currentUser: StateFlow<UserProfile?> = _currentUser.asStateFlow()
-
     private val _otherUser = MutableStateFlow<UserProfile?>(null)
     val otherUser: StateFlow<UserProfile?> = _otherUser.asStateFlow()
-
     private val _messages = MutableStateFlow<List<PrivateMessage>>(emptyList())
     val messages: StateFlow<List<PrivateMessage>> = _messages.asStateFlow()
-
     private var currentConversationId: String = ""
+    
+    private val _isUploading = MutableStateFlow(false)
+    val isUploading: StateFlow<Boolean> = _isUploading.asStateFlow()
 
     fun loadConversation(conversationId: String) {
         currentConversationId = conversationId
@@ -52,9 +50,33 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    fun sendMessage(text: String) {
-        if (text.isNotBlank() && currentConversationId.isNotEmpty()) {
-            repo.sendMessage(currentConversationId, text)
+    fun sendMessage(text: String, mediaUri: android.net.Uri? = null) {
+        if (currentConversationId.isEmpty()) return
+        if (text.isBlank() && mediaUri == null) return
+
+        viewModelScope.launch {
+            if (mediaUri != null) {
+                _isUploading.value = true
+                val url = repo.uploadMedia(mediaUri)
+                _isUploading.value = false
+                if (url != null) {
+                    repo.sendMediaMessage(currentConversationId, text, url)
+                }
+            } else {
+                repo.sendMessage(currentConversationId, text)
+            }
+        }
+    }
+
+    fun sendVoiceMessage(voicePath: String) {
+        if (currentConversationId.isEmpty()) return
+        viewModelScope.launch {
+            _isUploading.value = true
+            val url = repo.uploadMedia(voicePath)
+            _isUploading.value = false
+            if (url != null) {
+                repo.sendRealVoiceMessage(currentConversationId, url)
+            }
         }
     }
 
@@ -73,12 +95,6 @@ class ChatViewModel : ViewModel() {
     fun reactToMessage(msgId: String, emoji: String) {
         if (currentConversationId.isNotEmpty()) {
             repo.reactToMessage(currentConversationId, msgId, emoji)
-        }
-    }
-
-    fun sendVoiceMessage(voicePath: String) {
-        if (currentConversationId.isNotEmpty()) {
-            repo.sendVoiceMessage(currentConversationId, voicePath)
         }
     }
 }

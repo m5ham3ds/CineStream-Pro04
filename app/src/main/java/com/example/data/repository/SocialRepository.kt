@@ -142,6 +142,63 @@ class SocialRepository {
         }
     }
 
+        suspend fun uploadMedia(uri: Uri): String? {
+        return suspendCancellableCoroutine { continuation ->
+            try {
+                com.cloudinary.android.MediaManager.get().upload(uri)
+                    .unsigned(com.example.BuildConfig.CLOUDINARY_UPLOAD_PRESET)
+                    .callback(object : com.cloudinary.android.callback.UploadCallback {
+                        override fun onStart(requestId: String?) {}
+                        override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
+                        override fun onSuccess(requestId: String?, resultData: MutableMap<Any?, Any?>?) {
+                            val secureUrl = resultData?.get("secure_url") as? String
+                            continuation.resume(secureUrl)
+                        }
+                        override fun onError(requestId: String?, error: com.cloudinary.android.callback.ErrorInfo?) {
+                            android.util.Log.e("SocialRepository", "Upload Error: ${error?.description}")
+                            continuation.resume(null)
+                        }
+                        override fun onReschedule(requestId: String?, error: com.cloudinary.android.callback.ErrorInfo?) {
+                            continuation.resume(null)
+                        }
+                    }).dispatch()
+            } catch (e: Exception) {
+                android.util.Log.e("SocialRepository", "Exception during upload", e)
+                continuation.resume(null)
+            }
+        }
+    }
+
+    suspend fun uploadMedia(filePath: String): String? {
+        return suspendCancellableCoroutine { continuation ->
+            try {
+                com.cloudinary.android.MediaManager.get().upload(filePath)
+                    .unsigned(com.example.BuildConfig.CLOUDINARY_UPLOAD_PRESET)
+                    .callback(object : com.cloudinary.android.callback.UploadCallback {
+                        override fun onStart(requestId: String?) {}
+                        override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
+                        override fun onSuccess(requestId: String?, resultData: MutableMap<Any?, Any?>?) {
+                            val secureUrl = resultData?.get("secure_url") as? String
+                            var format = resultData?.get("format") as? String
+                            var finalUrl = secureUrl
+                            // Cloudinary sometimes returns .m4a as video, it's fine, the URL works.
+                            continuation.resume(finalUrl)
+                        }
+                        override fun onError(requestId: String?, error: com.cloudinary.android.callback.ErrorInfo?) {
+                            android.util.Log.e("SocialRepository", "Upload Error: ${error?.description}")
+                            continuation.resume(null)
+                        }
+                        override fun onReschedule(requestId: String?, error: com.cloudinary.android.callback.ErrorInfo?) {
+                            continuation.resume(null)
+                        }
+                    }).dispatch()
+            } catch (e: Exception) {
+                android.util.Log.e("SocialRepository", "Exception during upload", e)
+                continuation.resume(null)
+            }
+        }
+    }
+
     fun getMessages(conversationId: String): Flow<List<PrivateMessage>> = callbackFlow {
         val listener = db.collection("conversations").document(conversationId)
             .collection("messages")
@@ -306,6 +363,39 @@ class SocialRepository {
                     }
                     transaction.update(msgRef, "reactions", newReactions)
                 }
+            }
+        }
+    }
+
+    fun sendMediaMessage(conversationId: String, text: String, mediaUrl: String) {
+        val user = getCurrentUser() ?: return
+        val docRef = db.collection("conversations").document(conversationId)
+        val msgRef = docRef.collection("messages").document()
+        val msg = PrivateMessage(msgRef.id, user.uid, text, System.currentTimeMillis(), mediaUrl = mediaUrl)
+        msgRef.set(msg)
+        
+        db.runTransaction { transaction ->
+            val convSnapshot = transaction.get(docRef)
+            if (convSnapshot.exists()) {
+                val displayMsg = if (text.isNotBlank()) text else "📷 Media"
+                transaction.update(docRef, "lastMessage", displayMsg)
+                transaction.update(docRef, "lastMessageTime", System.currentTimeMillis())
+            }
+        }
+    }
+
+    fun sendRealVoiceMessage(conversationId: String, voiceUrl: String) {
+        val user = getCurrentUser() ?: return
+        val docRef = db.collection("conversations").document(conversationId)
+        val msgRef = docRef.collection("messages").document()
+        val msg = PrivateMessage(msgRef.id, user.uid, "Voice Message", System.currentTimeMillis(), isVoice = true, mediaUrl = voiceUrl)
+        msgRef.set(msg)
+        
+        db.runTransaction { transaction ->
+            val convSnapshot = transaction.get(docRef)
+            if (convSnapshot.exists()) {
+                transaction.update(docRef, "lastMessage", "🎤 Voice Message")
+                transaction.update(docRef, "lastMessageTime", System.currentTimeMillis())
             }
         }
     }

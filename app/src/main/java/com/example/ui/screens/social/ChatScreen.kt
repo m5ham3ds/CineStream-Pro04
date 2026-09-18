@@ -1,4 +1,17 @@
 package com.example.ui.screens.social
+
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.example.ui.theme.SuccessGreen
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -15,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.material.icons.outlined.Mic
@@ -67,9 +81,31 @@ fun ChatScreen(
     var editingMessage by remember { mutableStateOf<PrivateMessage?>(null) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
+    val audioRecorder = remember { com.example.utils.AudioRecorder(context) }
+    var isRecording by remember { mutableStateOf(false) }
+    var recordedFile by remember { mutableStateOf<java.io.File?>(null) }
+    val isUploading by viewModel.isUploading.collectAsState()
+    val playingAudioId by com.example.utils.AudioPlayer.currentlyPlayingId.collectAsState()
+    
+    DisposableEffect(Unit) {
+        onDispose {
+            com.example.utils.AudioPlayer.stop()
+        }
+    }
+
+
+    val micPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Toast.makeText(context, "Microphone permission granted. Try again.", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Microphone permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
-            viewModel.sendMessage("Shared an image: $uri")
+            viewModel.sendMessage("", uri)
         }
     }
 
@@ -164,7 +200,7 @@ fun ChatScreen(
                             .clip(RoundedCornerShape(16.dp))
                             .background(darkGray)
                             .clickable {
-                            launcher.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            launcher.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
                         },
                         contentAlignment = Alignment.Center
                     ) {
@@ -196,25 +232,48 @@ fun ChatScreen(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)
-                            .background(primaryRed)
-                            .clickable {
-                                if (messageText.isNotBlank()) {
-                                    if (editingMessage != null) {
-                                        viewModel.editMessage(editingMessage!!.id, messageText)
-                                        editingMessage = null
-                                    } else {
-                                        viewModel.sendMessage(messageText)
+                            .background(if (isRecording) Color.Red else primaryRed)
+                            .pointerInput(messageText) {
+                                detectTapGestures(
+                                    onPress = { offset ->
+                                        if (messageText.isBlank() && editingMessage == null) {
+                                            if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                                isRecording = true
+                                                recordedFile = audioRecorder.startRecording()
+                                            } else {
+                                                micPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                                            }
+                                        }
+                                        tryAwaitRelease()
+                                        if (isRecording) {
+                                            isRecording = false
+                                            audioRecorder.stopRecording()
+                                            recordedFile?.let {
+                                                viewModel.sendVoiceMessage(it.absolutePath)
+                                            }
+                                            recordedFile = null
+                                        }
+                                    },
+                                    onTap = {
+                                        if (messageText.isNotBlank() || editingMessage != null) {
+                                            if (editingMessage != null) {
+                                                viewModel.editMessage(editingMessage!!.id, messageText)
+                                                editingMessage = null
+                                            } else {
+                                                viewModel.sendMessage(messageText)
+                                            }
+                                            messageText = ""
+                                        } else {
+                                            Toast.makeText(context, "Hold to record voice", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
-                                    messageText = ""
-                                } else {
-                                    // Send voice message
-                                    viewModel.sendVoiceMessage("local_voice_path.m4a")
-                                    Toast.makeText(context, "Voice message sent", Toast.LENGTH_SHORT).show()
-                                }
+                                )
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        if (messageText.isNotBlank() || editingMessage != null) {
+                        if (isUploading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onBackground, strokeWidth = 2.dp)
+                        } else if (messageText.isNotBlank() || editingMessage != null) {
                             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onBackground)
                         } else {
                             Icon(Icons.Outlined.MicNone, contentDescription = "Voice", tint = MaterialTheme.colorScheme.onBackground)
@@ -278,23 +337,51 @@ fun ChatScreen(
                                 }
                             } else if (msg.isVoice) {
                                 val textColor = if (isMe) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                val isPlaying = playingAudioId == msg.id
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
                                     if (msg.mediaUrl != null && !msg.isDeleted) {
-                                        Toast.makeText(context, "Voice message downloaded and deleted from cloud", Toast.LENGTH_SHORT).show()
-                                        viewModel.deleteMessage(msg.id, true)
+                                        if (isPlaying) {
+                                            com.example.utils.AudioPlayer.stop()
+                                        } else {
+                                            com.example.utils.AudioPlayer.play(msg.id, msg.mediaUrl)
+                                        }
                                     }
                                 }) {
-                                    Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = textColor, modifier = Modifier.size(24.dp))
+                                    Icon(if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow, contentDescription = "Play", tint = textColor, modifier = Modifier.size(24.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Box(modifier = Modifier.width(100.dp).height(2.dp).background(textColor.copy(alpha = 0.5f)))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("0:12", color = textColor, fontSize = 12.sp)
+                                    Text(if (isPlaying) "Playing" else "Voice", color = textColor, fontSize = 12.sp)
                                 }
                             } else {
                                 val textColor = if (isMe) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                 val timeColor = if (isMe) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text(text = msg.text, color = textColor, fontSize = 15.sp, modifier = Modifier.align(Alignment.Start))
+                                    if (msg.mediaUrl != null) {
+                                        val isVideo = msg.mediaUrl.contains(".mp4") || msg.mediaUrl.contains(".mov") || msg.mediaUrl.contains("/video/")
+                                        Box(modifier = Modifier.padding(bottom = 4.dp)) {
+                                            coil.compose.AsyncImage(
+                                                model = if (isVideo) msg.mediaUrl.replace(".mp4", ".jpg") else msg.mediaUrl, // Simple trick for cloudinary thumbnails
+                                                contentDescription = "Media",
+                                                modifier = Modifier
+                                                    .fillMaxWidth(0.7f)
+                                                    .heightIn(max = 200.dp)
+                                                    .clip(RoundedCornerShape(8.dp)),
+                                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                            )
+                                            if (isVideo) {
+                                                Box(
+                                                    modifier = Modifier.align(Alignment.Center).size(40.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(Icons.Default.PlayArrow, contentDescription = "Video", tint = Color.White)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (msg.text.isNotBlank()) {
+                                        Text(text = msg.text, color = textColor, fontSize = 15.sp, modifier = Modifier.align(Alignment.Start))
+                                    }
                                     
                                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
                                         if (msg.isEdited) {
