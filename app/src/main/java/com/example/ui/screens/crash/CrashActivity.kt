@@ -1,6 +1,7 @@
 package com.example.ui.screens.crash
 
 import androidx.compose.ui.res.stringResource
+import com.example.ui.theme.SuccessGreen
 import com.example.R
 
 import android.content.Intent
@@ -36,7 +37,7 @@ class CrashActivity : ComponentActivity() {
                     ) {
                         Text(text = stringResource(R.string.app_crashed),
                             style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.error
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         

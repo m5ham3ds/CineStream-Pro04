@@ -214,7 +214,7 @@ Dialog(
         val isNormal = bypassStatus == "NORMAL"
         val isCloudflare = bypassStatus == "CLOUDFLARE"
 
-        val activeColor = if (isVerified || isNormal) SuccessGreen else MaterialTheme.colorScheme.error
+        val activeColor = if (isVerified || isNormal) SuccessGreen else MaterialTheme.colorScheme.primary
 
 
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -524,7 +524,7 @@ Dialog(
                 else -> androidx.compose.material.icons.Icons.Outlined.CloudDownload
             }
             
-            val iconTint = if (isFailed) MaterialTheme.colorScheme.error else if (isVerified || isNormal) SuccessGreen else MaterialTheme.colorScheme.primary
+            val iconTint = if (isFailed) MaterialTheme.colorScheme.primary else if (isVerified || isNormal) SuccessGreen else MaterialTheme.colorScheme.primary
             
             val isHorizontal = isLoading && !isCloudflare && extractedServers.isEmpty() && !isFailed
             
@@ -624,16 +624,16 @@ Dialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.errorContainer)
-                                    .border(1.dp, MaterialTheme.colorScheme.error, RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                                    .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp))
                                     .padding(16.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(androidx.compose.material.icons.Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(24.dp))
+                                    Icon(androidx.compose.material.icons.Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = "عذراً، لم نتمكن من العثور على سيرفرات تعمل لهذا العمل في جميع المواقع المدعومة.",
-                                        color = MaterialTheme.colorScheme.error,
+                                        color = MaterialTheme.colorScheme.primary,
                                         style = MaterialTheme.typography.bodySmall,
                                         lineHeight = 18.sp
                                     )
@@ -651,7 +651,7 @@ Dialog(
                                     retryTrigger++
                                 },
                                 modifier = Modifier.fillMaxWidth().height(48.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                 shape = RoundedCornerShape(24.dp)
                             ) {
                                 Icon(androidx.compose.material.icons.Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
@@ -931,7 +931,7 @@ Dialog(
                             onDismiss()
                         }
                     ) {
-                        Text(stringResource(R.string.yes_cancel), color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.yes_cancel), color = MaterialTheme.colorScheme.primary)
                     }
                 },
                 dismissButton = {

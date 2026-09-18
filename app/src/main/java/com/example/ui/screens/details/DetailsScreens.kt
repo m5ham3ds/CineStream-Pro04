@@ -2,6 +2,7 @@
 package com.example.ui.screens.details
 
 import androidx.compose.animation.core.animateFloat
+import com.example.ui.theme.SuccessGreen
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.LinearEasing
@@ -460,7 +461,7 @@ fun SeriesDetailsScreen(
         }
         if (series == null && !uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(uiState.error ?: "Failed to load details", color = MaterialTheme.colorScheme.error)
+                Text(uiState.error ?: "Failed to load details", color = MaterialTheme.colorScheme.primary)
             }
             return@PullToRefreshBox
         }
