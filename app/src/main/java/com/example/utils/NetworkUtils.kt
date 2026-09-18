@@ -38,24 +38,7 @@ object NetworkUtils {
     }
 
     fun getLocalIpAddress(context: Context? = null): String {
-        try {
-            val interfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
-            for (intf in interfaces) {
-                if (!intf.isUp || intf.isLoopback) continue
-                val addrs = Collections.list(intf.inetAddresses)
-                for (addr in addrs) {
-                    if (!addr.isLoopbackAddress && addr is Inet4Address) {
-                        val host = addr.hostAddress ?: continue
-                        if (!host.startsWith("127.")) {
-                            return host
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
+        // 1. Try WifiManager if connected to Wi-Fi
         if (context != null) {
             try {
                 val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
@@ -73,6 +56,66 @@ object NetworkUtils {
                 e.printStackTrace()
             }
         }
-        return "127.0.0.1"
+
+        // 2. Prioritize WLAN, AP, P2P network interfaces
+        try {
+            val interfaces = Collections.list(NetworkInterface.getNetworkInterfaces())
+            // First pass: wlan, ap, p2p, swlan, eth
+            for (intf in interfaces) {
+                if (!intf.isUp || intf.isLoopback) continue
+                val name = intf.name.lowercase()
+                if (name.startsWith("wlan") || name.startsWith("ap") || name.startsWith("p2p") || name.startsWith("swlan") || name.startsWith("eth")) {
+                    val addrs = Collections.list(intf.inetAddresses)
+                    for (addr in addrs) {
+                        if (!addr.isLoopbackAddress && addr is Inet4Address) {
+                            val host = addr.hostAddress ?: continue
+                            if (!host.startsWith("127.")) {
+                                return host
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Second pass: any non-loopback interface except cellular/vpn/dummy
+            for (intf in interfaces) {
+                if (!intf.isUp || intf.isLoopback) continue
+                val name = intf.name.lowercase()
+                if (name.startsWith("rmnet") || name.startsWith("ccmni") || name.startsWith("tun") || name.startsWith("dummy")) continue
+                val addrs = Collections.list(intf.inetAddresses)
+                for (addr in addrs) {
+                    if (!addr.isLoopbackAddress && addr is Inet4Address) {
+                        val host = addr.hostAddress ?: continue
+                        if (!host.startsWith("127.")) {
+                            return host
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return "192.168.43.1"
+    }
+
+    fun getGatewayIp(context: Context): String? {
+        try {
+            val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+            val dhcpInfo = wifiManager?.dhcpInfo
+            val gateway = dhcpInfo?.gateway ?: 0
+            if (gateway != 0) {
+                return String.format(
+                    "%d.%d.%d.%d",
+                    gateway and 0xff,
+                    gateway shr 8 and 0xff,
+                    gateway shr 16 and 0xff,
+                    gateway shr 24 and 0xff
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 }

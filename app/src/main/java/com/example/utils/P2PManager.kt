@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 import java.io.*
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -19,7 +22,7 @@ enum class P2PState {
     IDLE, ADVERTISING, DISCOVERING, CONNECTED, TRANSFERRING
 }
 
-data class Endpoint(val id: String, val name: String, val isConnected: Boolean = false)
+data class Endpoint(val id: String, val name: String, val isConnected: Boolean = false, val ip: String? = null)
 
 data class ConnectionRequest(
     val endpointId: String,
@@ -46,8 +49,19 @@ class P2PManager(private val context: Context) {
     private val _transferProgress = MutableStateFlow(0f)
     val transferProgress: StateFlow<Float> = _transferProgress.asStateFlow()
 
+    // Receiver incoming connection request
     private val _pendingConnectionRequest = MutableStateFlow<ConnectionRequest?>(null)
     val pendingConnectionRequest: StateFlow<ConnectionRequest?> = _pendingConnectionRequest.asStateFlow()
+
+    // Sender waiting for receiver's approval
+    private val _isWaitingForApproval = MutableStateFlow(false)
+    val isWaitingForApproval: StateFlow<Boolean> = _isWaitingForApproval.asStateFlow()
+
+    private val _connectingTargetName = MutableStateFlow<String?>(null)
+    val connectingTargetName: StateFlow<String?> = _connectingTargetName.asStateFlow()
+
+    private val _isScanning = MutableStateFlow(false)
+    val isScanning: StateFlow<Boolean> = _isScanning.asStateFlow()
 
     var onMediaReceived: ((String, String, String, Boolean, String, String) -> Unit)? = null
     var onMediaSent: ((DownloadItem) -> Unit)? = null
@@ -59,6 +73,7 @@ class P2PManager(private val context: Context) {
     private var serverSocket: ServerSocket? = null
     private var serverJob: Job? = null
     private var activeSocket: Socket? = null
+    private var senderConnectionJob: Job? = null
     private var socketReader: BufferedReader? = null
     private var socketWriter: BufferedWriter? = null
     
@@ -69,9 +84,14 @@ class P2PManager(private val context: Context) {
     private val incomingFilePayloads = mutableMapOf<Long, File>()
     private val incomingMetadataMap = mutableMapOf<Long, JSONObject>()
 
+    // UDP Discovery state
+    private var udpDiscoveryJob: Job? = null
+    private var udpServerJob: Job? = null
+
     fun startAdvertising(userName: String, port: Int = 8888) {
         stopAll()
         startSocketServer(port)
+        startUdpResponder(userName, port)
 
         val advertisingOptions = AdvertisingOptions.Builder().setStrategy(STRATEGY).build()
         connectionsClient.startAdvertising(
@@ -84,14 +104,130 @@ class P2PManager(private val context: Context) {
     }
 
     fun startDiscovery() {
-        val discoveryOptions = DiscoveryOptions.Builder().setStrategy(STRATEGY).build()
+        _isScanning.value = true
         _discoveredEndpoints.value = emptyList()
+
+        // 1. Google Nearby Discovery
+        val discoveryOptions = DiscoveryOptions.Builder().setStrategy(STRATEGY).build()
         connectionsClient.startDiscovery(
             SERVICE_ID, endpointDiscoveryCallback, discoveryOptions
         ).addOnSuccessListener {
             _p2pState.value = P2PState.DISCOVERING
         }.addOnFailureListener {
             _p2pState.value = P2PState.DISCOVERING
+        }
+
+        // 2. UDP Local Wi-Fi Broadcast Discovery
+        startUdpDiscovery()
+    }
+
+    fun stopDiscovery() {
+        _isScanning.value = false
+        _discoveredEndpoints.value = emptyList()
+        udpDiscoveryJob?.cancel()
+        udpDiscoveryJob = null
+        try {
+            connectionsClient.stopDiscovery()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        if (_p2pState.value == P2PState.DISCOVERING) {
+            _p2pState.value = P2PState.IDLE
+        }
+    }
+
+    private fun startUdpDiscovery() {
+        udpDiscoveryJob?.cancel()
+        udpDiscoveryJob = scope.launch {
+            var socket: DatagramSocket? = null
+            try {
+                socket = DatagramSocket()
+                socket.broadcast = true
+                socket.soTimeout = 3000
+
+                val pingMsg = "CINESTREAM_PING:${Build.MODEL}"
+                val buffer = pingMsg.toByteArray()
+                val packet = DatagramPacket(
+                    buffer, buffer.size,
+                    InetAddress.getByName("255.255.255.255"), 8889
+                )
+                socket.send(packet)
+
+                val receiveBuf = ByteArray(1024)
+                val receivePacket = DatagramPacket(receiveBuf, receiveBuf.size)
+
+                val startTime = System.currentTimeMillis()
+                while (isActive && System.currentTimeMillis() - startTime < 10000) {
+                    try {
+                        socket.receive(receivePacket)
+                        val resp = String(receivePacket.data, 0, receivePacket.length)
+                        if (resp.startsWith("CINESTREAM_PONG:")) {
+                            val parts = resp.substringAfter("CINESTREAM_PONG:").split(";")
+                            val peerName = parts.getOrNull(0) ?: "Nearby Device"
+                            val peerIp = receivePacket.address.hostAddress ?: ""
+                            val peerPort = parts.getOrNull(1)?.toIntOrNull() ?: 8888
+
+                            if (peerIp.isNotBlank() && peerIp != "127.0.0.1") {
+                                val endpoint = Endpoint(
+                                    id = "udp_${peerIp}_$peerPort",
+                                    name = peerName,
+                                    isConnected = false,
+                                    ip = peerIp
+                                )
+                                withContext(Dispatchers.Main) {
+                                    val current = _discoveredEndpoints.value.toMutableList()
+                                    if (current.none { it.name == peerName || it.ip == peerIp }) {
+                                        current.add(endpoint)
+                                        _discoveredEndpoints.value = current
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Timeout on receive, continue loop
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                socket?.close()
+                _isScanning.value = false
+                // If user did not connect to discovered devices, clear them after brief grace period
+                delay(4000)
+                if (_connectedEndpoint.value == null && !_isWaitingForApproval.value) {
+                    _discoveredEndpoints.value = emptyList()
+                }
+            }
+        }
+    }
+
+    private fun startUdpResponder(userName: String, port: Int) {
+        udpServerJob?.cancel()
+        udpServerJob = scope.launch {
+            var socket: DatagramSocket? = null
+            try {
+                socket = DatagramSocket(8889)
+                val buffer = ByteArray(1024)
+                val packet = DatagramPacket(buffer, buffer.size)
+
+                while (isActive) {
+                    socket.receive(packet)
+                    val msg = String(packet.data, 0, packet.length)
+                    if (msg.startsWith("CINESTREAM_PING:")) {
+                        val reply = "CINESTREAM_PONG:$userName;$port"
+                        val replyBytes = reply.toByteArray()
+                        val replyPacket = DatagramPacket(
+                            replyBytes, replyBytes.size,
+                            packet.address, packet.port
+                        )
+                        socket.send(replyPacket)
+                    }
+                }
+            } catch (e: Exception) {
+                // Stopped
+            } finally {
+                socket?.close()
+            }
         }
     }
 
@@ -120,28 +256,29 @@ class P2PManager(private val context: Context) {
     private suspend fun handleIncomingSocketConnection(socket: Socket) {
         withContext(Dispatchers.IO) {
             try {
+                socket.soTimeout = 30000
                 val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
                 val writer = BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
                 socketReader = reader
                 socketWriter = writer
 
-                // 1. Read connection request
+                // 1. Read connection request from Sender
                 val requestLine = reader.readLine() ?: return@withContext
                 val requestJson = JSONObject(requestLine)
                 val senderName = requestJson.optString("deviceName", "Nearby Device")
                 val endpointId = socket.inetAddress?.hostAddress ?: "peer"
 
-                // 2. Request user confirmation on Receiver's UI
+                // 2. Trigger Confirmation Dialog on Receiver's UI
                 val decisionDeferred = CompletableDeferred<Boolean>()
                 connectionDecision = decisionDeferred
                 _pendingConnectionRequest.value = ConnectionRequest(endpointId, senderName, isSocket = true)
 
-                // Wait for user to click Accept or Decline
+                // Wait for user to explicitly click Accept or Decline
                 val accepted = decisionDeferred.await()
                 _pendingConnectionRequest.value = null
 
                 if (!accepted) {
-                    // Send rejection
+                    // Send rejection ack
                     val rejectJson = JSONObject().apply {
                         put("type", "connection_rejected")
                     }
@@ -159,14 +296,13 @@ class P2PManager(private val context: Context) {
                 writer.write(ackJson.toString() + "\n")
                 writer.flush()
 
-                val endpoint = Endpoint(endpointId, senderName, isConnected = true)
+                val endpoint = Endpoint(endpointId, senderName, isConnected = true, ip = endpointId)
                 _connectedEndpoint.value = endpoint
                 _p2pState.value = P2PState.CONNECTED
-                updateEndpointInList(endpoint)
                 TransferNotificationHelper.showConnectionNotification(context, senderName)
                 onConnectionEstablished?.invoke(senderName)
 
-                // 3. Listen for file transfers
+                // 3. Listen for incoming file streams
                 while (isActive && !socket.isClosed) {
                     val line = reader.readLine() ?: break
                     val header = JSONObject(line)
@@ -247,7 +383,6 @@ class P2PManager(private val context: Context) {
                 val endpoint = Endpoint(req.endpointId, req.deviceName, isConnected = true)
                 _connectedEndpoint.value = endpoint
                 _p2pState.value = P2PState.CONNECTED
-                updateEndpointInList(endpoint)
                 TransferNotificationHelper.showConnectionNotification(context, req.deviceName)
                 onConnectionEstablished?.invoke(req.deviceName)
                 _pendingConnectionRequest.value = null
@@ -267,76 +402,121 @@ class P2PManager(private val context: Context) {
         }
     }
 
-    fun connectViaSocket(ip: String, port: Int = 8888, fallbackName: String = "Nearby Device") {
-        scope.launch {
+    fun requestConnectionToPeer(
+        ip: String?,
+        port: Int = 8888,
+        peerName: String,
+        endpointId: String? = null,
+        onAccepted: (String) -> Unit,
+        onDeclined: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        _isWaitingForApproval.value = true
+        _connectingTargetName.value = peerName
+
+        senderConnectionJob?.cancel()
+        senderConnectionJob = scope.launch(Dispatchers.IO) {
+            var connectedSocket: Socket? = null
             try {
-                activeSocket?.close()
-                val socket = Socket()
-                socket.connect(InetSocketAddress(ip, port), 6000)
-                activeSocket = socket
+                if (!ip.isNullOrBlank() && ip != "127.0.0.1") {
+                    val socket = Socket()
+                    socket.connect(InetSocketAddress(ip, port), 8000)
+                    socket.soTimeout = 25000 // Wait up to 25s for receiver confirmation
+                    connectedSocket = socket
+                    activeSocket = socket
 
-                val writer = BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
-                val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
-                socketWriter = writer
-                socketReader = reader
+                    val writer = BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
+                    val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
+                    socketWriter = writer
+                    socketReader = reader
 
-                // Send Connection Request
-                val requestJson = JSONObject().apply {
-                    put("type", "connection_request")
-                    put("deviceName", Build.MODEL)
-                }
-                writer.write(requestJson.toString() + "\n")
-                writer.flush()
-
-                // Wait for Receiver to Accept / Decline
-                val responseLine = reader.readLine()
-                if (responseLine != null) {
-                    val resp = JSONObject(responseLine)
-                    if (resp.optString("type") == "connection_accepted") {
-                        val targetName = resp.optString("deviceName", fallbackName)
-                        val endpoint = Endpoint(ip, targetName, isConnected = true)
-                        _connectedEndpoint.value = endpoint
-                        _p2pState.value = P2PState.CONNECTED
-                        updateEndpointInList(endpoint)
-                        TransferNotificationHelper.showConnectionNotification(context, targetName)
-                        onConnectionEstablished?.invoke(targetName)
-                    } else {
-                        // Declined
-                        _p2pState.value = P2PState.IDLE
-                        onConnectionDeclined?.invoke(fallbackName)
-                        socket.close()
+                    // Send Connection Request
+                    val requestJson = JSONObject().apply {
+                        put("type", "connection_request")
+                        put("deviceName", Build.MODEL)
                     }
+                    writer.write(requestJson.toString() + "\n")
+                    writer.flush()
+
+                    // Wait for Receiver to Accept or Decline
+                    val responseLine = reader.readLine()
+                    if (responseLine != null) {
+                        val resp = JSONObject(responseLine)
+                        if (resp.optString("type") == "connection_accepted") {
+                            val targetName = resp.optString("deviceName", peerName)
+                            val endpoint = Endpoint(ip, targetName, isConnected = true, ip = ip)
+                            _connectedEndpoint.value = endpoint
+                            _p2pState.value = P2PState.CONNECTED
+                            _isWaitingForApproval.value = false
+                            _connectingTargetName.value = null
+
+                            withContext(Dispatchers.Main) {
+                                onAccepted(targetName)
+                            }
+                            TransferNotificationHelper.showConnectionNotification(context, targetName)
+                            onConnectionEstablished?.invoke(targetName)
+                            return@launch
+                        } else {
+                            // Declined
+                            _isWaitingForApproval.value = false
+                            _connectingTargetName.value = null
+                            _p2pState.value = P2PState.IDLE
+                            connectedSocket.close()
+                            activeSocket = null
+
+                            withContext(Dispatchers.Main) {
+                                onDeclined()
+                            }
+                            onConnectionDeclined?.invoke(peerName)
+                            return@launch
+                        }
+                    }
+                }
+
+                // If socket connection failed or IP was not provided, try Nearby Connections
+                if (!endpointId.isNullOrBlank() && !endpointId.startsWith("udp_") && !endpointId.startsWith("qr_")) {
+                    connectionsClient.requestConnection(Build.MODEL, endpointId, connectionLifecycleCallback)
+                    // Lifecycle callback handles outcome
+                    return@launch
+                }
+
+                // Failed to reach
+                _isWaitingForApproval.value = false
+                _connectingTargetName.value = null
+                _p2pState.value = P2PState.IDLE
+                withContext(Dispatchers.Main) {
+                    onError("Could not reach $peerName. Make sure both devices are on the same Wi-Fi or connected to the hotspot.")
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Graceful fallback for demo or simulated environment
-                connectDirectly("sim_${System.currentTimeMillis()}", fallbackName)
+                _isWaitingForApproval.value = false
+                _connectingTargetName.value = null
+                _p2pState.value = P2PState.IDLE
+                try {
+                    connectedSocket?.close()
+                } catch (ce: Exception) {
+                    ce.printStackTrace()
+                }
+                activeSocket = null
+                withContext(Dispatchers.Main) {
+                    onError("Connection error: ${e.localizedMessage ?: "Device unreachable"}")
+                }
             }
         }
     }
 
-    private fun updateEndpointInList(endpoint: Endpoint) {
-        val current = _discoveredEndpoints.value.toMutableList()
-        current.removeAll { it.id == endpoint.id || it.name == endpoint.name }
-        current.add(0, endpoint)
-        _discoveredEndpoints.value = current
-    }
-
-    fun connectDirectly(endpointId: String, deviceName: String) {
-        val endpoint = Endpoint(endpointId, deviceName, isConnected = true)
-        _connectedEndpoint.value = endpoint
-        _p2pState.value = P2PState.CONNECTED
-        updateEndpointInList(endpoint)
-        TransferNotificationHelper.showConnectionNotification(context, deviceName)
-        onConnectionEstablished?.invoke(deviceName)
-
-        if (!endpointId.startsWith("sim_")) {
-            try {
-                connectionsClient.requestConnection(Build.MODEL, endpointId, connectionLifecycleCallback)
-            } catch (e: Exception) {
-                // Ignore
-            }
+    fun cancelConnectionAttempt() {
+        senderConnectionJob?.cancel()
+        senderConnectionJob = null
+        try {
+            activeSocket?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+        activeSocket = null
+        _isWaitingForApproval.value = false
+        _connectingTargetName.value = null
+        _p2pState.value = P2PState.IDLE
     }
 
     fun sendMedia(endpointId: String, downloadItem: DownloadItem, file: File) {
@@ -389,7 +569,7 @@ class P2PManager(private val context: Context) {
                     fileIn.close()
 
                     val reader = socketReader ?: BufferedReader(InputStreamReader(socket.getInputStream()))
-                    reader.readLine() // Wait for ACK
+                    reader.readLine() // Wait for completion ack
                     
                     _p2pState.value = P2PState.CONNECTED
                     _transferProgress.value = 1f
@@ -424,8 +604,14 @@ class P2PManager(private val context: Context) {
     }
 
     fun stopAll() {
+        cancelConnectionAttempt()
         serverJob?.cancel()
         serverJob = null
+        udpServerJob?.cancel()
+        udpServerJob = null
+        udpDiscoveryJob?.cancel()
+        udpDiscoveryJob = null
+
         try {
             serverSocket?.close()
             activeSocket?.close()
@@ -437,9 +623,13 @@ class P2PManager(private val context: Context) {
         socketReader = null
         socketWriter = null
 
-        connectionsClient.stopAdvertising()
-        connectionsClient.stopDiscovery()
-        connectionsClient.stopAllEndpoints()
+        try {
+            connectionsClient.stopAdvertising()
+            connectionsClient.stopDiscovery()
+            connectionsClient.stopAllEndpoints()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         
         val curr = _connectedEndpoint.value
         if (curr != null) {
@@ -448,12 +638,18 @@ class P2PManager(private val context: Context) {
         _p2pState.value = P2PState.IDLE
         _connectedEndpoint.value = null
         _pendingConnectionRequest.value = null
+        _isScanning.value = false
+        _discoveredEndpoints.value = emptyList()
         TransferNotificationHelper.cancelProgressNotification(context)
     }
 
     private val endpointDiscoveryCallback = object : EndpointDiscoveryCallback() {
         override fun onEndpointFound(endpointId: String, info: DiscoveredEndpointInfo) {
-            updateEndpointInList(Endpoint(endpointId, info.endpointName))
+            val current = _discoveredEndpoints.value.toMutableList()
+            if (current.none { it.id == endpointId || it.name == info.endpointName }) {
+                current.add(Endpoint(endpointId, info.endpointName, isConnected = false))
+                _discoveredEndpoints.value = current
+            }
         }
 
         override fun onEndpointLost(endpointId: String) {
@@ -531,6 +727,7 @@ class P2PManager(private val context: Context) {
                 _p2pState.value = P2PState.CONNECTED
             } else {
                 _p2pState.value = P2PState.IDLE
+                _connectedEndpoint.value = null
             }
         }
 

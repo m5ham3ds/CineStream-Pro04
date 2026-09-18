@@ -55,8 +55,7 @@ import com.example.data.repository.NearbyDevice
 import com.example.data.repository.NearbyDeviceRepository
 import com.example.data.repository.P2PTransferRepository
 import com.example.ui.components.QrCodeScannerDialog
-import com.example.utils.ConnectionRequest
-import com.example.utils.Endpoint
+import com.example.utils.HotspotManager
 import com.example.utils.MediaStorageUtils
 import com.example.utils.NetworkUtils
 import com.example.utils.P2PManager
@@ -76,6 +75,7 @@ fun ShareScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val p2pManager = remember { P2PManager(context) }
+    val hotspotManager = remember { HotspotManager(context) }
     val downloadRepository = remember { DownloadRepository(context) }
     val p2pTransferRepository = remember { P2PTransferRepository(context) }
     val nearbyDeviceRepository = remember { NearbyDeviceRepository(context) }
@@ -85,6 +85,9 @@ fun ShareScreen(
     val discoveredEndpoints by p2pManager.discoveredEndpoints.collectAsState()
     val transferProgress by p2pManager.transferProgress.collectAsState()
     val pendingConnectionRequest by p2pManager.pendingConnectionRequest.collectAsState()
+    val isWaitingForApproval by p2pManager.isWaitingForApproval.collectAsState()
+    val connectingTargetName by p2pManager.connectingTargetName.collectAsState()
+    val isScanning by p2pManager.isScanning.collectAsState()
     val rememberedDevices by nearbyDeviceRepository.devices.collectAsState()
     
     val allDownloads by downloadRepository.getDownloadItems().collectAsState(initial = emptyList())
@@ -169,6 +172,7 @@ fun ShareScreen(
 
         onDispose {
             nearbyDeviceRepository.setAllDisconnected()
+            hotspotManager.stopLocalHotspot()
             p2pManager.stopAll()
         }
     }
@@ -212,9 +216,19 @@ fun ShareScreen(
 
     LaunchedEffect(showReceiveDialog) {
         if (showReceiveDialog) {
+            p2pManager.startAdvertising(Build.MODEL, 8888)
             val localIp = NetworkUtils.getLocalIpAddress(context)
-            val qrPayload = "cinestream://p2p?ip=$localIp&port=8888&name=${Uri.encode(Build.MODEL)}&t=${System.currentTimeMillis()}"
-            qrBitmap = QRCodeGenerator.generateQRCode(qrPayload, 512)
+            hotspotManager.startLocalHotspot(
+                onStarted = { ssid, key ->
+                    val apIp = NetworkUtils.getLocalIpAddress(context)
+                    val qrPayload = "cinestream://p2p?ip=$apIp&port=8888&name=${Uri.encode(Build.MODEL)}&ssid=${Uri.encode(ssid)}&key=${Uri.encode(key)}"
+                    qrBitmap = QRCodeGenerator.generateQRCode(qrPayload, 512)
+                },
+                onError = {
+                    val qrPayload = "cinestream://p2p?ip=$localIp&port=8888&name=${Uri.encode(Build.MODEL)}"
+                    qrBitmap = QRCodeGenerator.generateQRCode(qrPayload, 512)
+                }
+            )
         }
     }
 
@@ -225,7 +239,7 @@ fun ShareScreen(
                 .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
-            // 1. Connection Status Card (Above Send & Receive - Matching exact screenshot)
+            // 1. Connection Status Card
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -330,7 +344,7 @@ fun ShareScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // 2. Action Cards: Send Content (Red) & Receive Content (Dark)
+            // 2. Action Cards: Send Content & Receive Content
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -346,7 +360,6 @@ fun ShareScreen(
                                     permissionsState.launchMultiplePermissionRequest()
                                 }
                                 showSendDialog = true
-                                p2pManager.startDiscovery()
                             },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(16.dp)
@@ -471,7 +484,7 @@ fun ShareScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 3. Live Transfer Progress Banner (Visible when transferring)
+            // 3. Live Transfer Progress Banner
             if (p2pState == P2PState.TRANSFERRING) {
                 item {
                     Card(
@@ -524,7 +537,7 @@ fun ShareScreen(
                 }
             }
 
-            // 4. Choose Content Type (Exact 4 Equal Items in a Row)
+            // 4. Choose Content Type
             item {
                 Text(
                     stringResource(R.string.choose_content_type),
@@ -568,7 +581,7 @@ fun ShareScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 5. Recent Transfers (P2P Transfers)
+            // 5. Recent Transfers
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -615,7 +628,7 @@ fun ShareScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 6. Nearby Devices (No Fake Devices, Remembers Devices, Toggles Status)
+            // 6. Nearby Devices Section
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -653,19 +666,37 @@ fun ShareScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
+                        // Scan button with progress indicator
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { p2pManager.startDiscovery() }
+                            modifier = Modifier.clickable {
+                                if (isScanning) {
+                                    p2pManager.stopDiscovery()
+                                } else {
+                                    if (!permissionsState.allPermissionsGranted) {
+                                        permissionsState.launchMultiplePermissionRequest()
+                                    }
+                                    p2pManager.startDiscovery()
+                                }
+                            }
                         ) {
-                            Icon(
-                                Icons.Default.Refresh,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(14.dp)
-                            )
+                            if (isScanning) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(14.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                stringResource(R.string.scan),
+                                if (isScanning) "Stop" else stringResource(R.string.scan),
                                 color = MaterialTheme.colorScheme.primary,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
@@ -675,50 +706,83 @@ fun ShareScreen(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                // Show real remembered and discovered devices
-                val displayDevices = remember(rememberedDevices, discoveredEndpoints, connectedEndpoint) {
+                // Merge: 
+                // 1. Remembered (historically connected) devices
+                // 2. Currently discovered nearby devices that clicked "Receive" (runtime-only, NOT saved if user doesn't click connect)
+                val displayList = remember(rememberedDevices, discoveredEndpoints, connectedEndpoint) {
                     val list = rememberedDevices.toMutableList()
-                    // Merge active discovered endpoints
+                    // Add discovered devices that are not already remembered
                     discoveredEndpoints.forEach { ep ->
                         if (list.none { it.name == ep.name || it.id == ep.id }) {
-                            list.add(NearbyDevice(id = ep.id, name = ep.name, isConnected = ep.isConnected))
+                            list.add(
+                                NearbyDevice(
+                                    id = ep.id,
+                                    name = ep.name,
+                                    ip = ep.ip,
+                                    isConnected = false
+                                )
+                            )
                         }
                     }
-                    // Mark connected endpoint
+                    // Update connected state
                     if (connectedEndpoint != null) {
                         val conn = connectedEndpoint!!
                         val idx = list.indexOfFirst { it.name == conn.name || it.id == conn.id }
                         if (idx != -1) {
                             list[idx] = list[idx].copy(isConnected = true)
                         } else {
-                            list.add(0, NearbyDevice(id = conn.id, name = conn.name, isConnected = true))
+                            list.add(0, NearbyDevice(id = conn.id, name = conn.name, ip = conn.ip, isConnected = true))
                         }
                     }
                     list
                 }
 
-                if (displayDevices.isEmpty()) {
+                if (displayList.isEmpty()) {
                     Text(
-                        "No nearby devices found. Tap Scan or Scan QR Code to connect.",
+                        if (isScanning) "Searching for nearby devices..." else "No nearby devices found. Tap Scan or Scan QR Code to connect.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 } else {
-                    displayDevices.forEachIndexed { index, device ->
+                    displayList.forEachIndexed { index, device ->
                         NearbyDeviceItem(
                             name = device.name,
                             isConnected = device.isConnected,
                             onConnect = {
-                                if (device.ip != null) {
-                                    p2pManager.connectViaSocket(device.ip, device.port, device.name)
+                                if (device.isConnected) {
+                                    showSendDialog = true
                                 } else {
-                                    p2pManager.connectDirectly(device.id, device.name)
+                                    // DOES NOT AUTO-CONNECT! Sends request and waits for approval
+                                    p2pManager.requestConnectionToPeer(
+                                        ip = device.ip,
+                                        port = device.port,
+                                        peerName = device.name,
+                                        endpointId = device.id,
+                                        onAccepted = { realName ->
+                                            Toast.makeText(context, "Connected to $realName!", Toast.LENGTH_SHORT).show()
+                                            nearbyDeviceRepository.addOrUpdateDevice(
+                                                NearbyDevice(
+                                                    id = device.id,
+                                                    name = realName,
+                                                    ip = device.ip,
+                                                    port = device.port,
+                                                    isConnected = true
+                                                )
+                                            )
+                                            showSendDialog = true
+                                        },
+                                        onDeclined = {
+                                            Toast.makeText(context, "Connection declined by ${device.name}", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onError = { errorMsg ->
+                                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                                        }
+                                    )
                                 }
-                                showSendDialog = true
                             }
                         )
-                        if (index < displayDevices.size - 1) {
+                        if (index < displayList.size - 1) {
                             HorizontalDivider(
                                 color = MaterialTheme.colorScheme.surfaceVariant,
                                 modifier = Modifier.padding(vertical = 12.dp)
@@ -775,11 +839,39 @@ fun ShareScreen(
         }
     }
 
-    var selectedFolder by remember { mutableStateOf<String?>(null) }
-    var selectedItemsToSend by remember { mutableStateOf<Set<DownloadItem>>(emptySet()) }
-    
-    // Connection Request Confirmation Dialog on Receiver phone
-    if (pendingConnectionRequest != null) {
+    // Sender: Waiting for Receiver's Approval Dialog
+    if (isWaitingForApproval) {
+        AlertDialog(
+            onDismissRequest = { p2pManager.cancelConnectionAttempt() },
+            icon = {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(36.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 3.dp
+                )
+            },
+            title = {
+                Text("Waiting for Approval", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            },
+            text = {
+                Text(
+                    "Connection request sent to ${connectingTargetName ?: "nearby device"}. Waiting for confirmation...",
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 14.sp
+                )
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { p2pManager.cancelConnectionAttempt() }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Receiver: Connection Request Confirmation Dialog (standalone fallback when showReceiveDialog is not active)
+    if (pendingConnectionRequest != null && !showReceiveDialog) {
         val req = pendingConnectionRequest!!
         AlertDialog(
             onDismissRequest = { p2pManager.rejectConnection() },
@@ -795,11 +887,20 @@ fun ShareScreen(
                 Text("Connection Request", fontWeight = FontWeight.Bold)
             },
             text = {
-                Text("${req.deviceName} wants to connect with your device to share media.")
+                Text("${req.deviceName} wants to connect with your device to share media files.")
             },
             confirmButton = {
                 Button(
-                    onClick = { p2pManager.acceptConnection() },
+                    onClick = {
+                        p2pManager.acceptConnection()
+                        nearbyDeviceRepository.addOrUpdateDevice(
+                            NearbyDevice(
+                                id = req.endpointId,
+                                name = req.deviceName,
+                                isConnected = true
+                            )
+                        )
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Accept")
@@ -831,11 +932,11 @@ fun ShareScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("1. Receiver taps 'Receive Content' to display the pairing QR code.", fontSize = 13.sp)
-                    Text("2. Sender taps 'Scan QR Code' with the camera to scan the code.", fontSize = 13.sp)
-                    Text("3. A confirmation dialog appears on the receiver: '[Phone Name] wants to connect with you'.", fontSize = 13.sp)
-                    Text("4. Once accepted, select media and transfer at high speed without internet!", fontSize = 13.sp)
-                    Text("5. Transferred videos are saved directly in app storage and can be watched offline anytime.", fontSize = 13.sp)
+                    Text("1. Receiver taps 'Receive Content' to start hotspot/advertising and show the QR code.", fontSize = 13.sp)
+                    Text("2. Sender taps 'Scan QR Code' with the camera to scan the receiver's code.", fontSize = 13.sp)
+                    Text("3. Sender waits for the receiver: a confirmation dialog appears on the receiver: '[Phone Name] wants to connect with you'.", fontSize = 13.sp)
+                    Text("4. Once accepted by the receiver, the devices pair securely and media can be transferred at high speed!", fontSize = 13.sp)
+                    Text("5. Transferred videos are saved in app storage and can be played offline anytime.", fontSize = 13.sp)
                 }
             },
             confirmButton = {
@@ -848,6 +949,9 @@ fun ShareScreen(
             }
         )
     }
+
+    var selectedFolder by remember { mutableStateOf<String?>(null) }
+    var selectedItemsToSend by remember { mutableStateOf<Set<DownloadItem>>(emptySet()) }
 
     // Send Dialog
     if (showSendDialog) {
@@ -1087,25 +1191,30 @@ fun ShareScreen(
                             selectedFolder = null
                             selectedItemsToSend = emptySet()
                         },
-                        enabled = selectedItemsToSend.isNotEmpty()
+                        enabled = selectedItemsToSend.isNotEmpty() && connectedEndpoint != null
                     ) {
-                        Text(
-                            if (connectedEndpoint != null) "Send (${selectedItemsToSend.size})" else "Pair & Send (${selectedItemsToSend.size})"
-                        )
+                        Text("Send (${selectedItemsToSend.size})")
                     }
                 }
             }
         )
     }
 
-    // Receive Dialog with Genuine QR Code
+    // Receive Dialog with QR Code
     if (showReceiveDialog) {
         AlertDialog(
             onDismissRequest = {
                 showReceiveDialog = false
+                hotspotManager.stopLocalHotspot()
                 p2pManager.stopAll()
             },
-            title = { Text(stringResource(R.string.receive_media), fontWeight = FontWeight.Bold) },
+            title = {
+                Text(
+                    if (pendingConnectionRequest != null) "Connection Request"
+                    else stringResource(R.string.receive_media),
+                    fontWeight = FontWeight.Bold
+                )
+            },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -1121,6 +1230,58 @@ fun ShareScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(stringResource(R.string.connected_to, connectedEndpoint!!.name), fontWeight = FontWeight.Bold)
                         Text(stringResource(R.string.waiting_for_files), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else if (pendingConnectionRequest != null) {
+                        val req = pendingConnectionRequest!!
+                        Icon(
+                            Icons.Default.PhoneAndroid,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(56.dp)
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Text(
+                            req.deviceName,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "${req.deviceName} wants to connect with your device to share media files.",
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { p2pManager.rejectConnection() },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Decline")
+                            }
+                            Button(
+                                onClick = {
+                                    nearbyDeviceRepository.addOrUpdateDevice(
+                                        NearbyDevice(
+                                            id = req.endpointId,
+                                            name = req.deviceName,
+                                            isConnected = true,
+                                            lastSeen = System.currentTimeMillis()
+                                        )
+                                    )
+                                    p2pManager.acceptConnection()
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text("Accept")
+                            }
+                        }
                     } else {
                         Box(
                             modifier = Modifier
@@ -1155,10 +1316,13 @@ fun ShareScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    showReceiveDialog = false
-                    p2pManager.stopAll()
-                }) { Text(stringResource(R.string.cancel)) }
+                if (pendingConnectionRequest == null) {
+                    TextButton(onClick = {
+                        showReceiveDialog = false
+                        hotspotManager.stopLocalHotspot()
+                        p2pManager.stopAll()
+                    }) { Text(stringResource(R.string.cancel)) }
+                }
             }
         )
     }
@@ -1171,19 +1335,63 @@ fun ShareScreen(
                 showQrScannerDialog = false
                 try {
                     val uri = Uri.parse(scannedCode)
-                    val ip = uri.getQueryParameter("ip")
+                    val rawIp = uri.getQueryParameter("ip")
                     val port = uri.getQueryParameter("port")?.toIntOrNull() ?: 8888
                     val name = uri.getQueryParameter("name") ?: "Nearby Device"
-                    if (!ip.isNullOrBlank() && ip != "127.0.0.1") {
-                        Toast.makeText(context, "Sending connection request to $name...", Toast.LENGTH_SHORT).show()
-                        p2pManager.connectViaSocket(ip, port, name)
-                    } else {
-                        p2pManager.connectDirectly("qr_${System.currentTimeMillis()}", name)
+                    val ssid = uri.getQueryParameter("ssid")
+                    val key = uri.getQueryParameter("key")
+
+                    val connectAction = {
+                        val gatewayIp = NetworkUtils.getGatewayIp(context)
+                        val targetIp = if (!gatewayIp.isNullOrBlank() && gatewayIp != "0.0.0.0") {
+                            gatewayIp
+                        } else if (!rawIp.isNullOrBlank() && rawIp != "127.0.0.1") {
+                            rawIp
+                        } else {
+                            "192.168.43.1"
+                        }
+
+                        // Request connection and wait for Receiver approval!
+                        p2pManager.requestConnectionToPeer(
+                            ip = targetIp,
+                            port = port,
+                            peerName = name,
+                            endpointId = "qr_${System.currentTimeMillis()}",
+                            onAccepted = { realName ->
+                                Toast.makeText(context, "Connected to $realName!", Toast.LENGTH_SHORT).show()
+                                nearbyDeviceRepository.addOrUpdateDevice(
+                                    NearbyDevice(
+                                        id = targetIp,
+                                        name = realName,
+                                        ip = targetIp,
+                                        port = port,
+                                        isConnected = true,
+                                        lastSeen = System.currentTimeMillis()
+                                    )
+                                )
+                                showSendDialog = true
+                            },
+                            onDeclined = {
+                                Toast.makeText(context, "Connection declined by $name", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = { errorMsg ->
+                                Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                            }
+                        )
                     }
-                    showSendDialog = true
+
+                    if (!ssid.isNullOrBlank() && !key.isNullOrBlank()) {
+                        Toast.makeText(context, "Connecting to hotspot: $ssid...", Toast.LENGTH_SHORT).show()
+                        hotspotManager.connectToHotspot(ssid, key, onConnected = {
+                            connectAction()
+                        }, onFailed = {
+                            connectAction()
+                        })
+                    } else {
+                        connectAction()
+                    }
                 } catch (e: Exception) {
-                    p2pManager.connectDirectly("qr_${System.currentTimeMillis()}", scannedCode.take(20))
-                    showSendDialog = true
+                    Toast.makeText(context, "Invalid QR code", Toast.LENGTH_SHORT).show()
                 }
             }
         )
