@@ -56,7 +56,8 @@ import androidx.compose.foundation.lazy.LazyRow
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ShareScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onItemClick: (String, Boolean) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -82,15 +83,15 @@ fun ShareScreen(
     val completedDownloads = remember(allDownloads) { allDownloads.filter { it.isCompleted } }
 
     DisposableEffect(Unit) {
-        p2pManager.onMovieReceived = { id, title, isMovie, posterUrl ->
+        p2pManager.onMediaReceived = { id, mediaId, title, isMovie, posterUrl, quality ->
             scope.launch {
                 downloadRepository.addCompletedDownload(
                     DownloadItem(
-                        id = id, mediaId = id,
+                        id = id, mediaId = mediaId,
                         title = title,
                         posterUrl = posterUrl,
                         isMovie = isMovie,
-                        quality = "1080p", // Inherited default
+                        quality = quality,
                         progress = 1f,
                         isCompleted = true
                     )
@@ -306,29 +307,20 @@ fun ShareScreen(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                // Demo item 1
-                RecentTransferItem(
-                    title = "John Wick 4",
-                    type = "Movie",
-                    size = "2.1 GB",
-                    isSent = true,
-                    time = "12:45 PM",
-                    targetDevice = "Ahmed's Phone",
-                    isCompleted = true
-                )
-                
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
-                
-                // Demo item 2
-                RecentTransferItem(
-                    title = "Attack on Titan S4",
-                    type = "TV Series",
-                    size = "8.7 GB",
-                    isSent = false,
-                    time = "Yesterday",
-                    targetDevice = "Sara's Phone",
-                    isCompleted = true
-                )
+                val recentItems = completedDownloads.reversed().take(3)
+                if (recentItems.isEmpty()) {
+                    Text(stringResource(R.string.no_downloads), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                } else {
+                    recentItems.forEachIndexed { index, item ->
+                        RecentTransferItem(
+                            item = item,
+                            onClick = { onItemClick(item.mediaId, item.isMovie) }
+                        )
+                        if (index < recentItems.size - 1) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.padding(vertical = 12.dp))
+                        }
+                    }
+                }
                 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -396,6 +388,7 @@ fun ShareScreen(
     }
 
     var selectedFolder by remember { mutableStateOf<String?>(null) }
+    var selectedItemsToSend by remember { mutableStateOf<Set<DownloadItem>>(emptySet()) }
     
     // Kept the functional dialogs unchanged logic-wise, but using the dark theme
     if (showSendDialog) {
@@ -403,6 +396,7 @@ fun ShareScreen(
             onDismissRequest = {
                 showSendDialog = false
                 selectedFolder = null
+                selectedItemsToSend = emptySet()
                 p2pManager.stopAll()
             },
             title = { Text(if (selectedFolder == null) "Select Media to Send" else selectedFolder!!, fontWeight = FontWeight.Bold) },
@@ -441,9 +435,9 @@ fun ShareScreen(
                                     if (movies.isNotEmpty()) {
                                         item { Text(stringResource(R.string.movies), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 8.dp)) }
                                         items(movies) { item ->
-                                            SendItemRow(item, context, p2pManager, connectedEndpoint) { 
-                                                showSendDialog = false 
-                                                selectedFolder = null
+                                            val isSelected = selectedItemsToSend.contains(item)
+                                            SendItemRow(item, isSelected) {
+                                                selectedItemsToSend = if (isSelected) selectedItemsToSend - item else selectedItemsToSend + item
                                             }
                                         }
                                     }
@@ -482,9 +476,9 @@ fun ShareScreen(
                                     }
                                     val folderItems = completedDownloads.filter { !it.isMovie && (it.title.split(" - ").firstOrNull() ?: it.title) == selectedFolder }
                                     items(folderItems) { item ->
-                                        SendItemRow(item, context, p2pManager, connectedEndpoint) { 
-                                            showSendDialog = false 
-                                            selectedFolder = null
+                                        val isSelected = selectedItemsToSend.contains(item)
+                                        SendItemRow(item, isSelected) {
+                                            selectedItemsToSend = if (isSelected) selectedItemsToSend - item else selectedItemsToSend + item
                                         }
                                     }
                                 }
@@ -494,11 +488,34 @@ fun ShareScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    showSendDialog = false
-                    selectedFolder = null
-                    p2pManager.stopAll()
-                }) { Text(stringResource(R.string.cancel)) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = {
+                        showSendDialog = false
+                        selectedFolder = null
+                        selectedItemsToSend = emptySet()
+                        p2pManager.stopAll()
+                    }) { Text(stringResource(R.string.cancel)) }
+                    
+                    if (connectedEndpoint != null && selectedItemsToSend.isNotEmpty()) {
+                        Button(onClick = {
+                            selectedItemsToSend.forEach { item ->
+                                val file = File(context.filesDir, "downloads/${item.id}.mp4")
+                                if (file.exists()) {
+                                    p2pManager.sendMedia(connectedEndpoint!!.id, item, file)
+                                }
+                            }
+                            showSendDialog = false
+                            selectedFolder = null
+                            selectedItemsToSend = emptySet()
+                        }) {
+                            Text("Send (${selectedItemsToSend.size})")
+                        }
+                    }
+                }
             }
         )
     }
@@ -572,43 +589,43 @@ fun RowScope.ContentTypeCard(title: String, icon: ImageVector, isSelected: Boole
 }
 
 @Composable
-fun RecentTransferItem(title: String, type: String, size: String, isSent: Boolean, time: String, targetDevice: String, isCompleted: Boolean) {
+fun RecentTransferItem(item: DownloadItem, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Thumbnail placeholder
-        Box(
+        AsyncImage(
+            model = item.posterUrl,
+            contentDescription = item.title,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(60.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Outlined.Movie, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        )
         
         Spacer(modifier = Modifier.width(12.dp))
         
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(item.title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("$type • $size", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                Text(if (item.isMovie) "Movie" else "Episode", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    if (isSent) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                    Icons.Default.ArrowDownward,
                     contentDescription = null,
-                    tint = if (isSent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                    tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(12.dp)
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                Text(if (isSent) stringResource(R.string.sent) else stringResource(R.string.received), color = if (isSent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                Text(stringResource(R.string.received), color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
             }
-            Text(if (isSent) "To: $targetDevice" else "From: $targetDevice", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
         
         Column(horizontalAlignment = Alignment.End) {
-            Text(time, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.CheckCircleOutline, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(14.dp))
@@ -659,33 +676,24 @@ fun NearbyDeviceItem(name: String, onConnect: () -> Unit = {}) {
 }
 
 @Composable
-fun SendItemRow(item: DownloadItem, context: android.content.Context, p2pManager: P2PManager, connectedEndpoint: Endpoint?, onSent: () -> Unit) {
+fun SendItemRow(item: DownloadItem, isSelected: Boolean, onSelect: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                val file = File(context.filesDir, "downloads/${item.id}.mp4")
-                if (file.exists() && connectedEndpoint != null) {
-                    p2pManager.sendMovie(connectedEndpoint.id, item.id, item.title, item.isMovie, item.posterUrl, file)
-                }
-                onSent()
-            }
+            .clickable { onSelect() }
             .padding(vertical = 12.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(Icons.Outlined.Movie, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.width(16.dp))
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(item.title, color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Bold)
             Text(if (item.isMovie) "Movie" else "Episode", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
-        Spacer(modifier = Modifier.weight(1f))
-        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.send), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
-    }
-
-    }
-
-
-
-
+        Checkbox(
+            checked = isSelected,
+            onCheckedChange = { onSelect() }
+        )
+    }    
+}
 

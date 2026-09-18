@@ -966,7 +966,14 @@ navController.navigate(Screen.SeriesDetails.createRoute(id)) },
             }
             composable(Screen.Share.route) {
                 ShareScreen(
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onItemClick = { id, isMovie ->
+                        if (isMovie) {
+                            navController.navigate(Screen.MovieDetails.createRoute(id))
+                        } else {
+                            navController.navigate(Screen.SeriesDetails.createRoute(id))
+                        }
+                    }
                 )
             }
 

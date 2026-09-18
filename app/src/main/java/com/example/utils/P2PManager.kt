@@ -43,7 +43,7 @@ class P2PManager(private val context: Context) {
     private val _transferProgress = MutableStateFlow(0f)
     val transferProgress = _transferProgress.asStateFlow()
 
-    var onMovieReceived: ((String, String, Boolean, String) -> Unit)? = null // id, title, isMovie, posterUrl // id, title, isMovie
+    var onMediaReceived: ((String, String, String, Boolean, String, String) -> Unit)? = null // id, title, isMovie, posterUrl // id, title, isMovie
 
     // Key: Payload ID, Value: File path/info
     private val incomingFilePayloads = mutableMapOf<Long, File>()
@@ -84,20 +84,26 @@ class P2PManager(private val context: Context) {
         _discoveredEndpoints.value = emptyList()
     }
 
-    fun sendMovie(endpointId: String, movieId: String, title: String, isMovie: Boolean, posterUrl: String, file: File) {
+    fun sendMedia(endpointId: String, downloadItem: com.example.data.model.DownloadItem, file: File) {
         try {
+            // Create file payload first to get its ID
+            val filePayload = Payload.fromFile(file)
+
             // 1. Send Metadata as bytes
             val metadata = JSONObject()
             metadata.put("type", "metadata")
-            metadata.put("id", movieId)
-            metadata.put("title", title)
-            metadata.put("isMovie", isMovie)
-            metadata.put("posterUrl", posterUrl)
+            metadata.put("payloadId", filePayload.id)
+            metadata.put("id", downloadItem.id)
+            metadata.put("mediaId", downloadItem.mediaId)
+            metadata.put("title", downloadItem.title)
+            metadata.put("isMovie", downloadItem.isMovie)
+            metadata.put("posterUrl", downloadItem.posterUrl)
+            metadata.put("quality", downloadItem.quality)
             val metadataPayload = Payload.fromBytes(metadata.toString().toByteArray())
+            
             connectionsClient.sendPayload(endpointId, metadataPayload)
 
             // 2. Send the actual file
-            val filePayload = Payload.fromFile(file)
             connectionsClient.sendPayload(endpointId, filePayload)
             _p2pState.value = P2PState.TRANSFERRING
         } catch (e: Exception) {
@@ -119,7 +125,7 @@ class P2PManager(private val context: Context) {
         }
     }
 
-    private var incomingMetadata: JSONObject? = null
+    private val incomingMetadataMap = mutableMapOf<Long, JSONObject>()
 
     private val payloadCallback = object : PayloadCallback() {
         override fun onPayloadReceived(endpointId: String, payload: Payload) {
@@ -128,7 +134,10 @@ class P2PManager(private val context: Context) {
                 if (data != null) {
                     val json = JSONObject(String(data))
                     if (json.optString("type") == "metadata") {
-                        incomingMetadata = json
+                        val payloadId = json.optLong("payloadId", -1L)
+                        if (payloadId != -1L) {
+                            incomingMetadataMap[payloadId] = json
+                        }
                     }
                 }
             } else if (payload.type == Payload.Type.FILE) {
@@ -149,10 +158,15 @@ class P2PManager(private val context: Context) {
                 
                 // Handle file success
                 val payloadFile = incomingFilePayloads[update.payloadId]
-                if (payloadFile != null && incomingMetadata != null) {
-                    val id = incomingMetadata!!.getString("id")
-                    val title = incomingMetadata!!.getString("title")
-                    val isMovie = incomingMetadata!!.getBoolean("isMovie")
+                val metadata = incomingMetadataMap[update.payloadId]
+                
+                if (payloadFile != null && metadata != null) {
+                    val id = metadata.getString("id")
+                    val mediaId = metadata.optString("mediaId", id)
+                    val title = metadata.getString("title")
+                    val isMovie = metadata.getBoolean("isMovie")
+                    val quality = metadata.optString("quality", "1080p")
+                    val posterUrl = metadata.optString("posterUrl", "")
                     
                     // Move file to our downloads directory
                     val destDir = File(context.filesDir, "downloads")
@@ -161,11 +175,14 @@ class P2PManager(private val context: Context) {
                     
                     payloadFile.copyTo(destFile, overwrite = true)
                     
-                    val posterUrl = incomingMetadata!!.optString("posterUrl", "")
-                    onMovieReceived?.invoke(id, title, isMovie, posterUrl)
+                    onMediaReceived?.invoke(id, mediaId, title, isMovie, posterUrl, quality)
                     
-                    incomingMetadata = null
+                    incomingMetadataMap.remove(update.payloadId)
                     incomingFilePayloads.remove(update.payloadId)
+                }
+                
+                if (incomingFilePayloads.isEmpty()) {
+                    _p2pState.value = P2PState.CONNECTED
                 }
             }
         }
