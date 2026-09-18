@@ -113,8 +113,10 @@ class PlayerViewModel : ViewModel() {
             if (directUrl.startsWith("local_offline_file://")) {
                 val fileId = directUrl.removePrefix("local_offline_file://")
                 val ctx = com.example.MyApplication.appContext
-                val file = java.io.File(ctx.getExternalFilesDir(android.os.Environment.DIRECTORY_MOVIES) ?: java.io.File(ctx.filesDir, "movies"), "${fileId}.mp4")
-                finalDirectUrl = android.net.Uri.fromFile(file).toString()
+                val file = com.example.utils.MediaStorageUtils.findMediaFile(ctx, fileId)
+                if (file != null && file.exists()) {
+                    finalDirectUrl = android.net.Uri.fromFile(file).toString()
+                }
             }
             _uiState.value = _uiState.value.copy(
                 currentVideoUrl = finalDirectUrl, 

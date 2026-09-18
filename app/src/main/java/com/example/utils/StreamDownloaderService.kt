@@ -1,5 +1,7 @@
 package com.example.utils
 
+import com.example.utils.MediaStorageUtils
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -97,10 +99,10 @@ class StreamDownloaderService : Service() {
                     val item = dao.getItemById(fileId)
                     if (item != null) dao.deleteItem(item)
                     
-                    val dir = getExternalFilesDir(Environment.DIRECTORY_MOVIES) ?: File(filesDir, "movies")
-                    val destFile = File(dir, "${fileId}.mp4")
-                    if (destFile.exists()) destFile.delete()
-                    val tempDir = File(dir, "temp_$fileId")
+                    val destFile = MediaStorageUtils.findMediaFile(this@StreamDownloaderService, fileId)
+                    if (destFile != null && destFile.exists()) destFile.delete()
+                    val internalDir = MediaStorageUtils.getMediaDirectory(this@StreamDownloaderService)
+                    val tempDir = File(internalDir, "temp_$fileId")
                     if (tempDir.exists()) tempDir.deleteRecursively()
                 } catch (e: Exception) {}
             }
@@ -283,11 +285,10 @@ class StreamDownloaderService : Service() {
     }
 
     private suspend fun downloadMp4(notificationId: Int, url: String, title: String, fileId: String, maxSegments: Int) {
-        val dir = getExternalFilesDir(Environment.DIRECTORY_MOVIES) ?: File(filesDir, "movies")
-        java.io.File(dir, ".nomedia").createNewFile()
-        if (!dir.exists()) dir.mkdirs()
-        
-        val destFile = File(dir, "${fileId}.mp4")
+        val urlClean = url.substringBefore('?').substringBefore('#')
+        val detectedExt = urlClean.substringAfterLast('.', "mp4").lowercase()
+        val validExt = if (detectedExt in listOf("mp4", "mkv", "webm", "avi", "mov", "flv", "m4v")) detectedExt else "mp4"
+        val destFile = MediaStorageUtils.getDestinationFile(this, fileId, validExt)
         
         var headReq = getHeaders(url).head().build()
         var headRes = client.newCall(headReq).execute()
@@ -402,11 +403,8 @@ class StreamDownloaderService : Service() {
         }
         if (segments.isEmpty()) throw Exception("No video segments found")
 
-        val dir = getExternalFilesDir(Environment.DIRECTORY_MOVIES) ?: File(filesDir, "movies")
-        java.io.File(dir, ".nomedia").createNewFile()
-        if (!dir.exists()) dir.mkdirs()
-        
-        val destFile = File(dir, "${fileId}.mp4")
+        val dir = MediaStorageUtils.getMediaDirectory(this)
+        val destFile = MediaStorageUtils.getDestinationFile(this, fileId, "mp4")
         if (destFile.exists()) destFile.delete()
 
         val downloadedCount = AtomicInteger(0)

@@ -99,6 +99,8 @@ class P2PManager(private val context: Context) {
             metadata.put("isMovie", downloadItem.isMovie)
             metadata.put("posterUrl", downloadItem.posterUrl)
             metadata.put("quality", downloadItem.quality)
+            metadata.put("fileName", file.name)
+            metadata.put("extension", file.extension)
             val metadataPayload = Payload.fromBytes(metadata.toString().toByteArray())
             
             connectionsClient.sendPayload(endpointId, metadataPayload)

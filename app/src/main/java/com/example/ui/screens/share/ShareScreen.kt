@@ -503,8 +503,8 @@ fun ShareScreen(
                     if (connectedEndpoint != null && selectedItemsToSend.isNotEmpty()) {
                         Button(onClick = {
                             selectedItemsToSend.forEach { item ->
-                                val file = File(context.filesDir, "downloads/${item.id}.mp4")
-                                if (file.exists()) {
+                                val file = com.example.utils.MediaStorageUtils.findMediaFile(context, item.id)
+                                if (file != null && file.exists()) {
                                     p2pManager.sendMedia(connectedEndpoint!!.id, item, file)
                                 }
                             }

@@ -46,8 +46,8 @@ class DownloadRepository(private val context: Context) {
     suspend fun removeFromDownloads(item: DownloadItem) {
         downloadDao.deleteItem(item)
         DownloadManagerService.pauseDownload(item.id)
-        val file = File(context.filesDir, "downloads/${item.id}.mp4")
-        if (file.exists()) {
+        val file = com.example.utils.MediaStorageUtils.findMediaFile(context, item.id)
+        if (file != null && file.exists()) {
             file.delete()
         }
     }
