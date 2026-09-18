@@ -80,6 +80,60 @@ class PlayerViewModel : ViewModel() {
         val bestWebsite = website ?: fallbackList.first()
         val remainingFallbacks = if (website == null) fallbackList.drop(1) else emptyList()
 
+        val isDownloaded = directUrl != null && (
+            directUrl.startsWith("local_offline_file") ||
+            directUrl.startsWith("file://") ||
+            directUrl.startsWith("content://")
+        )
+        val ctx = com.example.MyApplication.appContext
+        val localFile = if (isMovie) {
+            com.example.utils.MediaStorageUtils.findMediaFile(ctx, mediaId)
+        } else {
+            com.example.utils.MediaStorageUtils.findMediaFile(ctx, mediaId)
+                ?: com.example.utils.MediaStorageUtils.findMediaFile(ctx, "${mediaId}_1")
+        }
+        val isOffline = !com.example.utils.NetworkUtils.isInternetAvailable(ctx)
+        val isOfflineOrDownloaded = isDownloaded || (localFile != null && localFile.exists()) || isOffline
+
+        if (isOfflineOrDownloaded) {
+            var localVideoUrl: String? = null
+            if (directUrl != null) {
+                if (directUrl.startsWith("local_offline_file://")) {
+                    val fileId = directUrl.removePrefix("local_offline_file://")
+                    val file = com.example.utils.MediaStorageUtils.findMediaFile(ctx, fileId)
+                    if (file != null && file.exists()) {
+                        localVideoUrl = android.net.Uri.fromFile(file).toString()
+                    }
+                } else if (directUrl.startsWith("file://") || directUrl.startsWith("content://") || directUrl.contains(".mp4") || directUrl.contains(".mkv")) {
+                    localVideoUrl = directUrl
+                }
+            } else if (localFile != null && localFile.exists()) {
+                localVideoUrl = android.net.Uri.fromFile(localFile).toString()
+            }
+
+            _uiState.value = _uiState.value.copy(
+                mediaId = mediaId,
+                isMovie = isMovie,
+                isAnime = isAnime,
+                title = initialTitle,
+                availableWebsites = emptyList(),
+                currentWebsite = "",
+                fallbackWebsites = emptyList(),
+                availableServers = emptyList(),
+                currentServer = "",
+                availableServerLinks = emptyMap(),
+                availableServerIds = emptyMap(),
+                serverIdToChange = null,
+                availableQualities = emptyList(),
+                currentQuality = "",
+                extractedQualitiesInfo = emptyList(),
+                currentVideoUrl = localVideoUrl,
+                extractionUrl = null,
+                isLoading = false
+            )
+            return
+        }
+
         val serverIds = com.example.ui.screens.player.ServerStateStore.extractedServerIds
 
         _uiState.value = _uiState.value.copy(
@@ -291,6 +345,12 @@ fun setFinalVideoUrl(url: String) {
     }
 
     fun updateServers(servers: List<String>) {
+        val isOffline = !com.example.utils.NetworkUtils.isInternetAvailable(com.example.MyApplication.appContext)
+        val isLocal = _uiState.value.currentVideoUrl?.let { it.startsWith("file://") || it.startsWith("content://") } ?: false
+        if (isOffline || isLocal) {
+            _uiState.value = _uiState.value.copy(availableServers = emptyList())
+            return
+        }
         if (_uiState.value.availableServers != servers && servers.isNotEmpty()) {
             val firstServer = servers.first()
             val link = com.example.ui.screens.player.ServerStateStore.extractedServerLinks[firstServer]

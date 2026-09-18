@@ -1,5 +1,6 @@
 package com.example.utils
 
+import com.example.MainActivity
 import com.example.utils.MediaStorageUtils
 
 import android.app.NotificationChannel
@@ -114,7 +115,7 @@ class StreamDownloaderService : Service() {
             serviceScope.launch {
                 updateDbState(fileId, true)
             }
-            updateNotification(activeNotifications[fileId] ?: fileId.hashCode(), title, "Paused", 0, 0, false, fileId, true)
+            updateNotification(activeNotifications[fileId] ?: fileId.hashCode(), title, "متوقف مؤقتاً", 0, 0, true, fileId, isPaused = true)
             return START_NOT_STICKY
         }
         
@@ -122,8 +123,28 @@ class StreamDownloaderService : Service() {
             pausedFlags[fileId] = false
             serviceScope.launch {
                 updateDbState(fileId, false)
+                val job = activeJobs[fileId]
+                if (job == null || !job.isActive) {
+                    try {
+                        val db = com.example.data.db.AppDatabase.getDatabase(this@StreamDownloaderService)
+                        val item = db.downloadDao().getItemById(fileId)
+                        if (item != null) {
+                            val resolvedUrl = if (item.quality.contains("||")) item.quality.substringAfter("||") else item.quality
+                            if (resolvedUrl.isNotEmpty()) {
+                                val restartIntent = Intent(this@StreamDownloaderService, StreamDownloaderService::class.java).apply {
+                                    putExtra("url", resolvedUrl)
+                                    putExtra("title", item.title)
+                                    putExtra("id", item.id)
+                                }
+                                startService(restartIntent)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
             }
-            updateNotification(activeNotifications[fileId] ?: fileId.hashCode(), title, "Resuming...", 0, 0, true, fileId, false)
+            updateNotification(activeNotifications[fileId] ?: fileId.hashCode(), title, "جاري التحميل...", 0, 0, true, fileId, isPaused = false)
             return START_NOT_STICKY
         }
         
@@ -197,19 +218,34 @@ class StreamDownloaderService : Service() {
 
     private fun updateNotification(notificationId: Int, title: String, text: String, progress: Int, max: Int, ongoing: Boolean, fileId: String, isPaused: Boolean) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val isServiceActive = ongoing || isPaused
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
-            .setSmallIcon(if (ongoing) android.R.drawable.stat_sys_download else android.R.drawable.stat_sys_download_done)
-            .setOngoing(ongoing)
+            .setSmallIcon(if (isServiceActive) android.R.drawable.stat_sys_download else android.R.drawable.stat_sys_download_done)
+            .setOngoing(isServiceActive)
             .setOnlyAlertOnce(true)
+
+        // Clicking notification body opens MainActivity and navigates directly to downloads screen
+        val openIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra("navigate_to", "downloads")
+        }
+        val openPendingIntent = PendingIntent.getActivity(
+            this,
+            notificationId,
+            openIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        builder.setContentIntent(openPendingIntent)
+        builder.setAutoCancel(!isServiceActive)
 
         if (max > 0) {
             builder.setProgress(max, progress, false)
         }
         
-        if (fileId.isNotEmpty() && ongoing) {
-            // Add Pause/Resume button
+        if (fileId.isNotEmpty() && isServiceActive) {
+            // Add Pause/Resume button - preserved whether downloading or paused!
             val pauseResumeIntent = Intent(this, StreamDownloaderService::class.java).apply {
                 action = if (isPaused) "RESUME" else "PAUSE"
                 putExtra("id", fileId)
@@ -218,7 +254,7 @@ class StreamDownloaderService : Service() {
             val prPendingIntent = PendingIntent.getService(this, notificationId + 1, pauseResumeIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             builder.addAction(
                 if (isPaused) android.R.drawable.ic_media_play else android.R.drawable.ic_media_pause,
-                if (isPaused) "Resume" else "Pause",
+                if (isPaused) "استئناف" else "إيقاف مؤقت",
                 prPendingIntent
             )
             
@@ -228,11 +264,11 @@ class StreamDownloaderService : Service() {
                 putExtra("id", fileId)
             }
             val cancelPendingIntent = PendingIntent.getService(this, notificationId + 2, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "Cancel", cancelPendingIntent)
+            builder.addAction(android.R.drawable.ic_menu_close_clear_cancel, "إلغاء", cancelPendingIntent)
         }
         
         val notif = builder.build()
-        if (ongoing) {
+        if (isServiceActive) {
             if (currentForegroundId == null || currentForegroundId == notificationId) {
                 currentForegroundId = notificationId
                 startForeground(notificationId, notif)

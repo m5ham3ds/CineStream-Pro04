@@ -1,6 +1,7 @@
 package com.example.utils
 
 import android.content.Context
+import android.net.wifi.WifiManager
 import android.os.Build
 import com.example.data.model.DownloadItem
 import com.google.android.gms.nearby.Nearby
@@ -44,6 +45,44 @@ data class ConnectedPeer(
 )
 
 class P2PManager(private val context: Context) {
+    companion object {
+        @Volatile
+        private var INSTANCE: P2PManager? = null
+
+        fun getInstance(context: Context): P2PManager {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: P2PManager(context.applicationContext).also { INSTANCE = it }
+            }
+        }
+    }
+
+    private val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+    private var multicastLock: WifiManager.MulticastLock? = null
+
+    private fun acquireMulticastLock() {
+        try {
+            if (multicastLock == null) {
+                multicastLock = wifiManager?.createMulticastLock("cinestream_p2p_mcast")?.apply {
+                    setReferenceCounted(true)
+                }
+            }
+            if (multicastLock?.isHeld == false) {
+                multicastLock?.acquire()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun releaseMulticastLock() {
+        try {
+            if (multicastLock?.isHeld == true) {
+                multicastLock?.release()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
     private val connectionsClient = Nearby.getConnectionsClient(context)
     private val STRATEGY = Strategy.P2P_STAR
     private val SERVICE_ID = "com.example.cinestream.P2P"
@@ -136,7 +175,7 @@ class P2PManager(private val context: Context) {
 
     fun startDiscovery() {
         _isScanning.value = true
-        _discoveredEndpoints.value = emptyList()
+        acquireMulticastLock()
 
         // 1. Google Nearby Discovery
         val discoveryOptions = DiscoveryOptions.Builder().setStrategy(STRATEGY).build()
@@ -150,15 +189,16 @@ class P2PManager(private val context: Context) {
             // Socket UDP is primary
         }
 
-        // 2. UDP Local Wi-Fi Broadcast Discovery
+        // 2. Offline UDP Broadcast Discovery & TCP Subnet Probe
         startUdpDiscovery()
+        startSubnetProbeDiscovery()
     }
 
     fun stopDiscovery() {
         _isScanning.value = false
-        _discoveredEndpoints.value = emptyList()
         udpDiscoveryJob?.cancel()
         udpDiscoveryJob = null
+        releaseMulticastLock()
         try {
             connectionsClient.stopDiscovery()
         } catch (e: Exception) {
@@ -169,28 +209,124 @@ class P2PManager(private val context: Context) {
         }
     }
 
+    private fun getAllBroadcastAddresses(): List<InetAddress> {
+        val list = mutableSetOf<InetAddress>()
+        try {
+            val interfaces = java.util.Collections.list(NetworkInterface.getNetworkInterfaces())
+            for (intf in interfaces) {
+                if (!intf.isUp || intf.isLoopback) continue
+                for (ia in intf.interfaceAddresses) {
+                    val b = ia.broadcast
+                    if (b != null) list.add(b)
+                }
+            }
+        } catch (e: Exception) {}
+        try { list.add(InetAddress.getByName("255.255.255.255")) } catch (e: Exception) {}
+        try { list.add(InetAddress.getByName("192.168.43.255")) } catch (e: Exception) {}
+        try { list.add(InetAddress.getByName("192.168.49.255")) } catch (e: Exception) {}
+        return list.toList()
+    }
+
+    private fun getLocalSubnetPrefixes(): List<String> {
+        val list = mutableSetOf<String>()
+        try {
+            val interfaces = java.util.Collections.list(NetworkInterface.getNetworkInterfaces())
+            for (intf in interfaces) {
+                if (!intf.isUp || intf.isLoopback) continue
+                for (addr in java.util.Collections.list(intf.inetAddresses)) {
+                    if (!addr.isLoopbackAddress && addr is Inet4Address) {
+                        val ip = addr.hostAddress ?: continue
+                        if (ip.contains(".")) {
+                            list.add(ip.substringBeforeLast(".") + ".")
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {}
+        list.add("192.168.43.")
+        list.add("192.168.49.")
+        return list.toList()
+    }
+
+    private fun startSubnetProbeDiscovery() {
+        scope.launch(Dispatchers.IO) {
+            val prefixes = getLocalSubnetPrefixes()
+            for (prefix in prefixes) {
+                if (!_isScanning.value) break
+                val ipsToTest = mutableListOf("${prefix}1")
+                for (i in 2..35) ipsToTest.add("$prefix$i")
+                val defs = ipsToTest.map { testIp ->
+                    async {
+                        var s: Socket? = null
+                        try {
+                            s = Socket()
+                            s.connect(InetSocketAddress(testIp, 8888), 300)
+                            val w = BufferedWriter(OutputStreamWriter(s.getOutputStream()))
+                            val r = BufferedReader(InputStreamReader(s.getInputStream()))
+                            val probe = JSONObject().apply { put("type", "probe") }
+                            w.write(probe.toString() + "\n")
+                            w.flush()
+                            s.soTimeout = 500
+                            val line = r.readLine()
+                            if (line != null) {
+                                val resp = JSONObject(line)
+                                if (resp.optString("type") == "probe_ack") {
+                                    val name = resp.optString("deviceName", "Nearby Device")
+                                    val port = resp.optInt("port", 8888)
+                                    val endpoint = Endpoint(
+                                        id = testIp,
+                                        name = name,
+                                        isConnected = _connectedPeers.value.containsKey(testIp),
+                                        ip = testIp,
+                                        port = port
+                                    )
+                                    withContext(Dispatchers.Main) {
+                                        val current = _discoveredEndpoints.value.toMutableList()
+                                        if (current.none { it.name == name || it.ip == testIp }) {
+                                            current.add(endpoint)
+                                            _discoveredEndpoints.value = current
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (e: Exception) {
+                        } finally {
+                            try { s?.close() } catch (e: Exception) {}
+                        }
+                    }
+                }
+                defs.awaitAll()
+            }
+        }
+    }
+
     private fun startUdpDiscovery() {
         udpDiscoveryJob?.cancel()
-        udpDiscoveryJob = scope.launch {
+        udpDiscoveryJob = scope.launch(Dispatchers.IO) {
             var socket: DatagramSocket? = null
             try {
-                socket = DatagramSocket()
-                socket.broadcast = true
-                socket.soTimeout = 3000
+                socket = DatagramSocket(null).apply {
+                    reuseAddress = true
+                    bind(InetSocketAddress(0))
+                    broadcast = true
+                    soTimeout = 2500
+                }
 
                 val pingMsg = "CINESTREAM_PING:${Build.MODEL}"
                 val buffer = pingMsg.toByteArray()
-                val packet = DatagramPacket(
-                    buffer, buffer.size,
-                    InetAddress.getByName("255.255.255.255"), 8889
-                )
-                socket.send(packet)
+                val broadcasts = getAllBroadcastAddresses()
+                for (bAddr in broadcasts) {
+                    try {
+                        val packet = DatagramPacket(buffer, buffer.size, bAddr, 8889)
+                        socket.send(packet)
+                    } catch (e: Exception) {}
+                }
 
                 val receiveBuf = ByteArray(1024)
                 val receivePacket = DatagramPacket(receiveBuf, receiveBuf.size)
 
                 val startTime = System.currentTimeMillis()
-                while (isActive && System.currentTimeMillis() - startTime < 8000) {
+                while (isActive && _isScanning.value && System.currentTimeMillis() - startTime < 10000) {
                     try {
                         socket.receive(receivePacket)
                         val resp = String(receivePacket.data, 0, receivePacket.length)
@@ -218,7 +354,15 @@ class P2PManager(private val context: Context) {
                             }
                         }
                     } catch (e: Exception) {
-                        // Timeout on receive, continue loop
+                        // Re-ping if still scanning
+                        if (System.currentTimeMillis() - startTime < 8000) {
+                            for (bAddr in broadcasts) {
+                                try {
+                                    val p = DatagramPacket(buffer, buffer.size, bAddr, 8889)
+                                    socket.send(p)
+                                } catch (ex: Exception) {}
+                            }
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -226,21 +370,21 @@ class P2PManager(private val context: Context) {
             } finally {
                 socket?.close()
                 _isScanning.value = false
-                // If user did not connect to discovered devices, clear them after brief grace period
-                delay(4000)
-                if (_connectedPeers.value.isEmpty() && !_isWaitingForApproval.value) {
-                    _discoveredEndpoints.value = emptyList()
-                }
             }
         }
     }
 
     private fun startUdpResponder(userName: String, port: Int) {
         if (udpServerJob?.isActive == true) return
-        udpServerJob = scope.launch {
+        acquireMulticastLock()
+        udpServerJob = scope.launch(Dispatchers.IO) {
             var socket: DatagramSocket? = null
             try {
-                socket = DatagramSocket(8889)
+                socket = DatagramSocket(null).apply {
+                    reuseAddress = true
+                    bind(InetSocketAddress(8889))
+                    broadcast = true
+                }
                 val buffer = ByteArray(1024)
                 val packet = DatagramPacket(buffer, buffer.size)
 
@@ -268,7 +412,7 @@ class P2PManager(private val context: Context) {
     private fun startSocketServer(port: Int) {
         if (serverJob?.isActive == true && serverSocket?.isClosed == false) return
         serverJob?.cancel()
-        serverJob = scope.launch {
+        serverJob = scope.launch(Dispatchers.IO) {
             try {
                 val server = ServerSocket()
                 server.reuseAddress = true
@@ -277,9 +421,13 @@ class P2PManager(private val context: Context) {
 
                 while (isActive) {
                     val client = server.accept()
+                    client.tcpNoDelay = true
+                    client.sendBufferSize = 1024 * 1024
+                    client.receiveBufferSize = 1024 * 1024
+                    client.keepAlive = true
                     // Spawn a separate coroutine for each client connection!
                     // This allows MULTIPLE devices to connect simultaneously!
-                    scope.launch {
+                    scope.launch(Dispatchers.IO) {
                         handleIncomingClientSocket(client)
                     }
                 }
@@ -293,12 +441,31 @@ class P2PManager(private val context: Context) {
         var peerId = socket.inetAddress?.hostAddress ?: "peer_${System.currentTimeMillis()}"
         var peerName = "Nearby Device"
         try {
+            socket.tcpNoDelay = true
+            socket.sendBufferSize = 1024 * 1024
+            socket.receiveBufferSize = 1024 * 1024
+            socket.keepAlive = true
+
             val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
             val writer = BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
 
-            // 1. Read connection request from Sender
+            // 1. Read request from Sender
             val requestLine = reader.readLine() ?: return@withContext
             val requestJson = JSONObject(requestLine)
+
+            // Lightweight discovery probe response
+            if (requestJson.optString("type") == "probe") {
+                val probeAck = JSONObject().apply {
+                    put("type", "probe_ack")
+                    put("deviceName", Build.MODEL)
+                    put("port", 8888)
+                }
+                writer.write(probeAck.toString() + "\n")
+                writer.flush()
+                socket.close()
+                return@withContext
+            }
+
             peerName = requestJson.optString("deviceName", "Nearby Device")
             val clientIp = socket.inetAddress?.hostAddress ?: peerId
             peerId = clientIp
@@ -329,6 +496,7 @@ class P2PManager(private val context: Context) {
             }
             writer.write(ackJson.toString() + "\n")
             writer.flush()
+            socket.soTimeout = 0 // Persistent keep-alive indefinitely!
 
             val peer = ConnectedPeer(
                 id = peerId,
@@ -375,11 +543,12 @@ class P2PManager(private val context: Context) {
                         TransferNotificationHelper.showTransferProgress(context, title, 0, isSender = false)
 
                         val destFile = MediaStorageUtils.getDestinationFile(context, id, extension)
-                        val fileOut = FileOutputStream(destFile)
-                        val rawIn = peer.socket.getInputStream()
-                        val buffer = ByteArray(64 * 1024)
+                        val fileOut = BufferedOutputStream(FileOutputStream(destFile), 256 * 1024)
+                        val rawIn = BufferedInputStream(peer.socket.getInputStream(), 256 * 1024)
+                        val buffer = ByteArray(128 * 1024)
                         var bytesReadTotal = 0L
                         var lastNotifTime = 0L
+                        var lastProgressTime = 0L
 
                         while (bytesReadTotal < fileSize) {
                             val toRead = minOf(buffer.size.toLong(), fileSize - bytesReadTotal).toInt()
@@ -388,11 +557,15 @@ class P2PManager(private val context: Context) {
                             fileOut.write(buffer, 0, read)
                             bytesReadTotal += read
 
-                            val progress = if (fileSize > 0) bytesReadTotal.toFloat() / fileSize.toFloat() else 1f
-                            _transferProgress.value = progress
-
                             val now = System.currentTimeMillis()
-                            if (now - lastNotifTime > 250) {
+                            if (now - lastProgressTime > 150 || bytesReadTotal == fileSize) {
+                                val progress = if (fileSize > 0) bytesReadTotal.toFloat() / fileSize.toFloat() else 1f
+                                _transferProgress.value = progress
+                                lastProgressTime = now
+                            }
+
+                            if (now - lastNotifTime > 400 || bytesReadTotal == fileSize) {
+                                val progress = if (fileSize > 0) bytesReadTotal.toFloat() / fileSize.toFloat() else 1f
                                 TransferNotificationHelper.showTransferProgress(context, title, (progress * 100).toInt(), isSender = false)
                                 lastNotifTime = now
                             }
@@ -514,13 +687,18 @@ class P2PManager(private val context: Context) {
                 // 1. Resolve IP: if missing or loopback, ping network to discover device by name
                 var targetIp = ip
                 if (targetIp.isNullOrBlank() || targetIp == "127.0.0.1") {
-                    targetIp = resolvePeerIpViaUdp(peerName)
+                    targetIp = resolvePeerIp(peerName)
                 }
 
                 if (!targetIp.isNullOrBlank() && targetIp != "127.0.0.1") {
                     val socket = Socket()
+                    socket.tcpNoDelay = true
+                    socket.sendBufferSize = 1024 * 1024
+                    socket.receiveBufferSize = 1024 * 1024
+                    socket.keepAlive = true
                     socket.connect(InetSocketAddress(targetIp, port), 6000)
-                    socket.soTimeout = 25000 // Wait up to 25s for receiver confirmation
+                    socket.soTimeout = 30000 // Wait up to 30s for receiver confirmation dialog
+
                     connectedSocket = socket
 
                     val writer = BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
@@ -610,18 +788,76 @@ class P2PManager(private val context: Context) {
         }
     }
 
+    private suspend fun resolvePeerIp(targetName: String): String? = withContext(Dispatchers.IO) {
+        _discoveredEndpoints.value.find { it.name.equals(targetName, ignoreCase = true) }?.ip?.let {
+            if (it.isNotBlank() && it != "127.0.0.1") return@withContext it
+        }
+        val udpIp = resolvePeerIpViaUdp(targetName)
+        if (!udpIp.isNullOrBlank() && udpIp != "127.0.0.1") return@withContext udpIp
+        val tcpIp = probeSubnetForPeer(targetName)
+        if (!tcpIp.isNullOrBlank() && tcpIp != "127.0.0.1") return@withContext tcpIp
+        null
+    }
+
+    private suspend fun probeSubnetForPeer(targetName: String): String? = withContext(Dispatchers.IO) {
+        val prefixes = getLocalSubnetPrefixes()
+        for (prefix in prefixes) {
+            val ipsToTest = mutableListOf("${prefix}1")
+            for (i in 2..35) ipsToTest.add("$prefix$i")
+            val defs = ipsToTest.map { testIp ->
+                async {
+                    var s: Socket? = null
+                    try {
+                        s = Socket()
+                        s.connect(InetSocketAddress(testIp, 8888), 250)
+                        val w = BufferedWriter(OutputStreamWriter(s.getOutputStream()))
+                        val r = BufferedReader(InputStreamReader(s.getInputStream()))
+                        val probeMsg = JSONObject().apply { put("type", "probe") }
+                        w.write(probeMsg.toString() + "\n")
+                        w.flush()
+                        s.soTimeout = 400
+                        val line = r.readLine()
+                        if (line != null) {
+                            val resp = JSONObject(line)
+                            if (resp.optString("type") == "probe_ack") {
+                                val name = resp.optString("deviceName", "")
+                                if (name.equals(targetName, ignoreCase = true)) {
+                                    return@async testIp
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                    } finally {
+                        try { s?.close() } catch (e: Exception) {}
+                    }
+                    null
+                }
+            }
+            val match = defs.awaitAll().firstOrNull { it != null }
+            if (match != null) return@withContext match
+        }
+        null
+    }
+
     /**
      * Resolves device's current IP via UDP broadcast ping if the remembered IP is stale or unknown
      */
     private suspend fun resolvePeerIpViaUdp(targetName: String): String? = withContext(Dispatchers.IO) {
         var socket: DatagramSocket? = null
         try {
-            socket = DatagramSocket()
-            socket.broadcast = true
-            socket.soTimeout = 1500
+            socket = DatagramSocket(null).apply {
+                reuseAddress = true
+                bind(InetSocketAddress(0))
+                broadcast = true
+                soTimeout = 1500
+            }
             val ping = "CINESTREAM_PING:${Build.MODEL}".toByteArray()
-            val packet = DatagramPacket(ping, ping.size, InetAddress.getByName("255.255.255.255"), 8889)
-            socket.send(packet)
+            val broadcasts = getAllBroadcastAddresses()
+            for (b in broadcasts) {
+                try {
+                    socket.send(DatagramPacket(ping, ping.size, b, 8889))
+                } catch (e: Exception) {}
+            }
             val recvBuf = ByteArray(1024)
             val recvPacket = DatagramPacket(recvBuf, recvBuf.size)
             val start = System.currentTimeMillis()
@@ -812,12 +1048,13 @@ class P2PManager(private val context: Context) {
         peer.writer.write(header.toString() + "\n")
         peer.writer.flush()
 
-        val rawOut = peer.socket.getOutputStream()
-        val fileIn = FileInputStream(file)
-        val buffer = ByteArray(64 * 1024)
+        val rawOut = BufferedOutputStream(peer.socket.getOutputStream(), 256 * 1024)
+        val fileIn = BufferedInputStream(FileInputStream(file), 256 * 1024)
+        val buffer = ByteArray(128 * 1024)
         var bytesSentTotal = 0L
         val totalBytes = file.length()
         var lastNotifTime = 0L
+        var lastProgressTime = 0L
 
         while (true) {
             val read = fileIn.read(buffer)
@@ -825,11 +1062,15 @@ class P2PManager(private val context: Context) {
             rawOut.write(buffer, 0, read)
             bytesSentTotal += read
 
-            val progress = if (totalBytes > 0) bytesSentTotal.toFloat() / totalBytes.toFloat() else 1f
-            _transferProgress.value = progress
-
             val now = System.currentTimeMillis()
-            if (now - lastNotifTime > 250) {
+            if (now - lastProgressTime > 150 || bytesSentTotal == totalBytes) {
+                val progress = if (totalBytes > 0) bytesSentTotal.toFloat() / totalBytes.toFloat() else 1f
+                _transferProgress.value = progress
+                lastProgressTime = now
+            }
+
+            if (now - lastNotifTime > 400 || bytesSentTotal == totalBytes) {
+                val progress = if (totalBytes > 0) bytesSentTotal.toFloat() / totalBytes.toFloat() else 1f
                 TransferNotificationHelper.showTransferProgress(context, downloadItem.title, (progress * 100).toInt(), isSender = true)
                 lastNotifTime = now
             }

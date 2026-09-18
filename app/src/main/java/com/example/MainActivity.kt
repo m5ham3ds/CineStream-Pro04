@@ -17,8 +17,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.os.LocaleListCompat
+import android.content.Intent
 import com.example.data.repository.UserPreferencesRepository
 import com.example.navigation.AppNavigation
+import com.example.navigation.NavigationIntentHandler
+import com.example.navigation.Screen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.utils.NotificationHelper
 import com.startapp.sdk.adsbase.StartAppAd
@@ -28,6 +31,7 @@ class MainActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     
     super.onCreate(savedInstanceState)
+    handleNavigationIntent(intent)
     
     ExtensionManager.init(this)
     
@@ -87,6 +91,19 @@ class MainActivity : AppCompatActivity() {
           AppNavigation()
         }
       }
+    }
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleNavigationIntent(intent)
+  }
+
+  private fun handleNavigationIntent(intent: Intent?) {
+    val dest = intent?.getStringExtra("navigate_to")
+    if (dest == "downloads") {
+      NavigationIntentHandler.navigateTo(Screen.Downloads.route)
     }
   }
 }

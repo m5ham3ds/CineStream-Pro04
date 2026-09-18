@@ -13,6 +13,17 @@ import androidx.compose.foundation.verticalScroll
 
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import android.database.ContentObserver
+import android.media.AudioManager
+import android.provider.Settings
+import android.view.WindowManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.material.icons.filled.BrightnessMedium
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.VolumeOff
+import kotlin.math.roundToInt
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -103,8 +114,37 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
     var isBuffering by remember { mutableStateOf(true) }
     var currentTime by remember { mutableStateOf(0L) }
     var totalDuration by remember { mutableStateOf(0L) }
-    var brightness by remember { mutableStateOf(0.5f) }
-    var volume by remember { mutableStateOf(0.5f) }
+    // Initialize brightness with current system brightness
+    val initialBrightness = remember {
+        val activity = context as? Activity
+        val currentWindowBrightness = activity?.window?.attributes?.screenBrightness ?: -1f
+        if (currentWindowBrightness in 0.01f..1f) {
+            currentWindowBrightness
+        } else {
+            try {
+                val systemBrightnessInt = Settings.System.getInt(
+                    context.contentResolver,
+                    Settings.System.SCREEN_BRIGHTNESS
+                )
+                (systemBrightnessInt / 255f).coerceIn(0.01f, 1f)
+            } catch (e: Exception) {
+                0.5f
+            }
+        }
+    }
+    var brightness by remember { mutableStateOf(initialBrightness) }
+
+    // Initialize volume with current device media stream volume
+    val audioManager = remember { context.getSystemService(android.content.Context.AUDIO_SERVICE) as? AudioManager }
+    val initialVolume = remember {
+        audioManager?.let { am ->
+            val maxVol = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val curVol = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+            if (maxVol > 0) curVol.toFloat() / maxVol.toFloat() else 0.5f
+        } ?: 0.5f
+    }
+    var volume by remember { mutableStateOf(initialVolume) }
+
     var isLocked by remember { mutableStateOf(false) }
     var currentSpeed by remember { mutableStateOf(1f) }
     
@@ -116,12 +156,13 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
     var showWebsiteSheet by remember { mutableStateOf(false) }
     var isCloudflareChallenge by remember { mutableStateOf(false) }
 
-    // Force landscape mode for better viewing
+    // Force landscape mode and keep screen on while inside player
     DisposableEffect(Unit) {
         val activity = context as? Activity
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-        
         val window = activity?.window
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        
         var insetsController: WindowInsetsControllerCompat? = null
         if (window != null) {
             insetsController = WindowInsetsControllerCompat(window, window.decorView)
@@ -132,6 +173,44 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
         onDispose {
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             insetsController?.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            val lp = window?.attributes
+            if (lp != null) {
+                lp.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
+                window.attributes = lp
+            }
+        }
+    }
+
+    // ContentObserver to sync physical volume buttons with the volume slider
+    DisposableEffect(context) {
+        val contentObserver = object : ContentObserver(android.os.Handler(android.os.Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                super.onChange(selfChange)
+                audioManager?.let { am ->
+                    val maxVol = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    val curVol = am.getStreamVolume(AudioManager.STREAM_MUSIC)
+                    if (maxVol > 0) {
+                        volume = (curVol.toFloat() / maxVol.toFloat()).coerceIn(0f, 1f)
+                    }
+                }
+            }
+        }
+        try {
+            context.contentResolver.registerContentObserver(
+                Settings.System.CONTENT_URI,
+                true,
+                contentObserver
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        onDispose {
+            try {
+                context.contentResolver.unregisterContentObserver(contentObserver)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -227,7 +306,12 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
     }
     
     LaunchedEffect(volume) {
-        exoPlayer.volume = volume
+        audioManager?.let { am ->
+            val maxVol = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val targetVol = (volume * maxVol).roundToInt().coerceIn(0, maxVol)
+            am.setStreamVolume(AudioManager.STREAM_MUSIC, targetVol, 0)
+        }
+        exoPlayer.volume = volume.coerceIn(0f, 1f)
     }
     
     LaunchedEffect(isPlaying) {
@@ -247,6 +331,22 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
     DisposableEffect(Unit) {
         onDispose {
             exoPlayer.release()
+        }
+    }
+
+    // Lifecycle observer: Stop playback when exiting/leaving app, require clicking play upon return
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
+                exoPlayer.pause()
+                exoPlayer.playWhenReady = false
+                isPlaying = false
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -271,6 +371,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                         PlayerView(ctx).apply {
                             player = exoPlayer
                             useController = false
+                            keepScreenOn = true
                         }
                     },
                     modifier = Modifier.fillMaxSize()
@@ -279,6 +380,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                 AndroidView(
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            keepScreenOn = true
                             settings.apply {
                                 javaScriptEnabled = true
                                 domStorageEnabled = true
@@ -355,17 +457,6 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
         }
 
         AnimatedVisibility(
-            visible = !showControls && !uiState.isLoading,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth()
-        ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-                com.example.ui.components.StartAppBanner()
-            }
-        }
-
-        AnimatedVisibility(
             visible = showControls,
             enter = fadeIn(),
             exit = fadeOut(),
@@ -404,14 +495,16 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                                 modifier = Modifier.size(28.dp).clickable { onBack() }
                             )
                             Spacer(modifier = Modifier.weight(1f))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.clickable { showServerSheet = true }.padding(8.dp)
-                            ) {
-                                val serverName = if (uiState.currentServer.isNotEmpty()) uiState.currentServer.uppercase() else "SERVER"
-                                Text(serverName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                            if (uiState.availableServers.isNotEmpty()) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.clickable { showServerSheet = true }.padding(8.dp)
+                                ) {
+                                    val serverName = if (uiState.currentServer.isNotEmpty()) uiState.currentServer.uppercase() else "SERVER"
+                                    Text(serverName, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                }
                             }
                             Spacer(modifier = Modifier.weight(1f))
                         }
@@ -426,13 +519,15 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                         // Right section
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             Spacer(modifier = Modifier.weight(1f))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.clickable { showWebsiteSheet = true }.padding(8.dp)
-                            ) {
-                                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(uiState.currentWebsite.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                            if (uiState.availableWebsites.isNotEmpty()) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.clickable { showWebsiteSheet = true }.padding(8.dp)
+                                ) {
+                                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(uiState.currentWebsite.uppercase(), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                }
                             }
                             Spacer(modifier = Modifier.weight(1f))
                             Icon(
@@ -448,7 +543,8 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                     Box(modifier = Modifier.align(Alignment.CenterStart).padding(start = 24.dp)) {
                         VerticalSlider(
                             value = brightness, 
-                            onValueChange = { brightness = it }
+                            onValueChange = { brightness = it },
+                            icon = Icons.Default.BrightnessMedium
                         )
                     }
 
@@ -456,7 +552,8 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                     Box(modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp)) {
                         VerticalSlider(
                             value = volume, 
-                            onValueChange = { volume = it }
+                            onValueChange = { volume = it },
+                            icon = if (volume <= 0.01f) Icons.Default.VolumeOff else Icons.Default.VolumeUp
                         )
                     }
 
@@ -516,11 +613,12 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                             .padding(horizontal = 32.dp, vertical = 24.dp)
                     ) {
                         // Progress Bar Row
+                        val hasHours = totalDuration >= 3600_000L
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(formatTime(currentTime), color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
+                            Text(formatTime(currentTime, hasHours), color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
                             Spacer(modifier = Modifier.width(16.dp))
                             SimpleSlider(
                                 value = if (totalDuration > 0) (currentTime.toFloat() / totalDuration.toFloat()) else 0f,
@@ -532,7 +630,7 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(formatTime(totalDuration), color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
+                            Text(formatTime(totalDuration, hasHours), color = MaterialTheme.colorScheme.onBackground, fontSize = 14.sp)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -557,8 +655,10 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
                             BottomAction(icon = Icons.Default.Lock, text = "Lock") { isLocked = true }
                             ActionDivider()
                             if (!uiState.isMovie) { BottomAction(icon = Icons.Default.VideoLibrary, text = "Episodes") { showEpisodesSheet = true } }
-                            ActionDivider()
-                            QualityAction(uiState.currentQuality, onClick = { showQualitySheet = true })
+                            if (uiState.availableQualities.isNotEmpty()) {
+                                ActionDivider()
+                                QualityAction(uiState.currentQuality, onClick = { showQualitySheet = true })
+                            }
                             ActionDivider()
                             BottomAction(icon = if (downloadItem?.isCompleted == true) Icons.Default.Check else Icons.Default.Download, text = if (downloadItem?.isCompleted == true) "Downloaded" else "Download") { 
                                 if (downloadItem?.isCompleted == true) {
@@ -805,9 +905,22 @@ fun PlayerScreen(mediaId: String, episodeId: String = "", isMovie: Boolean, titl
 @Composable
 fun VerticalSlider(
     value: Float,
-    onValueChange: (Float) -> Unit
+    onValueChange: (Float) -> Unit,
+    icon: ImageVector? = null
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        if (icon != null) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f),
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+        }
         val onBgColor = MaterialTheme.colorScheme.onBackground
         Canvas(
             modifier = Modifier
@@ -902,12 +1015,17 @@ fun ActionDivider() {
     )
 }
 
-fun formatTime(timeMs: Long): String {
-    if (timeMs < 0) return "00:00"
+fun formatTime(timeMs: Long, forceHours: Boolean = false): String {
+    if (timeMs <= 0) return if (forceHours) "0:00:00" else "00:00"
     val totalSeconds = timeMs / 1000
-    val minutes = totalSeconds / 60
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
     val seconds = totalSeconds % 60
-    return String.format("%02d:%02d", minutes, seconds)
+    return if (hours > 0 || forceHours) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
+    }
 }
 
 @Composable

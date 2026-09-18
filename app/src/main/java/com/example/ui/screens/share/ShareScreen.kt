@@ -74,7 +74,7 @@ fun ShareScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val p2pManager = remember { P2PManager(context) }
+    val p2pManager = remember { P2PManager.getInstance(context) }
     val hotspotManager = remember { HotspotManager(context) }
     val downloadRepository = remember { DownloadRepository(context) }
     val p2pTransferRepository = remember { P2PTransferRepository(context) }
@@ -178,9 +178,7 @@ fun ShareScreen(
         }
 
         onDispose {
-            nearbyDeviceRepository.setAllDisconnected()
-            hotspotManager.stopLocalHotspot()
-            p2pManager.stopAll()
+            p2pManager.stopDiscovery()
         }
     }
 
@@ -958,6 +956,9 @@ fun ShareScreen(
                         p2pManager.disconnectPeer(dev.name)
                         nearbyDeviceRepository.setDeviceConnected(dev.id, false)
                         nearbyDeviceRepository.setDeviceConnected(dev.name, false)
+                        if (connectedEndpoints.size <= 1) {
+                            hotspotManager.stopLocalHotspot()
+                        }
                         deviceToDisconnect = null
                         Toast.makeText(context, "Disconnected from ${dev.name}", Toast.LENGTH_SHORT).show()
                     },
