@@ -240,26 +240,26 @@ fun ChatScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 2.dp),
                     horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start
                 ) {
                     Column(
                         horizontalAlignment = if (isMe) Alignment.End else Alignment.Start
                     ) {
                         val isEffectivelyDeleted = msg.isDeleted
-                
-                Box(
+                        
+                        Box(
                             modifier = Modifier
                                 .background(
                                     color = if (isEffectivelyDeleted) Color.Transparent else if (isMe) primaryRed else darkGray,
                                     shape = RoundedCornerShape(
-                                        topStart = 20.dp,
-                                        topEnd = 20.dp,
-                                        bottomStart = if (isMe) 20.dp else 4.dp,
-                                        bottomEnd = if (isMe) 4.dp else 20.dp
+                                        topStart = 16.dp,
+                                        topEnd = 16.dp,
+                                        bottomStart = if (isMe) 16.dp else 4.dp,
+                                        bottomEnd = if (isMe) 4.dp else 16.dp
                                     )
                                 )
-                                .border(if (isEffectivelyDeleted) 1.dp else 0.dp, if (isEffectivelyDeleted) MaterialTheme.colorScheme.onSurfaceVariant else Color.Transparent, RoundedCornerShape(20.dp))
+                                .border(if (isEffectivelyDeleted) 1.dp else 0.dp, if (isEffectivelyDeleted) MaterialTheme.colorScheme.onSurfaceVariant else Color.Transparent, RoundedCornerShape(16.dp))
                                 .combinedClickable(
                                     onClick = {},
                                     onLongClick = {
@@ -268,32 +268,45 @@ fun ChatScreen(
                                         }
                                     }
                                 )
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             if (isEffectivelyDeleted) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Block, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Block, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(text = stringResource(R.string.msg_deleted), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                    Text(text = stringResource(R.string.msg_deleted), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                                 }
                             } else if (msg.isVoice) {
+                                val textColor = if (isMe) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
                                     if (msg.mediaUrl != null && !msg.isDeleted) {
                                         Toast.makeText(context, "Voice message downloaded and deleted from cloud", Toast.LENGTH_SHORT).show()
                                         viewModel.deleteMessage(msg.id, true)
                                     }
                                 }) {
-                                    Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(24.dp))
+                                    Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = textColor, modifier = Modifier.size(24.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Box(modifier = Modifier.width(100.dp).height(2.dp).background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)))
+                                    Box(modifier = Modifier.width(100.dp).height(2.dp).background(textColor.copy(alpha = 0.5f)))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("0:12", color = MaterialTheme.colorScheme.onBackground, fontSize = 12.sp)
+                                    Text("0:12", color = textColor, fontSize = 12.sp)
                                 }
                             } else {
-                                Column {
-                                    Text(text = msg.text, color = MaterialTheme.colorScheme.onBackground, fontSize = 15.sp)
-                                    if (msg.isEdited) {
-                                        Text(text = stringResource(R.string.edited), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f), fontSize = 10.sp, modifier = Modifier.align(Alignment.End))
+                                val textColor = if (isMe) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                val timeColor = if (isMe) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(text = msg.text, color = textColor, fontSize = 15.sp, modifier = Modifier.align(Alignment.Start))
+                                    
+                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                                        if (msg.isEdited) {
+                                            Text(text = stringResource(R.string.edited), color = timeColor, fontSize = 10.sp)
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                        }
+                                        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                                        Text(sdf.format(Date(msg.timestamp)), fontSize = 10.sp, color = timeColor)
+                                        if (isMe) {
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Icon(Icons.Default.DoneAll, contentDescription = "Read", tint = Color.White, modifier = Modifier.size(12.dp))
+                                        }
                                     }
                                 }
                             }
@@ -303,17 +316,8 @@ fun ChatScreen(
                         if (!isEffectivelyDeleted && msg.reactions.isNotEmpty()) {
                             Row(modifier = Modifier.padding(top = 2.dp)) {
                                 msg.reactions.values.distinct().forEach { emoji ->
-                                    Text(text = emoji, fontSize = 14.sp, modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape).padding(horizontal = 4.dp, vertical = 2.dp))
+                                    Text(text = emoji, fontSize = 12.sp, modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, CircleShape).padding(horizontal = 4.dp, vertical = 2.dp))
                                 }
-                            }
-                        }
-                        
-                        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
-                            Text(sdf.format(Date(msg.timestamp)), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            if (isMe) {
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(Icons.Default.DoneAll, contentDescription = "Read", tint = primaryRed, modifier = Modifier.size(14.dp))
                             }
                         }
                     }

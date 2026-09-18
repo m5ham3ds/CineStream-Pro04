@@ -34,7 +34,12 @@ class ChatViewModel : ViewModel() {
             if (conv != null) {
                 val otherUserId = conv.participants.firstOrNull { it != currentUser.value?.uid }
                 if (otherUserId != null) {
-                    _otherUser.value = repo.getUserProfile(otherUserId)
+                    val initialName = conv.participantNames[otherUserId] ?: "User"
+                    _otherUser.value = UserProfile(uid = otherUserId, username = initialName) // Immediate fallback
+                    
+                    repo.getUserProfileFlow(otherUserId).collect { profile ->
+                        if (profile != null) _otherUser.value = profile
+                    }
                 }
             }
         }

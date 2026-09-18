@@ -61,6 +61,11 @@ data class Story(
 )
 
 class SocialRepository {
+
+    companion object {
+        private val userProfileCache = mutableMapOf<String, UserProfile>()
+    }
+
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
 
@@ -70,12 +75,31 @@ class SocialRepository {
     }
 
     suspend fun getUserProfile(uid: String): UserProfile? {
+        if (userProfileCache.containsKey(uid)) return userProfileCache[uid]
         return try {
             val doc = db.collection("users").document(uid).get().await()
-            doc.toObject(UserProfile::class.java)
+            val p = doc.toObject(UserProfile::class.java)
+            if (p != null) userProfileCache[uid] = p
+            p
         } catch (e: Exception) {
             null
         }
+    }
+
+    fun getUserProfileFlow(userId: String): Flow<UserProfile?> = callbackFlow {
+        if (userProfileCache.containsKey(userId)) {
+            trySend(userProfileCache[userId])
+        }
+        val listener = db.collection("users").document(userId).addSnapshotListener { snapshot, _ ->
+            if (snapshot != null) {
+                val profile = snapshot.toObject(UserProfile::class.java)
+                if (profile != null) {
+                    userProfileCache[userId] = profile
+                    trySend(profile)
+                }
+            }
+        }
+        awaitClose { listener?.remove() }
     }
 
     fun getStories(): Flow<List<Story>> = callbackFlow {
